@@ -4,7 +4,7 @@ This repository contains information about the Deconf OSS project.
 
 ## About
 
-Deconf (**de**-centralised **conf**erence) is an Open Source library for building virtual conference platforms developed by [Open Lab at Newcastle University](http://openlab.ncl.ac.uk/). It has been developed with the learnings of running several online conferences since 2020.
+Deconf is an Open Source library for building virtual conference platforms developed by [Open Lab at Newcastle University](http://openlab.ncl.ac.uk/). It has been developed with the learnings of running several online conferences since 2020.
 
 ### Core team
 
