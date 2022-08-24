@@ -1,0 +1,21 @@
+h1 {
+  display: flex;
+  justify-content: space-between;
+}
+
+.card {
+  border: 0.25rem solid rebeccapurple;
+  border-image: linear-gradient(
+    to bottom right,
+    hsl(281, 100%, 50%) 0%,
+    hsl(211, 100%, 50%) 25%,
+    hsl(143, 81%, 46%) 50%,
+    hsl(37, 91%, 45%) 75%,
+    hsl(337, 100%, 50%) 100%
+  );
+  border-image-slice: 100%;
+  border-image-slice: 1;
+  padding: 0 1rem;
+  margin: calc(-1 * var(--s-3) - 0.25rem);
+  border-radius: 2rem;
+}

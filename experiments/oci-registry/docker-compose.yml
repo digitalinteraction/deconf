@@ -1,0 +1,11 @@
+version: "2"
+
+services:
+  # https://docs.docker.com/registry/deploying/
+  registry:
+    image: "registry:2"
+    restart: unless-stopped
+    ports:
+      - 5000:5000
+    volumes:
+      - ./registry:/var/lib/registry

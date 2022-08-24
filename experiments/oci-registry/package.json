@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "dependencies": {
+    "globby": "^13.1.2",
+    "got": "^12.3.1"
+  }
+}
