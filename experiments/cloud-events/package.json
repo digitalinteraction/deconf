@@ -1,0 +1,7 @@
+{
+  "type": "module",
+  "private": true,
+  "dependencies": {
+    "cloudevents": "^6.0.2"
+  }
+}
