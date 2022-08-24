@@ -6,11 +6,11 @@ Can an OCI image-spec registry be used to store versioned static websites?
 
 ## structure
 
-- `app/` — A static web app to be bundled and distrobuted.
-- `images/` — (git-ignored) Oci image-spec complaint images are built here.
+- `app/` — A static web app to be bundled and distributed.
+- `images/` — (git-ignored) OCI image-spec complaint images are built here.
 - `registry/` — (git-ignored) A volume for the docker-compose registry's data,
   for easy inspection and debugging.
-- `bundle.mjs` — A script that takes a version argument (`$1`) and creates an oci image-spec container in the `images/` folder.
+- `bundle.mjs` — A script that takes a version argument (`$1`) and creates an OCI image-spec container in the `images/` folder.
 - `upload.mjs` — A script that takes a version argument (`$1`) and uploads an `images/` version to the registry.
 - `serve.mjs` — A server that pulls static images from the registry and servers them over http.
 - `docker-compose.yml` — A docker-compose stack that deploys a registry for experimentation.
@@ -21,7 +21,7 @@ Can an OCI image-spec registry be used to store versioned static websites?
 - A custom config file can be stored too, `application/vnd.alembic.app.config.v1+json` in this case which could
   be used by the runtime to determine how to serve the static site.
 - This implementation stores the site as a single tar in a blob/layer,
-  indivisdual files could be stored which might enable blob reuse and reduce overall filesizes.
+  individual files could be stored which might enable blob reuse and reduce overall file-sizes.
 - A container in the registry can have many slashes in it (`/`), which could be useful for namespacing.
   They must have an interesting routing algorithm, with many slashes in the middle of URLs.
 - A special tar/gzip combo is needed to remove timestamps from tars and improve caching.
@@ -30,16 +30,16 @@ Can an OCI image-spec registry be used to store versioned static websites?
 - The index can be an index or a manifest which can be confusing, it relies on the `mediaType` field.
 - Something needs to be written to handle the other side, pulling an "image" and serving it.
   - Ideally, a plain nginx container would be the best thing to serve these assets.
-- Creating a regular image might make more sense as kubernetes can just run them.
+- Creating a regular image might make more sense as Kubernetes can just run them.
 - Its probably easier and simpler to generate the files and upload them to an S3 bucket then setup a CDN to serve the correct assets.
 - It feels like there are too many steps and not many benefits to this approach.
 
 ## links
 
-- [https://opencontainers.org/](Open Container Initiative)
-- [https://github.com/opencontainers/image-spec/blob/main/spec.md](opencontainers/image-spec)
-- [https://github.com/opencontainers/distribution-spec/blob/main/spec.md](opencontainers/distribution-spec)
-- [https://docs.docker.com/registry/spec/api/](Docker registry API)
+- [Open Container Initiative](https://opencontainers.org/)
+- [opencontainers/image-spec](https://github.com/opencontainers/image-spec/blob/main/spec.md)
+- [opencontainers/distribution-spec](https://github.com/opencontainers/distribution-spec/blob/main/spec.md)
+- [Docker Registry API](https://docs.docker.com/registry/spec/api/)
 
 ## experiment
 
@@ -172,6 +172,6 @@ http :5000/v2/my-app/blobs/$DIGEST
 mkdir tmp
 cd tmp
 
-# Get the app blob and untar into the current folder
+# Get the app blob and un-tar into the current folder
 http :5000/v2/my-app/blobs/sha256:3b109fddb59f60ebdfd93843cae0a652db64425f1272770983dc7e3f2714fbc1 | tar -xz
 ```
