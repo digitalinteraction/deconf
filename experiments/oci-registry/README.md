@@ -12,6 +12,7 @@ Can an OCI image-spec registry be used to store versioned static websites?
   for easy inspection and debugging.
 - `bundle.mjs` — A script that takes a version argument (`$1`) and creates an oci image-spec container in the `images/` folder.
 - `upload.mjs` — A script that takes a version argument (`$1`) and uploads an `images/` version to the registry.
+- `serve.mjs` — A server that pulls static images from the registry and servers them over http.
 - `docker-compose.yml` — A docker-compose stack that deploys a registry for experimentation.
 
 ## notes
@@ -28,8 +29,10 @@ Can an OCI image-spec registry be used to store versioned static websites?
 - The index is the only named file and everything else is a blob, including the manifest.
 - The index can be an index or a manifest which can be confusing, it relies on the `mediaType` field.
 - Something needs to be written to handle the other side, pulling an "image" and serving it.
+  - Ideally, a plain nginx container would be the best thing to serve these assets.
 - Creating a regular image might make more sense as kubernetes can just run them.
 - Its probably easier and simpler to generate the files and upload them to an S3 bucket then setup a CDN to serve the correct assets.
+- It feels like there are too many steps and not many benefits to this approach.
 
 ## links
 
@@ -67,6 +70,13 @@ npm install
 
 # take the v1 image from the images/ folder and upload it to the registry
 ./upload.mjs v1
+
+# serve the static sites in the registry
+# → runs on http://localhost:8080
+./serve.mjs
+
+# View the static app
+open http://localhost:8080/my-app/v1
 
 # retrieve image catalog from the registry
 http :5000/v2/_catalog
