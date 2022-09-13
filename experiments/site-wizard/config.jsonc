@@ -1,0 +1,238 @@
+{
+  // Notes:
+  // - Multiple-levels for future support?
+  // - Wizard will need to download and embed the icons
+  // - reference a page object
+  // - relative icon paths or from the CDN?
+  // - [type] fields should be camelCase to make js access easier
+  // - How can the platform support custom markdown widgets?
+  // - Versioned page types "atriumV1" / "mySchedulev3"?
+  //   or a seperate "version" key?
+  // - Should all polymorphics have "[type]" as an object?
+  "navigation": [
+    {
+      "page": "home",
+      "icon": "uploads/home.svg",
+      "text": {
+        "en": "Atrium"
+      }
+    },
+    {
+      "page": "schedule",
+      "icon": "uploads/schedule.svg",
+      "text": {
+        "en": "Schedule"
+      }
+    },
+    {
+      "page": "my-schedule",
+      "icon": "uploads/my-schedule.svg",
+      "text": {
+        "en": "My Schedule"
+      }
+    },
+    {
+      "page": "help",
+      "icon": "uploads/help.svg",
+      "text": {
+        "en": "Atrium"
+      }
+    }
+  ],
+
+  "site": {
+    "title": "Dog con",
+    "slug": "dog-con",
+    "url": "https://v1.dog-con.deconf.app",
+    "deconfVersion": "v0",
+    "opengraph": {
+      "title": "Come down to Dog con",
+      "description": "Lorem ipsum sil dor amet...",
+      "image": "https://dog-con.openlab.dev/uploads/opengraph.png",
+      "twitter": "@DogCon"
+    },
+
+    // Absolute paths?
+    // new URL("uploads/script.js", "file:")
+    // can load both? then use the "protocol" to decide how to load
+    "customCss": ["uploads/styles.css"],
+    "customScripts": ["uploads/script.js"]
+  },
+
+  // "type" + "[type]" structure from the Notion API
+  "pages": [
+    //
+    // ATRIUM PAGE
+    //
+    {
+      "id": "home",
+      "type": "atrium",
+      "atrium": {
+        "heroTitle": "Welcome to Dog Con!!",
+        "heroSubtitle": "Get your dog on",
+        "heroImage": "",
+        "content": {
+          "en": "## Dog con is now\n\nLorem ipsum sil dor amet"
+        },
+        "widgets": [
+          // Widget IDs for usage analytics? and allow custom CSS styling
+          {
+            "id": "widget-a",
+            "type": "login",
+            "login": {
+              "faIcon": ["fas", "envelope"],
+              "title": "Log in",
+              "subtitle": "Get a magic link"
+            }
+          },
+          {
+            "id": "widget-b",
+            "type": "register",
+            "register": {
+              "faIcon": ["fas", "clipboard"],
+              "title": "Register",
+              "subtitle": "Sign up for the conference"
+            }
+          },
+          {
+            "id": "widget-c",
+            "type": "siteVisitors",
+            "siteVisitors": {
+              "faIcon": ["fas", "users"],
+              "subtitle": "Online now"
+            }
+          },
+          {
+            "id": "widget-d",
+            "type": "page",
+            "page": {
+              "id": "my-schedule",
+              "faIcon": ["fas", "chain"],
+              "title": "My Schedule",
+              "subtitle": "See your events"
+            }
+          },
+          {
+            "id": "widget-e",
+            "type": "url",
+            "url": {
+              "url": "https://duck.com",
+              "faIcon": ["fas", "chain"],
+              "title": "Duck…",
+              "subtitle": "…DuckGo"
+            }
+          }
+        ],
+        "sponsors": [
+          {
+            "size": "large",
+            "text": { "en": "Platinum sponsors" },
+            "sponsors": [
+              {
+                "id": "sponsor-a", // for analytics?
+                "name": { "en": "Open Lab" },
+                "image": "uploads/sponsor-a.png",
+                "url": "https://openlab.ncl.ac.uk"
+              },
+              {
+                "id": "sponsor-b",
+                "name": { "en": "Newcastle University" },
+                "image": "uploads/sponsor-b.png",
+                "url": null
+              }
+            ]
+          }
+        ]
+      }
+    },
+
+    //
+    // SCHEDULE PAGE
+    //
+    {
+      "id": "schedule",
+      "type": "schedule",
+      "version": "v1",
+      "schedule": {
+        "title": "Programme",
+        "subtitle": "Search for sessions that are interesting to you",
+        "primaryFilters": [
+          { "type": "builtin", "builtin": "search" },
+          { "type": "builtin", "builtin": "date" }
+        ],
+        "secondaryFilters": [
+          {
+            "type": "taxonomy",
+            "taxonomy": { "id": "space" }
+          }
+        ],
+        "tiles": {
+          "title": { "enabled": true },
+          "content": { "enabled": true },
+          "header": [
+            {
+              "type": "taxonomy",
+              "taxonomy": { "id": "space" }
+            },
+            {
+              "type": "taxonomy",
+              "taxonomy": { "id": "space" }
+            }
+          ]
+        }
+      }
+    }
+  ],
+
+  "languages": {
+    "default": "en",
+    "available": [
+      { "key": "en", "name": "English" },
+      { "key": "fr", "name": "French" }
+    ]
+  },
+
+  "taxonomies": [
+    {
+      "id": "space",
+      "title": { "en": "Space" },
+      "options": [
+        {
+          "id": "space-a",
+          "title": { "en": "AI and Agriculture" }
+        },
+        {
+          "id": "space-b",
+          "title": { "en": "Machine Learning with Fish" }
+        },
+        {
+          "id": "space-c",
+          "title": { "en": "Block Chain Horoscopes" }
+        }
+      ]
+    },
+    {
+      "id": "theme",
+      "title": { "en": "Theme" },
+      "options": [
+        {
+          "id": "theme-a",
+          "title": { "en": "Inclusivity" }
+        },
+        {
+          "id": "theme-b",
+          "title": { "en": "Awareness" }
+        },
+        {
+          "id": "theme-c",
+          "title": { "en": "Culture" }
+        }
+      ]
+    }
+  ],
+
+  // To be merged-in to i18n strings
+  "i18n": {
+    "general.search.title": "Search Sessions:"
+  }
+}
