@@ -5,6 +5,7 @@ import { readFileSync } from "fs";
 
 import express from "express";
 import { ExpressPeerServer } from "peer";
+import { createTerminus } from "@godaddy/terminus";
 
 async function main() {
   /** @type {{pairs:[string,string][]}} */
@@ -37,6 +38,20 @@ async function main() {
   // });
 
   server.listen(8080, () => console.log("Listening on :8080"));
+
+  createTerminus(server, {
+    signals: ["SIGINT", "SIGTERM"],
+    healthChecks: {
+      "/healthz": () => "ok",
+    },
+    async beforeShutdown() {
+      console.debug("terminus@beforeShutdown");
+    },
+    async onSignal() {
+      console.debug("terminus@onSignal");
+      peer.close();
+    },
+  });
 }
 
 main();

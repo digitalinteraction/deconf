@@ -1,6 +1,35 @@
 const initialTitle = document.title;
 const url = new URL(location.href);
 
+/** @type {HTMLVideoElement} */
+const video = document.getElementById("video");
+const messages = document.getElementById("messages");
+const title = document.getElementById("title");
+
+function message(message) {
+  console.info(message);
+
+  const elem = messages.appendChild(document.createElement("p"));
+  elem.innerText = message;
+
+  pause(10_000).then(() => {
+    messages.removeChild(elem);
+  });
+}
+
+/** @returns {Promise<{ id: string, index: number }>} */
+async function getTarget(id) {
+  const res = await fetch(`/api/pairs/${id}`);
+  if (!res.ok) throw new Error("Pair not found");
+  const peer = await res.json();
+  return peer;
+}
+
+const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+//
+// App entry point
+//
 async function main() {
   const id = url.searchParams.get("id");
   if (typeof id !== "string") throw new Error("id not set");
@@ -17,92 +46,112 @@ async function main() {
     debug: 2,
   });
 
-  message(`Connecting to "${target.id}"`);
-  const result = await setupCall(peer, target);
+  console.debug("Connecting to %s", target.id);
+  await (target.index === 0
+    ? waitForCall(peer, target)
+    : startCall(peer, target));
 
-  message(`Connection ${result}, waiting restarting…`);
-  await new Promise((resolve) => setTimeout(resolve, 1_000));
+  const result = await setupPeer(peer);
+
+  message(`Connection ${result}, restarting…`);
+  await pause(1_000);
 
   // Reload the page to retry
   location.reload();
 }
 
-/** @returns {Promise<{ id: string, index: number }>} */
-async function getTarget(id) {
-  const res = await fetch(`/api/pairs/${id}`);
-  if (!res.ok) throw new Error("Pair not found");
-  const peer = await res.json();
-  return peer;
-}
-
-async function setupCall(peer, target) {
-  return target.index === 0
-    ? waitForCall(peer, target)
-    : startCall(peer, target);
-}
-
-function setupConnection(connection) {
-  connection.send("hello there");
-
+function setupPeer(peer) {
   return new Promise((resolve) => {
-    // setTimeout(() => {
-    //   console.log(connection);
-    // }, 5_000);
-
-    // Handle data messages
-    connection.on("data", (data) => {
-      console.debug("connection@data", data);
-
-      if (data === "hello there") connection.send("general kenobi");
-    });
-
-    connection.on("close", () => resolve("closed"));
-    connection.on("disconnected", () => resolve("disconnected"));
-    connection.on("error", (error) => {
+    peer.on("close", () => resolve("closed"));
+    peer.on("disconnected", () => resolve("disconnected"));
+    peer.on("error", (error) => {
       console.error(error);
       resolve("failed");
     });
   });
 }
 
-async function waitForCall(peer, target) {
-  console.debug("waiting for call");
+// https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia
+function getUserMedia() {
+  return navigator.mediaDevices
+    .getUserMedia({
+      video: { width: 1920, height: 1080 },
+    })
+    .catch((error) => {
+      console.error(error.name, error.message);
+      throw error;
+    });
+}
 
-  const connection = await new Promise((resolve) => {
-    peer.on("connection", (connection) => {
-      console.debug("peer@connection");
-      resolve(connection);
+/** @param {MediaStream|null} mediaStream */
+function setMediaStream(mediaStream) {
+  if (mediaStream) {
+    title.textContent = "";
+    video.srcObject = mediaStream;
+    video.play();
+
+    mediaStream.addEventListener("removetrack", (e) => {
+      console.log("mediaStream@removetrack", e);
+    });
+  } else {
+    title.textContent = "Disconnected";
+    video.srcObject = null;
+    video.pause();
+  }
+}
+
+function setupCall(call) {
+  call.on("stream", (mediaStream) => {
+    message("Call opened");
+    console.debug("call@stream");
+    setMediaStream(mediaStream);
+  });
+  call.on("close", () => {
+    message("Call closed");
+    console.debug("call@close");
+    setMediaStream(null);
+  });
+  call.on("error", (error) => {
+    console.error("call@error", error);
+  });
+}
+
+async function waitForCall(peer, target) {
+  title.textContent = "Waiting for call…";
+  console.debug("Waiting for call from %o", target.id);
+
+  const mediaStream = await getUserMedia();
+
+  await new Promise((resolve) => {
+    peer.on("call", (call) => {
+      console.debug("peer@call");
+      call.answer(mediaStream);
+      setupCall(call);
+      resolve();
     });
   });
-
-  return setupConnection(connection);
 }
 
 async function startCall(peer, target) {
-  for (let i = 0; i < 10; i++) {
-    console.debug("creating call %d", i);
+  console.debug("Calling %o", target.id);
+  const mediaStream = await getUserMedia();
 
-    const connection = peer.connect(target.id);
+  let i = 1;
+  let call = peer.call(target.id, mediaStream);
+  setupCall(call);
+  title.textContent = "Calling";
 
-    let isOpen = false;
-    connection.on("open", () => {
-      console.debug("connection@open");
-      isOpen = true;
-    });
+  setInterval(() => {
+    if (call.open) return;
+    i++;
+    title.textContent = `Calling - ${i}`;
 
-    await new Promise((resolve) => setTimeout(resolve, 2_000));
-
-    if (isOpen) return setupConnection(connection);
-  }
-
-  return null;
-}
-
-function message(message) {
-  console.info(message);
+    call = peer.call(target.id, mediaStream);
+    setupCall(call);
+  }, 2_000);
 }
 
 main().catch((error) => {
   console.error(error);
-  alert(error.message);
+  title.textContent = error.message;
 });
