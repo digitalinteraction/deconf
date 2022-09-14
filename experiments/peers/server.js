@@ -7,7 +7,7 @@ import express from "express";
 import { ExpressPeerServer } from "peer";
 
 async function main() {
-  // TODO: authenticate peers are using valid IDs
+  /** @type {{pairs:[string,string][]}} */
   const appConfig = JSON.parse(readFileSync("app-config.json"));
 
   const app = express().use(express.static("app"));
@@ -31,6 +31,10 @@ async function main() {
 
   const peer = new ExpressPeerServer(server);
   app.use("/peerjs", peer);
+
+  // peer.on("connection", (e) => {
+  //   console.log(e.id);
+  // });
 
   server.listen(8080, () => console.log("Listening on :8080"));
 }

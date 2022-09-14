@@ -7,29 +7,23 @@ async function main() {
   document.title = `${id} | ${initialTitle}`;
 
   const target = await getTarget(id);
-  console.debug("%s → %s", id, target);
+  console.debug("%s → %s", id, target.id);
 
   const peer = new Peer(id, {
     host: url.hostname,
     path: "/peerjs",
     port: url.port,
     proxied: true,
+    debug: 2,
   });
 
-  // for (let i = 0; i < 20; i++) {
-  //   message(`Calling "${target}"`);
-  //   const result = await call(peer, target);
+  message(`Connecting to "${target.id}"`);
+  const result = await setupCall(peer, target);
 
-  //   message(`Call over or failed (${result}), waiting 10s`);
-  //   await new new Promise((resolve) => setTimeout(resolve, 10_000))();
-  // }
+  message(`Connection ${result}, waiting restarting…`);
+  await new Promise((resolve) => setTimeout(resolve, 1_000));
 
-  message(`Calling "${target.id}"`);
-  const result = await call(peer, target);
-  message(`Call ${result}, waiting 5s`);
-  await new Promise((resolve) => setTimeout(resolve, 5_000));
-
-  // After so many tries, just reload the page
+  // Reload the page to retry
   location.reload();
 }
 
@@ -41,22 +35,25 @@ async function getTarget(id) {
   return peer;
 }
 
-async function call(peer, target) {
-  const connection = peer.connect(target.id);
+async function setupCall(peer, target) {
+  return target.index === 0
+    ? waitForCall(peer, target)
+    : startCall(peer, target);
+}
 
-  connection.on("data", (data) => {
-    console.log("data", data);
-
-    if (data === "ping") connection.send("pong");
-  });
-
-  console.log(connection);
+function setupConnection(connection) {
+  connection.send("hello there");
 
   return new Promise((resolve) => {
-    connection.on("open", (e) => {
-      console.debug("opened");
+    // setTimeout(() => {
+    //   console.log(connection);
+    // }, 5_000);
 
-      connection.send("ping");
+    // Handle data messages
+    connection.on("data", (data) => {
+      console.debug("connection@data", data);
+
+      if (data === "hello there") connection.send("general kenobi");
     });
 
     connection.on("close", () => resolve("closed"));
@@ -66,6 +63,39 @@ async function call(peer, target) {
       resolve("failed");
     });
   });
+}
+
+async function waitForCall(peer, target) {
+  console.debug("waiting for call");
+
+  const connection = await new Promise((resolve) => {
+    peer.on("connection", (connection) => {
+      console.debug("peer@connection");
+      resolve(connection);
+    });
+  });
+
+  return setupConnection(connection);
+}
+
+async function startCall(peer, target) {
+  for (let i = 0; i < 10; i++) {
+    console.debug("creating call %d", i);
+
+    const connection = peer.connect(target.id);
+
+    let isOpen = false;
+    connection.on("open", () => {
+      console.debug("connection@open");
+      isOpen = true;
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 2_000));
+
+    if (isOpen) return setupConnection(connection);
+  }
+
+  return null;
 }
 
 function message(message) {
