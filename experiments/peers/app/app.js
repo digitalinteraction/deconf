@@ -6,7 +6,7 @@ const video = document.getElementById("video");
 const messages = document.getElementById("messages");
 const title = document.getElementById("title");
 const version = document.getElementById("version");
-version.innerText = "v0.0.3";
+version.innerText = "v0.0.4";
 
 let currentCall = null;
 
@@ -178,6 +178,9 @@ async function waitForCall(peer, target) {
 
     setupCall(call);
   });
+
+  // Retry if the peer disconnects
+  waitForEventSource(target).then(() => shutdown("Lost connection"));
 }
 
 async function startCall(peer, target) {
