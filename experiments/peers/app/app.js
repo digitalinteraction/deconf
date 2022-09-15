@@ -6,7 +6,9 @@ const video = document.getElementById("video");
 const messages = document.getElementById("messages");
 const title = document.getElementById("title");
 const version = document.getElementById("version");
-version.innerText = "v0.0.2";
+version.innerText = "v0.0.3";
+
+let currentCall = null;
 
 function pushMessage(message) {
   console.info(message);
@@ -41,6 +43,13 @@ async function getTarget(id) {
 
 const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+function waitForEventSource(target) {
+  return new Promise((resolve) => {
+    const src = new EventSource(`api/online/${target.id}`);
+    src.onerror = () => resolve();
+  });
+}
+
 //
 // App entry point
 //
@@ -65,12 +74,19 @@ async function main() {
   debug(`Connecting to "${target.id}"`);
   if (target.action === "wait") waitForCall(peer, target);
   else startCall(peer, target);
+
+  // TODO: this doesn't trigger the other's "close" event
+  // https://github.com/peers/peerjs/issues/636
+  window.addEventListener("beforeunload", function (e) {
+    debug("window@beforeunload");
+    if (currentCall) currentCall.close();
+  });
 }
 
 async function shutdown(message) {
   debug(`Peer ended with "${message}"`);
   pushMessage(`Connection ${message}, restarting…`);
-  await pause(5_000);
+  await pause(2_000);
 
   // Reload the page to retry
   location.reload();
@@ -86,7 +102,7 @@ function setupPeer(peer) {
     shutdown("disconnected");
   });
 
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     peer.on("open", (error) => {
       debug("peer@open " + error);
       resolve();
@@ -131,6 +147,9 @@ function setMediaStream(mediaStream) {
 }
 
 function setupCall(call) {
+  if (currentCall) currentCall.close();
+  currentCall = call;
+
   call.on("stream", (mediaStream) => {
     pushMessage("Call opened");
     debug("call@stream");
@@ -140,12 +159,10 @@ function setupCall(call) {
     pushMessage("Call closed");
     debug("call@close");
     setMediaStream(null);
-    shutdown("Connection closed");
   });
   call.on("error", (error) => {
     debug("call@error " + error);
     console.error("call@error", error);
-    shutdown("Connection error");
   });
 }
 
@@ -155,14 +172,12 @@ async function waitForCall(peer, target) {
 
   const mediaStream = await getUserMedia();
 
-  const call = await new Promise((resolve) =>
-    peer.on("call", (call) => resolve(call))
-  );
+  peer.on("call", (call) => {
+    debug("peer@call");
+    call.answer(mediaStream);
 
-  debug("peer@call");
-  call.answer(mediaStream);
-
-  setupCall(call);
+    setupCall(call);
+  });
 }
 
 async function startCall(peer, target) {
@@ -173,6 +188,14 @@ async function startCall(peer, target) {
   title.textContent = "Calling…";
 
   setupCall(call);
+
+  // Retry the call if it took more the 5s
+  setTimeout(() => {
+    if (!call.open) shutdown("No answer");
+  }, 5_000);
+
+  // Retry if the peer disconnects
+  waitForEventSource(target).then(() => shutdown("Lost connection"));
 }
 
 main().catch((error) => {

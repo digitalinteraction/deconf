@@ -1,3 +1,5 @@
+# kubectl create configmap peering-in-resources --from-file=app-config.json
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -14,13 +16,21 @@ spec:
     spec:
       containers:
         - name: app
-          image: robbj/peering-in:0.0.2
+          image: robbj/peering-in:0.0.3
           ports:
             - containerPort: 8080
           readinessProbe:
             tcpSocket: { port: 8080 }
           livenessProbe:
             httpGet: { port: 8080, path: /healthz }
+          volumeMounts:
+            - mountPath: /app/app-config.json
+              name: resources
+              subPath: app-config.json
+      volumes:
+        - name: resources
+          configMap:
+            name: peering-in-resources
 ---
 apiVersion: v1
 kind: Service
