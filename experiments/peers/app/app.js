@@ -5,8 +5,10 @@ const url = new URL(location.href);
 const video = document.getElementById("video");
 const messages = document.getElementById("messages");
 const title = document.getElementById("title");
+const version = document.getElementById("version");
+version.innerText = "v0.0.2";
 
-function message(message) {
+function pushMessage(message) {
   console.info(message);
 
   const elem = messages.appendChild(document.createElement("p"));
@@ -17,7 +19,19 @@ function message(message) {
   });
 }
 
-/** @returns {Promise<{ id: string, index: number }>} */
+function debug(message) {
+  console.debug(message);
+
+  const id = url.searchParams.get("id");
+  if (id) {
+    fetch(`/api/log/${id}`, {
+      method: "POST",
+      body: message,
+    });
+  }
+}
+
+/** @returns {Promise<{ id: string, action: string }>} */
 async function getTarget(id) {
   const res = await fetch(`/api/pairs/${id}`);
   if (!res.ok) throw new Error("Pair not found");
@@ -34,9 +48,7 @@ async function main() {
   const id = url.searchParams.get("id");
   if (typeof id !== "string") throw new Error("id not set");
   document.title = `${id} | ${initialTitle}`;
-
-  const target = await getTarget(id);
-  console.debug("%s → %s", id, target.id);
+  debug("Starting");
 
   const peer = new Peer(id, {
     host: url.hostname,
@@ -46,27 +58,42 @@ async function main() {
     debug: 2,
   });
 
-  console.debug("Connecting to %s", target.id);
-  await (target.index === 0
-    ? waitForCall(peer, target)
-    : startCall(peer, target));
+  await setupPeer(peer);
 
-  const result = await setupPeer(peer);
+  const target = await getTarget(id);
 
-  message(`Connection ${result}, restarting…`);
-  await pause(1_000);
+  debug(`Connecting to "${target.id}"`);
+  if (target.action === "wait") waitForCall(peer, target);
+  else startCall(peer, target);
+}
+
+async function shutdown(message) {
+  debug(`Peer ended with "${message}"`);
+  pushMessage(`Connection ${message}, restarting…`);
+  await pause(5_000);
 
   // Reload the page to retry
   location.reload();
 }
 
 function setupPeer(peer) {
-  return new Promise((resolve) => {
-    peer.on("close", () => resolve("closed"));
-    peer.on("disconnected", () => resolve("disconnected"));
+  peer.on("close", () => {
+    debug("peer@close");
+    shutdown("closed");
+  });
+  peer.on("disconnected", () => {
+    debug("peer@disconnected");
+    shutdown("disconnected");
+  });
+
+  return new Promise((resolve, reject) => {
+    peer.on("open", (error) => {
+      debug("peer@open " + error);
+      resolve();
+    });
     peer.on("error", (error) => {
-      console.error(error);
-      resolve("failed");
+      debug("peer@error " + error);
+      shutdown(error.toString());
     });
   });
 }
@@ -90,68 +117,66 @@ function setMediaStream(mediaStream) {
     video.srcObject = mediaStream;
     video.play();
 
+    version.setAttribute("aria-hidden", "true");
+
     mediaStream.addEventListener("removetrack", (e) => {
-      console.log("mediaStream@removetrack", e);
+      debug("mediaStream@removetrack", e);
     });
   } else {
     title.textContent = "Disconnected";
     video.srcObject = null;
     video.pause();
+    version.removeAttribute("aria-hidden");
   }
 }
 
 function setupCall(call) {
   call.on("stream", (mediaStream) => {
-    message("Call opened");
-    console.debug("call@stream");
+    pushMessage("Call opened");
+    debug("call@stream");
     setMediaStream(mediaStream);
   });
   call.on("close", () => {
-    message("Call closed");
-    console.debug("call@close");
+    pushMessage("Call closed");
+    debug("call@close");
     setMediaStream(null);
+    shutdown("Connection closed");
   });
   call.on("error", (error) => {
+    debug("call@error " + error);
     console.error("call@error", error);
+    shutdown("Connection error");
   });
 }
 
 async function waitForCall(peer, target) {
   title.textContent = "Waiting for call…";
-  console.debug("Waiting for call from %o", target.id);
+  debug("Waiting for call");
 
   const mediaStream = await getUserMedia();
 
-  await new Promise((resolve) => {
-    peer.on("call", (call) => {
-      console.debug("peer@call");
-      call.answer(mediaStream);
-      setupCall(call);
-      resolve();
-    });
-  });
+  const call = await new Promise((resolve) =>
+    peer.on("call", (call) => resolve(call))
+  );
+
+  debug("peer@call");
+  call.answer(mediaStream);
+
+  setupCall(call);
 }
 
 async function startCall(peer, target) {
-  console.debug("Calling %o", target.id);
+  debug("Starting call");
   const mediaStream = await getUserMedia();
 
-  let i = 1;
-  let call = peer.call(target.id, mediaStream);
+  const call = peer.call(target.id, mediaStream);
+  title.textContent = "Calling…";
+
   setupCall(call);
-  title.textContent = "Calling";
-
-  setInterval(() => {
-    if (call.open) return;
-    i++;
-    title.textContent = `Calling - ${i}`;
-
-    call = peer.call(target.id, mediaStream);
-    setupCall(call);
-  }, 2_000);
 }
 
 main().catch((error) => {
+  debug("Fatal error" + error);
   console.error(error);
   title.textContent = error.message;
 });
