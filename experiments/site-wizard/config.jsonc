@@ -3,6 +3,7 @@
   // Notes:
   // - Multiple-levels for future support?
   // - Wizard will need to download and embed the SVG icons
+  //   and sort out the `currentColor`
   // - relative icon paths or from the CDN?
   // - [type] fields should be camelCase to make js access easier
   // - How can the platform support custom markdown widgets?
@@ -50,6 +51,7 @@
     }
   ],
 
+  // TODO: Does it need title+description and the opengraph variants?
   "site": {
     "title": "Dog con",
     "description": "Lorem ipsum sil dor amet...",

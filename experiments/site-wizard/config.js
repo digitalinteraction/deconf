@@ -19,12 +19,19 @@ import {
   tuple,
   type,
   union,
+  coerce,
+  define,
 } from "superstruct";
 
 const faIcon = () => tuple([string(), string()]);
 const localised = () => record(string(), string());
 const access = () => enums(["public", "private", "other"]);
 const jsonDate = () => string();
+
+const url = () =>
+  coerce(string(), string(), (value) => {
+    return new URL(value, "file:").toString();
+  });
 
 const widgetV0 = () =>
   union([
@@ -288,17 +295,11 @@ const AppConfig = type({
   }),
 });
 
-async function main() {
-  const config = create(
+/** @typedef {ReturnType<typeof getConfig>} AppConfig */
+
+export async function getConfig() {
+  return create(
     JSON.parse(stripJsonComments(await fs.readFile("config.jsonc", "utf8"))),
     AppConfig
   );
-
-  for (const page of config.pages) {
-    if (page.type === "home") {
-      console.log(page.home);
-    }
-  }
 }
-
-main();
