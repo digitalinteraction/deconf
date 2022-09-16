@@ -57,7 +57,7 @@ async function main() {
   const id = url.searchParams.get("id");
   if (typeof id !== "string") throw new Error("id not set");
   document.title = `${id} | ${initialTitle}`;
-  debug("Starting");
+  debug(`Starting width=${window.innerWidth} height=${window.innerHeight}`);
 
   const peer = new Peer(id, {
     host: url.hostname,
@@ -129,6 +129,8 @@ function getUserMedia() {
 /** @param {MediaStream|null} mediaStream */
 function setMediaStream(mediaStream) {
   if (mediaStream) {
+    debug("Recieved MediaStream");
+
     title.textContent = "";
     video.srcObject = mediaStream;
     video.play();
@@ -139,6 +141,8 @@ function setMediaStream(mediaStream) {
       debug("mediaStream@removetrack", e);
     });
   } else {
+    debug("Clear MediaStream");
+
     title.textContent = "Disconnected";
     video.srcObject = null;
     video.pause();
@@ -180,7 +184,7 @@ async function waitForCall(peer, target) {
   });
 
   // Retry if the peer disconnects
-  waitForEventSource(target).then(() => shutdown("Lost connection"));
+  // waitForEventSource(target).then(() => shutdown("Lost connection"));
 }
 
 async function startCall(peer, target) {

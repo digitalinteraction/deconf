@@ -1,14 +1,17 @@
 {
+  //
   // Notes:
   // - Multiple-levels for future support?
-  // - Wizard will need to download and embed the icons
-  // - reference a page object
+  // - Wizard will need to download and embed the SVG icons
   // - relative icon paths or from the CDN?
   // - [type] fields should be camelCase to make js access easier
   // - How can the platform support custom markdown widgets?
   // - Versioned page types "atriumV1" / "mySchedulev3"?
   //   or a seperate "version" key?
   // - Should all polymorphics have "[type]" as an object?
+  // - A fallback-system for taxonomies to pick icons from
+  //
+  //
   "navigation": [
     {
       "page": "home",
@@ -22,6 +25,13 @@
       "icon": "uploads/schedule.svg",
       "text": {
         "en": "Schedule"
+      }
+    },
+    {
+      "page": "whats-on",
+      "icon": "uploads/schedule.svg",
+      "text": {
+        "en": "What's on"
       }
     },
     {
@@ -67,6 +77,8 @@
     {
       "id": "home",
       "type": "atrium",
+      "version": "v0",
+      "access": "public",
       "atrium": {
         "heroTitle": "Welcome to Dog Con!!",
         "heroSubtitle": "Get your dog on",
@@ -152,10 +164,15 @@
     {
       "id": "schedule",
       "type": "schedule",
-      "version": "v1",
+      "version": "v0",
+      "access": "public",
       "schedule": {
-        "title": "Programme",
-        "subtitle": "Search for sessions that are interesting to you",
+        "title": {
+          "en": "Programme"
+        },
+        "subtitle": {
+          "en": "Search for sessions that are interesting to you"
+        },
         "primaryFilters": [
           { "type": "builtin", "builtin": "search" },
           { "type": "builtin", "builtin": "date" }
@@ -169,16 +186,133 @@
         "tiles": {
           "title": { "enabled": true },
           "content": { "enabled": true },
+          "speakers": { "enabled": true, "limit": 5 },
           "header": [
             {
               "type": "taxonomy",
-              "taxonomy": { "id": "space" }
+              "taxonomy": { "id": "type", "limit": 1 }
+            }
+          ],
+          "footer": [
+            {
+              "type": "taxonomy",
+              "taxonomy": { "id": "space", "limit": 3 }
             },
             {
               "type": "taxonomy",
-              "taxonomy": { "id": "space" }
+              "taxonomy": { "id": "theme" }
             }
-          ]
+          ],
+          "openSession": { "enabled": true },
+          "addToMySchedule": { "enabled": true }
+        },
+        "sessionPredicate": [
+          {
+            "type": "taxonomy",
+            "taxonomy": {
+              "id": "space",
+              "allow": ["space-a", "space-b"]
+            }
+          },
+          {
+            "type": "taxonomy",
+            "taxonomy": {
+              "id": "type",
+              "block": ["workshop"]
+            }
+          },
+          {
+            "type": "date",
+            "date": {
+              "before": "2022-09-16T09:30:00.000Z"
+            }
+          }
+          // TODO: other types of filter ?
+        ]
+      }
+    },
+
+    //
+    // Whats on
+    //
+    {
+      "id": "whats-on",
+      "type": "sessionGrid",
+      "version": "v0",
+      "access": "public",
+      "sessionGrid": {
+        "title": {
+          "en": "What's on"
+        },
+        "subtitle": {
+          "en": "Take a sneak peak at whats coming your way"
+        },
+        "primaryFilters": [{ "type": "builtin", "builtin": "search" }],
+        "secondaryFilters": [],
+        "tiles": {
+          "title": { "enabled": true },
+          "content": { "enabled": true },
+          "speakers": { "enabled": true, "limit": 5 },
+          "header": [
+            {
+              "type": "taxonomy",
+              "taxonomy": { "id": "type", "limit": 1 }
+            }
+          ],
+          "footer": [
+            {
+              "type": "languages",
+              "languages": {}
+            }
+          ],
+          "openSession": { "enabled": false },
+          "addToMySchedule": { "enabled": true }
+        },
+        "sessionPredicate": [
+          {
+            "type": "taxonomy",
+            "taxonomy": {
+              "id": "space",
+              "allow": ["space-a", "space-b"]
+            }
+          },
+          {
+            "type": "taxonomy",
+            "taxonomy": {
+              "id": "type",
+              "block": ["workshop"]
+            }
+          }
+        ]
+      }
+    },
+
+    //
+    // My Schedule
+    //
+    {
+      "id": "my-schedule",
+      "type": "mySchedule",
+      "version": "v0",
+      "access": "user-private",
+      "mySchedule": {
+        "title": { "en": "My Schedule" },
+        "subtitle": { "en": "The sessions added to your schedule" }
+      }
+    },
+
+    //
+    // Help
+    //
+    {
+      "id": "help",
+      "type": "content",
+      "version": "v0",
+      "access": "public",
+      "content": {
+        "body": {
+          // TODO: could the markdown reference local images ?!
+          "en": "# Help!\n\n![Cover image](https://example.com/image.png)\n\n..."
         }
       }
     }
@@ -194,39 +328,40 @@
 
   "taxonomies": [
     {
-      "id": "space",
-      "title": { "en": "Space" },
+      "id": "type",
+      "title": { "en": "Type" },
+      "faIcon": ["fas", "circle"],
       "options": [
         {
-          "id": "space-a",
-          "title": { "en": "AI and Agriculture" }
+          "id": "type-a",
+          "title": { "en": "Plenary" },
+          "faIcon": ["fas", "keynote"]
         },
         {
-          "id": "space-b",
-          "title": { "en": "Machine Learning with Fish" }
-        },
-        {
-          "id": "space-c",
-          "title": { "en": "Block Chain Horoscopes" }
+          "id": "type-b",
+          "title": { "en": "Workshop" },
+          "faIcon": ["fas", "object-group"]
         }
+      ]
+    },
+    {
+      "id": "space",
+      "title": { "en": "Space" },
+      "faIcon": ["fas", "grill-hot"],
+      "options": [
+        { "id": "space-a", "title": { "en": "AI and Agriculture" } },
+        { "id": "space-b", "title": { "en": "Machine Learning with Fish" } },
+        { "id": "space-c", "title": { "en": "Block Chain Horoscopes" } }
       ]
     },
     {
       "id": "theme",
       "title": { "en": "Theme" },
+      "faIcon": ["fas", "tags"],
       "options": [
-        {
-          "id": "theme-a",
-          "title": { "en": "Inclusivity" }
-        },
-        {
-          "id": "theme-b",
-          "title": { "en": "Awareness" }
-        },
-        {
-          "id": "theme-c",
-          "title": { "en": "Culture" }
-        }
+        { "id": "theme-a", "title": { "en": "Inclusivity" } },
+        { "id": "theme-b", "title": { "en": "Awareness" } },
+        { "id": "theme-c", "title": { "en": "Culture" } }
       ]
     }
   ],
@@ -234,5 +369,33 @@
   // To be merged-in to i18n strings
   "i18n": {
     "general.search.title": "Search Sessions:"
+  },
+
+  "footer": {
+    "content": {
+      "en": "This site is ..."
+    },
+    "links": [
+      {
+        "type": "url",
+        "url": {
+          "text": { "en": "Privacy" },
+          "url": "https://example.com/privacy"
+        }
+      },
+      {
+        "type": "url",
+        "url": {
+          "text": { "en": "Terms" },
+          "url": "https://example.com/terms"
+        }
+      },
+      {
+        "type": "page",
+        "page": {
+          "id": "help"
+        }
+      }
+    ]
   }
 }
