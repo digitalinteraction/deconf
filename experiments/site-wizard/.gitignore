@@ -1,4 +1,4 @@
 dist
 template/shallow/config.js
 .parcel-cache
-shallow_
+shallow_*
