@@ -52,6 +52,7 @@
 
   "site": {
     "title": "Dog con",
+    "description": "Lorem ipsum sil dor amet...",
     "slug": "dog-con",
     "url": "https://v1.dog-con.deconf.app",
     "deconfVersion": "v0",
@@ -76,13 +77,15 @@
     //
     {
       "id": "home",
-      "type": "atrium",
+      "type": "home",
       "version": "v0",
       "access": "public",
-      "atrium": {
-        "heroTitle": "Welcome to Dog Con!!",
-        "heroSubtitle": "Get your dog on",
-        "heroImage": "",
+      "home": {
+        "hero": {
+          "title": { "en": "Welcome to Dog Con!!" },
+          "subtitle": { "en": "Get your dog on" },
+          "image": ""
+        },
         "content": {
           "en": "## Dog con is now\n\nLorem ipsum sil dor amet"
         },
@@ -90,28 +93,31 @@
           // Widget IDs for usage analytics? and allow custom CSS styling
           {
             "id": "widget-a",
-            "type": "login",
-            "login": {
+            "type": "builtin",
+            "builtin": {
+              "action": "login",
               "faIcon": ["fas", "envelope"],
-              "title": "Log in",
-              "subtitle": "Get a magic link"
+              "title": { "en": "Log in" },
+              "subtitle": { "en": "Get a magic link" }
             }
           },
           {
             "id": "widget-b",
-            "type": "register",
-            "register": {
+            "type": "builtin",
+            "builtin": {
+              "action": "register",
               "faIcon": ["fas", "clipboard"],
-              "title": "Register",
-              "subtitle": "Sign up for the conference"
+              "title": { "en": "Register" },
+              "subtitle": { "en": "Sign up for the conference" }
             }
           },
           {
             "id": "widget-c",
-            "type": "siteVisitors",
-            "siteVisitors": {
+            "type": "builtin",
+            "builtin": {
+              "action": "siteVisitors",
               "faIcon": ["fas", "users"],
-              "subtitle": "Online now"
+              "subtitle": { "en": "Online now" }
             }
           },
           {
@@ -120,8 +126,8 @@
             "page": {
               "id": "my-schedule",
               "faIcon": ["fas", "chain"],
-              "title": "My Schedule",
-              "subtitle": "See your events"
+              "title": { "en": "My Schedule" },
+              "subtitle": { "en": "See your events" }
             }
           },
           {
@@ -130,8 +136,8 @@
             "url": {
               "url": "https://duck.com",
               "faIcon": ["fas", "chain"],
-              "title": "Duck…",
-              "subtitle": "…DuckGo"
+              "title": { "en": "Duck…" },
+              "subtitle": { "en": "…DuckGo" }
             }
           }
         ],
@@ -163,10 +169,10 @@
     //
     {
       "id": "schedule",
-      "type": "schedule",
+      "type": "sessionTimeline",
       "version": "v0",
       "access": "public",
-      "schedule": {
+      "sessionTimeline": {
         "title": {
           "en": "Programme"
         },
@@ -294,7 +300,7 @@
       "id": "my-schedule",
       "type": "mySchedule",
       "version": "v0",
-      "access": "user-private",
+      "access": "private",
       "mySchedule": {
         "title": { "en": "My Schedule" },
         "subtitle": { "en": "The sessions added to your schedule" }
@@ -393,7 +399,8 @@
       {
         "type": "page",
         "page": {
-          "id": "help"
+          "id": "help",
+          "text": { "en": "Get help now" }
         }
       }
     ]
