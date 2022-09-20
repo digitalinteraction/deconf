@@ -16,7 +16,7 @@
   "navigation": [
     {
       "page": "home",
-      "icon": "uploads/home.svg",
+      "icon": "uploads/atrium.svg",
       "text": {
         "en": "Atrium"
       }
@@ -61,14 +61,14 @@
     "opengraph": {
       "title": "Come down to Dog con",
       "description": "Lorem ipsum sil dor amet...",
-      "image": "https://dog-con.openlab.dev/uploads/opengraph.png",
+      "image": "uploads/opengraph.png",
       "twitter": "@DogCon"
     },
 
     // Absolute paths?
     // new URL("uploads/script.js", "file:")
     // can load both? then use the "protocol" to decide how to load
-    "customCss": ["uploads/styles.css"],
+    "customStyles": ["uploads/styles.css"],
     "customScripts": ["uploads/script.js"]
   },
 
@@ -151,13 +151,13 @@
               {
                 "id": "sponsor-a", // for analytics?
                 "name": { "en": "Open Lab" },
-                "image": "uploads/sponsor-a.png",
+                "image": "uploads/sponsor-a.svg",
                 "url": "https://openlab.ncl.ac.uk"
               },
               {
                 "id": "sponsor-b",
                 "name": { "en": "Newcastle University" },
-                "image": "uploads/sponsor-b.png",
+                "image": "uploads/sponsor-b.svg",
                 "url": null
               }
             ]

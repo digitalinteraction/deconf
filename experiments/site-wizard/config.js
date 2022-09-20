@@ -226,7 +226,7 @@ const AppConfig = type({
     slug: string(),
     url: string(),
     deconfVersion: string(),
-    customCss: array(string()),
+    customStyles: array(string()),
     customScripts: array(string()),
     opengraph: type({
       title: string(),

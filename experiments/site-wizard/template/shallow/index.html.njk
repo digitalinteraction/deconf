@@ -11,12 +11,15 @@
     <meta property="og:title" content="{{ site.opengraph.title }}" />
     <meta property="og:description" content="description" />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="{{ site.opengraph.image }}" />
+    <meta
+      property="og:image"
+      content="{{ site.opengraph.image | staticAsset }}"
+    />
     <meta property="og:url" content="{{ site.url }}" />
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:site" content="{{ site.opengraph.twitter }}" />
-    {% for style in site.customCss %}
-    <link rel="stylesheet" href="{{ style }}" />
+    {% for style in site.customStyles %}
+    <link rel="stylesheet" href="{{ style | staticAsset }}" />
     {% endfor %}
   </head>
   <body>
@@ -24,7 +27,7 @@
     <script type="module" src="config.js"></script>
     <script type="module" src="app.js"></script>
     {% for script in site.customScripts %}
-    <script type="module" src="{{ script }}"></script>
+    <script type="module" src="{{ script | staticAsset }}"></script>
     {% endfor %}
   </body>
 </html>
