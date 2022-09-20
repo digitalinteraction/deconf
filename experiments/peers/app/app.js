@@ -6,7 +6,7 @@ const video = document.getElementById("video");
 const messages = document.getElementById("messages");
 const title = document.getElementById("title");
 const version = document.getElementById("version");
-version.innerText = "v0.0.4";
+version.innerText = "v0.0.5";
 
 let currentCall = null;
 
@@ -79,7 +79,7 @@ async function main() {
   // https://github.com/peers/peerjs/issues/636
   window.addEventListener("beforeunload", function (e) {
     debug("window@beforeunload");
-    if (currentCall) currentCall.close();
+    setCall(null);
   });
 }
 
@@ -150,24 +150,28 @@ function setMediaStream(mediaStream) {
   }
 }
 
-function setupCall(call) {
+function setCall(call) {
   if (currentCall) currentCall.close();
   currentCall = call;
 
-  call.on("stream", (mediaStream) => {
-    pushMessage("Call opened");
-    debug("call@stream");
-    setMediaStream(mediaStream);
-  });
-  call.on("close", () => {
-    pushMessage("Call closed");
-    debug("call@close");
+  if (call) {
+    call.on("stream", (mediaStream) => {
+      pushMessage("Call opened");
+      debug("call@stream");
+      setMediaStream(mediaStream);
+    });
+    call.on("close", () => {
+      pushMessage("Call closed");
+      debug("call@close");
+      setMediaStream(null);
+    });
+    call.on("error", (error) => {
+      debug("call@error " + error);
+      console.error("call@error", error);
+    });
+  } else {
     setMediaStream(null);
-  });
-  call.on("error", (error) => {
-    debug("call@error " + error);
-    console.error("call@error", error);
-  });
+  }
 }
 
 async function waitForCall(peer, target) {
@@ -180,11 +184,14 @@ async function waitForCall(peer, target) {
     debug("peer@call");
     call.answer(mediaStream);
 
-    setupCall(call);
+    setCall(call);
   });
 
   // Retry if the peer disconnects
-  // waitForEventSource(target).then(() => shutdown("Lost connection"));
+  waitForEventSource(target).then(() => {
+    debug("Wait for call disconnected");
+    setCall(null);
+  });
 }
 
 async function startCall(peer, target) {
@@ -194,7 +201,7 @@ async function startCall(peer, target) {
   const call = peer.call(target.id, mediaStream);
   title.textContent = "Calling…";
 
-  setupCall(call);
+  setCall(call);
 
   // Retry the call if it took more the 5s
   setTimeout(() => {
@@ -205,8 +212,13 @@ async function startCall(peer, target) {
   waitForEventSource(target).then(() => shutdown("Lost connection"));
 }
 
-main().catch((error) => {
-  debug("Fatal error" + error);
+function onError(error) {
+  debug("Fatal error: " + error);
   console.error(error);
   title.textContent = error.message;
-});
+}
+
+main().catch(onError);
+
+window.addEventListener("error", onError);
+window.addEventListener("unhandledrejection", onError);
