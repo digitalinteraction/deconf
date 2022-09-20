@@ -58,7 +58,9 @@ async function main() {
     res.flushHeaders();
 
     // keep alive until the socket disconnects
-    disconnectBus.once(req.params.id, () => res.end());
+    const handler = () => res.end();
+    disconnectBus.once(req.params.id, handler);
+    res.on("close", () => disconnectBus.removeListener(req.params.id, handler));
   });
 
   const server = createServer(app);
