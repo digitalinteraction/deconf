@@ -6,7 +6,7 @@ const video = document.getElementById("video");
 const messages = document.getElementById("messages");
 const title = document.getElementById("title");
 const version = document.getElementById("version");
-version.innerText = "v0.0.5";
+version.innerText = "v0.0.6";
 
 let currentCall = null;
 
@@ -67,7 +67,7 @@ async function main() {
     debug: 2,
   });
 
-  await setupPeer(peer);
+  await setPeer(peer);
 
   const target = await getTarget(id);
 
@@ -92,7 +92,7 @@ async function shutdown(message) {
   location.reload();
 }
 
-function setupPeer(peer) {
+function setPeer(peer) {
   peer.on("close", () => {
     debug("peer@close");
     shutdown("closed");
@@ -215,10 +215,9 @@ async function startCall(peer, target) {
 function onError(error) {
   debug("Fatal error: " + error);
   console.error(error);
-  title.textContent = error.message;
+  title.textContent = error?.message ?? error;
 }
 
 main().catch(onError);
-
-window.addEventListener("error", onError);
-window.addEventListener("unhandledrejection", onError);
+window.addEventListener("error", (e) => onError(e.error));
+window.addEventListener("unhandledrejection", (e) => onError(e.reason));
