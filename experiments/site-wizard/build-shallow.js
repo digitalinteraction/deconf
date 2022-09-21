@@ -97,7 +97,6 @@ function createIconsJs(faIcons) {
     )
     .join("\n");
 
-  // const additions = `library.add(${Object.values(usage).flatMap()})`
   const libraryAdditions = dedent`
     library.add(${Object.values(usage)
       .flatMap((s) => Array.from(s))
@@ -107,10 +106,16 @@ function createIconsJs(faIcons) {
 
   return [prefix, imports, libraryAdditions, suffix].join("\n\n");
 }
-function createConfigJs(config) {
-  return `window.DECONF_CONFIG = JSON.parse(${JSON.stringify(
-    JSON.stringify(config)
-  )});`;
+function createConfigJs(config, env) {
+  return dedent`
+    import { deepSeal } from '@openlab/deconf-ui-toolkit'
+    export const appConfig = deepSeal(JSON.parse(${JSON.stringify(
+      JSON.stringify(config)
+    )}));
+    export const env = deepSeal(JSON.parse(${JSON.stringify(
+      JSON.stringify(env)
+    )}));
+  `;
 }
 
 const assetPaths = [
@@ -132,6 +137,15 @@ const iconPaths = [
 async function main() {
   const config = await getConfig();
   config.site.url = deploymentUrl.toString();
+
+  // TODO: should these be merged into appConfig?
+  const appEnv = {
+    SELF_URL: "http://localhost:8080/",
+    SERVER_URL: "http://localhost:3000/",
+    BUILD_NAME: "v1.2.3",
+    JWT_ISSUER: "deconf-dev",
+    DISABLE_SOCKETS: false,
+  };
 
   // 1. Clone the template
   const tmpdir = await fs.mkdtemp("shallow_");
@@ -157,7 +171,10 @@ async function main() {
     );
 
     // 3. Process the template
-    await fs.writeFile(path.join(tmpdir, "config.js"), createConfigJs(config));
+    await fs.writeFile(
+      path.join(tmpdir, "config.js"),
+      createConfigJs(config, appEnv)
+    );
     await fs.writeFile(path.join(tmpdir, "icons.js"), createIconsJs(faIcons));
 
     const env = new nunjucks.Environment(new nunjucks.FileSystemLoader());

@@ -127,7 +127,7 @@
             "type": "page",
             "page": {
               "id": "my-schedule",
-              "faIcon": ["fas", "chain"],
+              "faIcon": ["fas", "link"],
               "title": { "en": "My Schedule" },
               "subtitle": { "en": "See your events" }
             }
@@ -137,7 +137,7 @@
             "type": "url",
             "url": {
               "url": "https://duck.com",
-              "faIcon": ["fas", "chain"],
+              "faIcon": ["fas", "link"],
               "title": { "en": "Duck…" },
               "subtitle": { "en": "…DuckGo" }
             }
@@ -343,7 +343,7 @@
         {
           "id": "type-a",
           "title": { "en": "Plenary" },
-          "faIcon": ["fas", "keynote"]
+          "faIcon": ["fas", "video"]
         },
         {
           "id": "type-b",
@@ -355,7 +355,7 @@
     {
       "id": "space",
       "title": { "en": "Space" },
-      "faIcon": ["fas", "grill-hot"],
+      "faIcon": ["fas", "code-branch"],
       "options": [
         { "id": "space-a", "title": { "en": "AI and Agriculture" } },
         { "id": "space-b", "title": { "en": "Machine Learning with Fish" } },
@@ -377,6 +377,15 @@
   // To be merged-in to i18n strings
   "i18n": {
     "general.search.title": "Search Sessions:"
+  },
+
+  "branding": {
+    "main": {
+      "url": "",
+      "width": "",
+      "height": ""
+    }
+    // TODO: ...
   },
 
   "footer": {
