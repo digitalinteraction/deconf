@@ -1,5 +1,7 @@
+import path from "path";
 import * as es from "@babel/types";
 import { CodeGenerator } from "@babel/generator";
+import { fontawesomeImports } from "./fontawesome.js";
 
 //
 // Exploring using JavaScript AST to generate sourcecode
@@ -18,26 +20,40 @@ export function iconName(i) {
   return "fa" + parts.join("");
 }
 
-/** @param {Map<string, [string,string]>} faIcons */
-export function getIconsJs(faIcons) {
-  const importUrls = {
-    fas: "@fortawesome/free-solid-svg-icons",
-    far: "@fortawesome/free-regular-svg-icons",
-    fab: "@fortawesome/free-brands-svg-icons",
-  };
-  const icons = Array.from(faIcons.values());
-
-  /** @type {Record<string, Set<string>>}  */
+/** @param {[string,string][]} faIcons */
+export function getIconsJs(faIcons, config) {
   const usage = {
-    fas: new Set(),
-    far: new Set(),
-    fab: new Set(),
+    fas: new Set(faIcons.filter((i) => i[0] === "fas").map((i) => i[1])),
+    far: new Set(faIcons.filter((i) => i[0] === "far").map((i) => i[1])),
+    fab: new Set(faIcons.filter((i) => i[0] === "fab").map((i) => i[1])),
   };
-  for (const icon of icons) {
-    const set = usage[icon[0]];
-    if (!set) throw new Error(`Unknown icon set '${icon[0]}'`);
-    set.add(icon[1]);
+
+  const svgNames = new Map();
+  const svgImports = [];
+  for (const item of config.navigation) {
+    if (svgNames.has(item.icon)) continue;
+    const name = `icon${svgNames.size}`;
+    svgNames.set(item.icon, name);
+    svgImports.push(
+      es.importDeclaration(
+        [es.importDefaultSpecifier(es.identifier(name))],
+        es.stringLiteral(`./${path.join("assets", item.icon)}?raw`)
+      )
+    );
   }
+
+  const svgExport = es.exportNamedDeclaration(
+    es.variableDeclaration("const", [
+      es.variableDeclarator(
+        es.identifier("navIcons"),
+        es.objectExpression(
+          Array.from(svgNames).map(([key, value]) =>
+            es.objectProperty(es.stringLiteral(key), es.identifier(value))
+          )
+        )
+      ),
+    ])
+  );
 
   return generate(
     es.program([
@@ -61,9 +77,13 @@ export function getIconsJs(faIcons) {
                 es.identifier(iconName(i))
               )
             ),
-            es.stringLiteral(importUrls[kind])
+            es.stringLiteral(fontawesomeImports[kind])
           )
         ),
+
+      ...svgImports,
+
+      svgExport,
 
       es.expressionStatement(
         es.callExpression(
@@ -77,21 +97,51 @@ export function getIconsJs(faIcons) {
   );
 }
 
-export function getConfigJs(config) {
+export function getConfigJs(appConfig, env) {
   return generate(
     es.program([
-      es.expressionStatement(
-        es.assignmentExpression(
-          "=",
-          es.memberExpression(
-            es.identifier("window"),
-            es.identifier("DECONF_CONFIG")
+      es.importDeclaration(
+        [
+          es.importSpecifier(
+            es.identifier("deepSeal"),
+            es.identifier("deepSeal")
           ),
-          es.callExpression(
-            es.memberExpression(es.identifier("JSON"), es.identifier("parse")),
-            [es.stringLiteral(JSON.stringify(config))]
-          )
-        )
+        ],
+        es.stringLiteral("@openlab/deconf-ui-toolkit")
+      ),
+
+      es.exportNamedDeclaration(
+        es.variableDeclaration("const", [
+          es.variableDeclarator(
+            es.identifier("appConfig"),
+            es.callExpression(es.identifier("deepSeal"), [
+              es.callExpression(
+                es.memberExpression(
+                  es.identifier("JSON"),
+                  es.identifier("parse")
+                ),
+                [es.stringLiteral(JSON.stringify(appConfig))]
+              ),
+            ])
+          ),
+        ])
+      ),
+
+      es.exportNamedDeclaration(
+        es.variableDeclaration("const", [
+          es.variableDeclarator(
+            es.identifier("env"),
+            es.callExpression(es.identifier("deepSeal"), [
+              es.callExpression(
+                es.memberExpression(
+                  es.identifier("JSON"),
+                  es.identifier("parse")
+                ),
+                [es.stringLiteral(JSON.stringify(env))]
+              ),
+            ])
+          ),
+        ])
       ),
     ])
   );

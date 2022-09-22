@@ -8,11 +8,11 @@ import { createServer } from "http";
 import { promisify } from "util";
 import cp from "child_process";
 
-import dedent from "dedent";
 import serveHandler from "serve-handler";
 import { globby } from "globby";
 import nunjucks from "nunjucks";
 import minio from "minio";
+import { watch } from "chokidar";
 
 import { build } from "vite";
 import vue from "@vitejs/plugin-vue2";
@@ -20,7 +20,8 @@ import yaml from "@rollup/plugin-yaml";
 
 import { getConfig } from "./config.js";
 import { find } from "./json-xpath.js";
-import { baseFaIcons, fontawesomeImports } from "./fontawesome.js";
+import { baseFaIcons } from "./fontawesome.js";
+import { getConfigJs, getIconsJs } from "./ast.js";
 
 const {
   NODE_ENV = "production",
@@ -48,93 +49,93 @@ const s3 = new minio.Client({
   secretKey: S3_SECRET_KEY,
 });
 
-/** @param {Map<string, [string,string]>} faIcons */
-async function createIconsJs(faIcons, config) {
-  const icons = Array.from(faIcons.values());
-
-  /** @type {Record<string, Set<string>>}  */
-  const usage = {
-    fas: new Set(),
-    far: new Set(),
-    fab: new Set(),
+function debounce(ms, fn) {
+  let timerId = null;
+  return () => {
+    if (timerId) clearTimeout(timerId);
+    timerId = setTimeout(() => fn(), ms);
   };
-  for (const icon of icons) {
-    const set = usage[icon[0]];
-    if (!set) throw new Error(`Unknown icon set '${icon[0]}'`);
-    set.add(icon[1]);
-  }
-
-  const prefix = dedent`
-    import { library } from '@fortawesome/fontawesome-svg-core'
-    import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-  `;
-  const suffix = dedent`
-    export class FontawesomePlugin {
-      static install(Vue) {
-        Vue.component('fa-icon', FontAwesomeIcon);
-      }
-    }
-  `;
-
-  /** @param {string} i */
-  const iconName = (i) => {
-    const parts = i
-      .split(/-+/)
-      .map((p) => p.slice(0, 1).toLocaleUpperCase() + p.slice(1));
-    return "fa" + parts.join("");
-  };
-
-  const imports = Object.entries(usage)
-    .filter((entry) => entry[1].size > 0)
-    .map(
-      ([kind, icons]) => dedent`
-      import {
-        ${Array.from(icons)
-          .map((i) => iconName(i))
-          .join(", ")}
-      } from "${fontawesomeImports[kind]}";`
-    )
-    .join("\n");
-
-  const libraryAdditions = dedent`
-    library.add(${Object.values(usage)
-      .flatMap((s) => Array.from(s))
-      .map((i) => iconName(i))
-      .join(", ")})
-    `;
-
-  const names = new Map();
-  const embeds = [];
-  for (const item of config.navigation) {
-    if (names.has(item.icon)) continue;
-    const name = `icon${names.size}`;
-    names.set(item.icon, name);
-    embeds.push(
-      `import ${name} from "./${path.join("assets", item.icon)}?raw";`
-    );
-  }
-  const namedIcons = Array.from(names.entries())
-    .map((entry) => `"${entry[0]}": ${entry[1]}`)
-    .join(", ");
-  const navIcons = dedent`
-    ${embeds.join("\n")}
-
-    export const navIcons = { ${namedIcons} }
-  `;
-
-  return [prefix, imports, navIcons, libraryAdditions, suffix].join("\n\n");
 }
-function createConfigJs(config, env) {
-  return dedent`
-    import { deepSeal } from '@openlab/deconf-ui-toolkit'
-    export const appConfig = deepSeal(JSON.parse(${JSON.stringify(
-      JSON.stringify(config)
-    )}));
-    export const env = deepSeal(JSON.parse(${JSON.stringify(
-      JSON.stringify(env)
-    )}));
-  `;
-}
+
+// /** @param {Map<string, [string,string]>} faIcons */
+// async function createIconsJs(faIcons, config) {
+//   const icons = Array.from(faIcons.values());
+
+//   /** @type {Record<string, Set<string>>}  */
+//   const usage = {
+//     fas: new Set(),
+//     far: new Set(),
+//     fab: new Set(),
+//   };
+//   for (const icon of icons) {
+//     const set = usage[icon[0]];
+//     if (!set) throw new Error(`Unknown icon set '${icon[0]}'`);
+//     set.add(icon[1]);
+//   }
+
+//   const prefix = dedent`
+//     import { library } from "@fortawesome/fontawesome-svg-core";
+//   `;
+
+//   /** @param {string} i */
+//   const iconName = (i) => {
+//     const parts = i
+//       .split(/-+/)
+//       .map((p) => p.slice(0, 1).toLocaleUpperCase() + p.slice(1));
+//     return "fa" + parts.join("");
+//   };
+
+//   const imports = Object.entries(usage)
+//     .filter((entry) => entry[1].size > 0)
+//     .map(
+//       ([kind, icons]) => dedent`
+//       import {
+//         ${Array.from(icons)
+//           .map((i) => iconName(i))
+//           .join(", ")}
+//       } from "${fontawesomeImports[kind]}";`
+//     )
+//     .join("\n");
+
+//   const libraryAdditions = dedent`
+//     library.add(${Object.values(usage)
+//       .flatMap((s) => Array.from(s))
+//       .map((i) => iconName(i))
+//       .join(", ")})
+//     `;
+
+//   const names = new Map();
+//   const embeds = [];
+//   for (const item of config.navigation) {
+//     if (names.has(item.icon)) continue;
+//     const name = `icon${names.size}`;
+//     names.set(item.icon, name);
+//     embeds.push(
+//       `import ${name} from "./${path.join("assets", item.icon)}?raw";`
+//     );
+//   }
+//   const namedIcons = Array.from(names.entries())
+//     .map((entry) => `"${entry[0]}": ${entry[1]}`)
+//     .join(", ");
+//   const navIcons = dedent`
+//     ${embeds.join("\n")}
+
+//     export const navIcons = { ${namedIcons} }
+//   `;
+
+//   return [prefix, imports, navIcons, libraryAdditions].join("\n\n");
+// }
+// function createConfigJs(config, env) {
+//   return dedent`
+//     import { deepSeal } from '@openlab/deconf-ui-toolkit'
+//     export const appConfig = deepSeal(JSON.parse(${JSON.stringify(
+//       JSON.stringify(config)
+//     )}));
+//     export const env = deepSeal(JSON.parse(${JSON.stringify(
+//       JSON.stringify(env)
+//     )}));
+//   `;
+// }
 
 const assetPaths = [
   "/site/customScripts/*",
@@ -170,6 +171,12 @@ async function main() {
     APP_VERSION: "0.0.1",
   };
 
+  const flags = {
+    keep: process.argv.includes("--keep"),
+    watch: process.argv.includes("--watch"),
+    serve: process.argv.includes("--serve"),
+  };
+
   // 1. Clone the template
   const tmpdir = await fs.mkdtemp("shallow_");
   await fs.mkdir(tmpdir, { recursive: true });
@@ -198,11 +205,11 @@ async function main() {
     // 3. Process the template
     await fs.writeFile(
       path.join(tmpdir, "config.js"),
-      createConfigJs(config, appEnv)
+      getConfigJs(config, appEnv)
     );
     await fs.writeFile(
       path.join(tmpdir, "icons.js"),
-      await createIconsJs(faIcons, config, tmpdir)
+      await getIconsJs(faIcons, config, tmpdir)
     );
 
     const env = new nunjucks.Environment(new nunjucks.FileSystemLoader());
@@ -231,12 +238,11 @@ async function main() {
         emptyOutDir: true,
         sourcemap: true,
         assetsDir: "dist",
-        watch: process.argv.includes("--watch"),
+        watch: flags.watch,
       },
+
       resolve: {
-        alias: {
-          "~bulma": "bulma",
-        },
+        alias: { "~bulma": "bulma" },
       },
       plugins: [vue(), yaml()],
       css: {
@@ -251,7 +257,14 @@ async function main() {
     await fs.mkdir(path.join("output/shallow/assets"), { recursive: true });
     await exec(`cp -R ${tmpdir}/assets/ output/shallow/assets/`);
 
-    if (process.argv.includes("--serve")) {
+    if (flags.watch) {
+      const onChange = debounce(200, async () => {
+        await exec(`cp -R template/shallow/* ${tmpdir}`);
+      });
+      watch("template/shallow").on("all", () => onChange());
+    }
+
+    if (flags.serve) {
       const options = {
         public: "output/shallow",
         rewrites: [{ source: "**", destination: "/index.html" }],
@@ -262,7 +275,7 @@ async function main() {
       server.listen(8080, () => console.log("Listening on :8080"));
     }
   } finally {
-    if (!process.argv.includes("--keep") && !process.argv.includes("--watch")) {
+    if (!flags.keep && !flags.watch) {
       await exec(`rm -r ${tmpdir}`);
     }
   }

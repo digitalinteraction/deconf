@@ -4,6 +4,13 @@ import Vue from "vue";
 
 import GenericAppLayout from "./components/GenericAppLayout.vue";
 
+function viewify(mod, props) {
+  return Vue.extend({
+    name: "DeconfInjectedView",
+    render: (h) => h(mod.default, { props }),
+  });
+}
+
 // TODO: generators for views
 
 function homeV0(page, appConfig) {
@@ -32,9 +39,8 @@ function myScheduleV0(page, appConfig) {
   });
 }
 function contentV0(page, appConfig) {
-  return Vue.extend({
-    render: (h) => h(GenericAppLayout, [h("p", "content")]),
-  });
+  return async () =>
+    viewify(await import("./v0/Content.vue"), { content: page.content.body });
 }
 function tokenCaptureV0(appConfig) {
   return Vue.extend({

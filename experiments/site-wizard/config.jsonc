@@ -46,7 +46,7 @@
       "page": "help",
       "icon": "uploads/help.svg",
       "text": {
-        "en": "Atrium"
+        "en": "Help"
       }
     }
   ],
@@ -324,7 +324,7 @@
       "content": {
         "body": {
           // TODO: could the markdown reference local images ?!
-          "en": "# Help!\n\n![Cover image](https://example.com/image.png)\n\n..."
+          "en": "# Help!\n\n![Cover image](https://pdc-2022.ams3.cdn.digitaloceanspaces.com/notion/NaykM4KG8GHUaAWdy1dwHlo0IQo2SNbiLnCPF6AoHPo.gif)\n\nQuis doloremque qui est modi quas sunt. Minima ea voluptate et beatae. Ipsam placeat dolorum earum iure corporis est doloribus. Est saepe quia culpa perspiciatis eligendi reprehenderit voluptate. Beatae minima animi incidunt enim in minus. Eos ut omnis est et optio nemo omnis.\n\nEst quos dolor alias. Similique velit excepturi qui tempore animi. Dolorem iusto voluptate iure.\n\nCorporis inventore repudiandae provident quidem alias rem. Et placeat mollitia praesentium voluptates odio vitae. Est id aut omnis eum quasi.\n\nDolore modi quisquam ullam ducimus vel iusto. Et ut quisquam atque. Porro officia voluptatem ipsa in culpa."
         }
       }
     }
