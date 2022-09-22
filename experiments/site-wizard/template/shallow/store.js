@@ -14,7 +14,7 @@ import {
 Vue.use(Vuex);
 
 function apiModule() {
-  const apiClient = new DeconfApiClient(env.SERVER_URL.href);
+  const apiClient = new DeconfApiClient(env.SERVER_URL);
 
   return {
     ...createApiStoreModule(),

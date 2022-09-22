@@ -1,11 +1,12 @@
 <template>
   <div id="app">
-    <ApiError v-if="apiState === 'error'">
-      <!-- <MainLogo slot="brand" /> -->
-      <!-- <PageFooter slot="footer" /> -->
-    </ApiError>
-    <router-view v-else-if="apiState === 'ready'" />
-    <AppLoading v-else />
+    <!-- <ApiError v-if="apiState === 'error'" :home-route="homeRoute">
+      <BrandAsset slot="brand" :image="appConfig.branding.primary" />
+      <PageFooter slot="footer" />
+    </ApiError> -->
+    <!-- <router-view v-else-if="apiState === 'ready'" /> -->
+    <!-- <AppLoading v-else /> -->
+    <router-view />
 
     <DevControl
       :dev-plugin="$dev"
@@ -25,12 +26,21 @@ import {
   DevControl,
   mapApiState,
 } from "@openlab/deconf-ui-toolkit";
-import { homeRoute, setLocale } from "./lib.js";
+import { appConfig, homeRoute, setLocale } from "./lib.js";
+import BrandAsset from "./components/BrandAsset.vue";
+import PageFooter from "./components/PageFooter.vue";
 
 export default Vue.extend({
-  components: { ApiError, AppDialog, AppLoading, DevControl },
+  components: {
+    ApiError,
+    AppDialog,
+    AppLoading,
+    BrandAsset,
+    DevControl,
+    PageFooter,
+  },
   data() {
-    return { homeRoute };
+    return { appConfig, homeRoute };
   },
   computed: {
     ...mapApiState("api", ["apiState", "schedule", "user"]),

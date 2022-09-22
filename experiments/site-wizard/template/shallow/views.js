@@ -1,17 +1,71 @@
+/* eslint-disable vue/one-component-per-file */
+
+import Vue from "vue";
+
+import GenericAppLayout from "./components/GenericAppLayout.vue";
+
 // TODO: generators for views
 
-function homeV0(page, appConfig) {}
-function sessionTimelineV0(page, appConfig) {}
-function sessionGridV0(page, appConfig) {}
-function sessionV0(page, appConfig) {}
-function myScheduleV0(page, appConfig) {}
-function contentV0(page, appConfig) {}
-function tokenCaptureV0(appConfig) {}
-function loginV0(appConfig) {}
-function registerV0(appConfig) {}
-function profileV0(appConfig) {}
-function errorV0(appConfig) {}
-function notFoundV0(appConfig) {}
+function homeV0(page, appConfig) {
+  return Vue.extend({
+    render: (h) => h(GenericAppLayout, [h("p", "home")]),
+  });
+}
+function sessionTimelineV0(page, appConfig) {
+  return Vue.extend({
+    render: (h) => h(GenericAppLayout, [h("p", "sessionTimeline")]),
+  });
+}
+function sessionGridV0(page, appConfig) {
+  return Vue.extend({
+    render: (h) => h(GenericAppLayout, [h("p", "sessionGrid")]),
+  });
+}
+function sessionV0(page, appConfig) {
+  return Vue.extend({
+    render: (h) => h(GenericAppLayout, [h("p", "session")]),
+  });
+}
+function myScheduleV0(page, appConfig) {
+  return Vue.extend({
+    render: (h) => h(GenericAppLayout, [h("p", "mySchedule")]),
+  });
+}
+function contentV0(page, appConfig) {
+  return Vue.extend({
+    render: (h) => h(GenericAppLayout, [h("p", "content")]),
+  });
+}
+function tokenCaptureV0(appConfig) {
+  return Vue.extend({
+    render: (h) => h(GenericAppLayout, [h("p", "tokenCapture")]),
+  });
+}
+function loginV0(appConfig) {
+  return Vue.extend({
+    render: (h) => h(GenericAppLayout, [h("p", "login")]),
+  });
+}
+function registerV0(appConfig) {
+  return Vue.extend({
+    render: (h) => h(GenericAppLayout, [h("p", "register")]),
+  });
+}
+function profileV0(appConfig) {
+  return Vue.extend({
+    render: (h) => h(GenericAppLayout, [h("p", "profile")]),
+  });
+}
+function errorV0(appConfig) {
+  return Vue.extend({
+    render: (h) => h(GenericAppLayout, [h("p", "error")]),
+  });
+}
+function notFoundV0(appConfig) {
+  return Vue.extend({
+    render: (h) => h(GenericAppLayout, [h("p", "notFound")]),
+  });
+}
 
 export const views = {
   v0: {

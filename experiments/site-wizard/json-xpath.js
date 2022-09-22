@@ -60,6 +60,8 @@ export async function testFn() {
     // ... misc
 
     "/pages/*/home/sponsors/*/sponsors/1/image",
+
+    "/branding/*/url",
   ];
 
   for (const path of testPaths) {

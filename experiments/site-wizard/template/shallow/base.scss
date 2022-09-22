@@ -5,23 +5,17 @@ $family-sans-serif: system-ui, BlinkMacSystemFont, -apple-system, "Segoe UI",
 $white: white;
 $black: black;
 
-$pdc-navy: rgb(5, 29, 104);
-$pdc-sky: rgb(12, 200, 233);
-$pdc-ocean: rgb(0, 120, 216);
-$pdc-yellow: rgb(252, 204, 76);
+$deconf-blue: #2770bf;
+$deconf-navy: #193059;
+$deconf-yellow: #fdca41;
+$deconf-orange: #fe6f59;
+$deconf-red: #f03a48;
 
-$primary: $pdc-ocean;
-$secondary: $pdc-navy;
-$link: $pdc-ocean;
+$primary: $deconf-blue;
+$secondary: $deconf-orange;
+$link: $deconf-navy;
 
-$radius-small: 2px;
-$radius: 4px;
-
-$sideTabs-background: $pdc-navy;
-$sideTabs-activeBackground: $pdc-yellow;
-$sideTabs-active: $pdc-navy;
-
-$navigationBar-mobileBackground: $pdc-navy;
-$navigationBar-mobileColor: $white;
+$sideTabs-background: $deconf-blue;
+$sideTabs-active: $deconf-blue;
 
 @import "@openlab/deconf-ui-toolkit/common.scss";

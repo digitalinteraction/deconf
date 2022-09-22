@@ -69,7 +69,11 @@
     // new URL("uploads/script.js", "file:")
     // can load both? then use the "protocol" to decide how to load
     "customStyles": ["uploads/styles.css"],
-    "customScripts": ["uploads/script.js"]
+    "customScripts": ["uploads/script.js"],
+
+    "login": { "enabled": true },
+    "register": { "enabled": true },
+    "profile": { "enabled": true }
   },
 
   // "type" + "[type]" structure from the Notion API
@@ -380,17 +384,27 @@
   },
 
   "branding": {
-    "main": {
-      "url": "",
-      "width": "",
-      "height": ""
+    "primary": {
+      "url": "uploads/primary-brand.png",
+      "width": "104px",
+      "height": "28px"
+    },
+    "secondary": {
+      "url": "uploads/secondary-brand.png",
+      "width": "157px",
+      "height": "28px"
+    },
+    "tabs": {
+      "url": "uploads/tab-brand.png",
+      "width": "64px",
+      "height": "64px"
     }
     // TODO: ...
   },
 
   "footer": {
     "content": {
-      "en": "This site is ..."
+      "en": "Hey there [*](https://duck.com)"
     },
     "links": [
       {

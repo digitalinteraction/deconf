@@ -31,8 +31,6 @@ Vue.use(MetricsPlugin);
 Vue.use(GenericDeconfPlugin);
 Vue.use(DialogPlugin);
 
-console.log(App);
-
 new Vue({
   router,
   store,

@@ -227,6 +227,9 @@ const AppConfig = type({
       image: string(),
       twitter: string(),
     }),
+    login: type({ enabled: boolean() }),
+    register: type({ enabled: boolean() }),
+    profile: type({ enabled: boolean() }),
   }),
 
   pages: array(
@@ -266,7 +269,7 @@ const AppConfig = type({
   i18n: record(string(), record(string(), string())),
 
   footer: type({
-    content: localised(),
+    content: optional(localised()),
     links: array(
       union([
         type({

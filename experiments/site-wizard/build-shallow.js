@@ -20,9 +20,15 @@ import yaml from "@rollup/plugin-yaml";
 
 import { getConfig } from "./config.js";
 import { find } from "./json-xpath.js";
+import { baseFaIcons, fontawesomeImports } from "./fontawesome.js";
 
-const { S3_ACCESS_KEY, S3_BUCKET_NAME, S3_ENDPOINT, S3_SECRET_KEY } =
-  process.env;
+const {
+  NODE_ENV = "production",
+  S3_ACCESS_KEY,
+  S3_BUCKET_NAME,
+  S3_ENDPOINT,
+  S3_SECRET_KEY,
+} = process.env;
 const exec = promisify(cp.exec);
 
 // TODO:
@@ -43,12 +49,7 @@ const s3 = new minio.Client({
 });
 
 /** @param {Map<string, [string,string]>} faIcons */
-function createIconsJs(faIcons) {
-  const importUrls = {
-    fas: "@fortawesome/free-solid-svg-icons",
-    far: "@fortawesome/free-regular-svg-icons",
-    fab: "@fortawesome/free-brands-svg-icons",
-  };
+async function createIconsJs(faIcons, config) {
   const icons = Array.from(faIcons.values());
 
   /** @type {Record<string, Set<string>>}  */
@@ -86,12 +87,12 @@ function createIconsJs(faIcons) {
   const imports = Object.entries(usage)
     .filter((entry) => entry[1].size > 0)
     .map(
-      ([kind, icons]) =>
-        dedent`
-          import { ${[...icons].map((i) => iconName(i)).join(", ")} } from "${
-          importUrls[kind]
-        }";
-        `
+      ([kind, icons]) => dedent`
+      import {
+        ${Array.from(icons)
+          .map((i) => iconName(i))
+          .join(", ")}
+      } from "${fontawesomeImports[kind]}";`
     )
     .join("\n");
 
@@ -102,7 +103,26 @@ function createIconsJs(faIcons) {
       .join(", ")})
     `;
 
-  return [prefix, imports, libraryAdditions, suffix].join("\n\n");
+  const names = new Map();
+  const embeds = [];
+  for (const item of config.navigation) {
+    if (names.has(item.icon)) continue;
+    const name = `icon${names.size}`;
+    names.set(item.icon, name);
+    embeds.push(
+      `import ${name} from "./${path.join("assets", item.icon)}?raw";`
+    );
+  }
+  const namedIcons = Array.from(names.entries())
+    .map((entry) => `"${entry[0]}": ${entry[1]}`)
+    .join(", ");
+  const navIcons = dedent`
+    ${embeds.join("\n")}
+
+    export const navIcons = { ${namedIcons} }
+  `;
+
+  return [prefix, imports, navIcons, libraryAdditions, suffix].join("\n\n");
 }
 function createConfigJs(config, env) {
   return dedent`
@@ -122,6 +142,9 @@ const assetPaths = [
   "/site/opengraph/image",
   "/navigation/*/icon",
   "/pages/*/home/sponsors/*/sponsors/*/image",
+  "/branding/primary/url",
+  "/branding/secondary/url",
+  "/branding/tabs/url",
 ];
 
 const iconPaths = [
@@ -143,6 +166,8 @@ async function main() {
     BUILD_NAME: "v1.2.3",
     JWT_ISSUER: "deconf-dev",
     DISABLE_SOCKETS: false,
+    APP_NAME: "Merlin",
+    APP_VERSION: "0.0.1",
   };
 
   // 1. Clone the template
@@ -162,7 +187,9 @@ async function main() {
   try {
     // 2. Prep assets
     const allAssets = assetPaths.flatMap((p) => find(config, p));
-    const faIcons = iconPaths.flatMap((p) => find(config, p));
+    const faIcons = baseFaIcons.concat(
+      iconPaths.flatMap((p) => find(config, p))
+    );
 
     await Promise.all(
       Array.from(new Set(allAssets)).map((p) => cacheObject(p))
@@ -173,7 +200,10 @@ async function main() {
       path.join(tmpdir, "config.js"),
       createConfigJs(config, appEnv)
     );
-    await fs.writeFile(path.join(tmpdir, "icons.js"), createIconsJs(faIcons));
+    await fs.writeFile(
+      path.join(tmpdir, "icons.js"),
+      await createIconsJs(faIcons, config, tmpdir)
+    );
 
     const env = new nunjucks.Environment(new nunjucks.FileSystemLoader());
     const context = { ...config };
@@ -193,11 +223,15 @@ async function main() {
 
     // 4. Bundle the app
     await build({
+      mode: NODE_ENV,
       root: tmpdir,
+      publicDir: "assets",
       build: {
         outDir: "../output/shallow",
         emptyOutDir: true,
         sourcemap: true,
+        assetsDir: "dist",
+        watch: process.argv.includes("--watch"),
       },
       resolve: {
         alias: {
@@ -208,7 +242,7 @@ async function main() {
       css: {
         preprocessorOptions: {
           scss: {
-            additionalData: '@import "base.scss";',
+            additionalData: '@import "/base.scss";',
           },
         },
       },
@@ -218,14 +252,17 @@ async function main() {
     await exec(`cp -R ${tmpdir}/assets/ output/shallow/assets/`);
 
     if (process.argv.includes("--serve")) {
-      const options = { public: "output/shallow" };
+      const options = {
+        public: "output/shallow",
+        rewrites: [{ source: "**", destination: "/index.html" }],
+      };
       const server = createServer((req, res) =>
         serveHandler(req, res, options)
       );
       server.listen(8080, () => console.log("Listening on :8080"));
     }
   } finally {
-    if (!process.argv.includes("--keep")) {
+    if (!process.argv.includes("--keep") && !process.argv.includes("--watch")) {
       await exec(`rm -r ${tmpdir}`);
     }
   }
