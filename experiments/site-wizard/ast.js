@@ -37,7 +37,7 @@ export function getIconsJs(faIcons, config) {
     svgImports.push(
       es.importDeclaration(
         [es.importDefaultSpecifier(es.identifier(name))],
-        es.stringLiteral(`./${path.join("assets", item.icon)}?raw`)
+        es.stringLiteral(`./${path.join("public", item.icon)}?raw`)
       )
     );
   }

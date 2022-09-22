@@ -1,4 +1,6 @@
 output
 template/shallow/config.js
+template/shallow/icons.js
+template/shallow/index.html
 .parcel-cache
 shallow_*

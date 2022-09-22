@@ -1,9 +1,9 @@
 <template>
   <div class="pageFooter">
-    <p
+    <Markdown
       class="pageFooter-line"
       v-if="appConfig.footer.content"
-      v-html="markdown(localise(appConfig.footer.content))"
+      :content="appConfig.footer.content"
     />
 
     <p class="pageFooter-line">
@@ -33,23 +33,14 @@
 </template>
 
 <script>
-import { marked } from "marked";
+import Vue from "vue";
 import { appConfig, env, localise } from "../lib.js";
-import { localiseFromObject } from "@openlab/deconf-ui-toolkit";
+import Markdown from "./Markdown.vue";
 
-export default {
+export default Vue.extend({
+  components: { Markdown },
   data() {
     return { appConfig, localise, env };
   },
-  computed: {
-    localeContent() {
-      return marked(localiseFromObject("en", appConfig.footer.content));
-    },
-  },
-  methods: {
-    markdown(str) {
-      return marked(str);
-    },
-  },
-};
+});
 </script>

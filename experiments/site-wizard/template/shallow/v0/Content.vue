@@ -1,5 +1,5 @@
 <template>
-  <GenericAppLayout>
+  <AppLayout>
     <div class="contentV0">
       <section class="section">
         <div class="container">
@@ -9,12 +9,12 @@
         </div>
       </section>
     </div>
-  </GenericAppLayout>
+  </AppLayout>
 </template>
 
 <script>
 import Vue from "vue";
-import GenericAppLayout from "../components/GenericAppLayout.vue";
+import AppLayout from "../components/AppLayout.vue";
 import { BoxContent } from "@openlab/deconf-ui-toolkit";
 import { marked } from "marked";
 
@@ -22,7 +22,7 @@ import { localise } from "../lib.js";
 
 export default Vue.extend({
   name: "ContentV0View",
-  components: { GenericAppLayout, BoxContent },
+  components: { AppLayout, BoxContent },
   props: {
     content: { type: Object, required: true },
   },

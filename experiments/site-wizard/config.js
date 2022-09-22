@@ -227,10 +227,14 @@ const AppConfig = type({
       image: string(),
       twitter: string(),
     }),
-    login: type({ enabled: boolean() }),
-    register: type({ enabled: boolean() }),
-    profile: type({ enabled: boolean() }),
   }),
+
+  login: type({
+    enabled: boolean(),
+    text: localised(),
+  }),
+  register: type({ enabled: boolean() }),
+  profile: type({ enabled: boolean() }),
 
   pages: array(
     union([

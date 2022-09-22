@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
   <head>
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -14,10 +14,7 @@
       content="{{ site.opengraph.description }}"
     />
     <meta property="og:type" content="website" />
-    <meta
-      property="og:image"
-      content="{{ site.opengraph.image | staticAsset }}"
-    />
+    <meta property="og:image" content="{{ site.opengraph.image | fullUrl }}" />
     <meta property="og:url" content="{{ site.url }}" />
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:site" content="{{ site.opengraph.twitter }}" />

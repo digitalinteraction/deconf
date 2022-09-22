@@ -28,6 +28,7 @@ import BrandAsset from "./BrandAsset.vue";
 import PageFooter from "./PageFooter.vue";
 
 export default Vue.extend({
+  name: "GenericAppLayout",
   components: { AppLayout, BrandAsset, PageFooter },
   data() {
     return { homeRoute, appConfig };
@@ -36,9 +37,10 @@ export default Vue.extend({
     ...mapApiState("api", ["schedule", "user"]),
     navLinks() {
       const links = [];
-      if (appConfig.site.login.enabled) links.push("login");
-      if (appConfig.site.register.enabled) links.push("register");
-      if (appConfig.site.profile.enabled) links.push("profile");
+
+      if (appConfig.login.enabled) links.push("login");
+      if (appConfig.register.enabled) links.push("register");
+      if (appConfig.profile.enabled) links.push("profile");
       return links;
     },
     routes() {

@@ -2,9 +2,9 @@
 
 import Vue from "vue";
 
-import GenericAppLayout from "./components/GenericAppLayout.vue";
+import AppLayout from "./components/AppLayout.vue";
 
-function viewify(mod, props) {
+function viewify(mod, props = {}) {
   return Vue.extend({
     name: "DeconfInjectedView",
     render: (h) => h(mod.default, { props }),
@@ -13,63 +13,61 @@ function viewify(mod, props) {
 
 // TODO: generators for views
 
-function homeV0(page, appConfig) {
+function homeV0(page) {
   return Vue.extend({
-    render: (h) => h(GenericAppLayout, [h("p", "home")]),
+    render: (h) => h(AppLayout, [h("p", "home")]),
   });
 }
-function sessionTimelineV0(page, appConfig) {
+function sessionTimelineV0(page) {
   return Vue.extend({
-    render: (h) => h(GenericAppLayout, [h("p", "sessionTimeline")]),
+    render: (h) => h(AppLayout, [h("p", "sessionTimeline")]),
   });
 }
-function sessionGridV0(page, appConfig) {
+function sessionGridV0(page) {
   return Vue.extend({
-    render: (h) => h(GenericAppLayout, [h("p", "sessionGrid")]),
+    render: (h) => h(AppLayout, [h("p", "sessionGrid")]),
   });
 }
-function sessionV0(page, appConfig) {
+function sessionV0(page) {
   return Vue.extend({
-    render: (h) => h(GenericAppLayout, [h("p", "session")]),
+    render: (h) => h(AppLayout, [h("p", "session")]),
   });
 }
-function myScheduleV0(page, appConfig) {
+function myScheduleV0(page) {
   return Vue.extend({
-    render: (h) => h(GenericAppLayout, [h("p", "mySchedule")]),
+    render: (h) => h(AppLayout, [h("p", "mySchedule")]),
   });
 }
-function contentV0(page, appConfig) {
-  return async () =>
-    viewify(await import("./v0/Content.vue"), { content: page.content.body });
+function contentV0(page) {
+  const props = { content: page.content.body };
+  return async () => viewify(await import("./v0/Content.vue"), props);
 }
-function tokenCaptureV0(appConfig) {
+function tokenCaptureV0() {
   return Vue.extend({
-    render: (h) => h(GenericAppLayout, [h("p", "tokenCapture")]),
+    render: (h) => h(AppLayout, [h("p", "tokenCapture")]),
   });
 }
-function loginV0(appConfig) {
+function loginV0() {
+  return async () => viewify(await import("./v0/Login.vue"));
+}
+function registerV0() {
   return Vue.extend({
-    render: (h) => h(GenericAppLayout, [h("p", "login")]),
+    render: (h) => h(AppLayout, [h("p", "register")]),
   });
 }
-function registerV0(appConfig) {
+function profileV0() {
   return Vue.extend({
-    render: (h) => h(GenericAppLayout, [h("p", "register")]),
+    render: (h) => h(AppLayout, [h("p", "profile")]),
   });
 }
-function profileV0(appConfig) {
+function errorV0() {
   return Vue.extend({
-    render: (h) => h(GenericAppLayout, [h("p", "profile")]),
+    render: (h) => h(AppLayout, [h("p", "error")]),
   });
 }
-function errorV0(appConfig) {
+function notFoundV0() {
   return Vue.extend({
-    render: (h) => h(GenericAppLayout, [h("p", "error")]),
-  });
-}
-function notFoundV0(appConfig) {
-  return Vue.extend({
-    render: (h) => h(GenericAppLayout, [h("p", "notFound")]),
+    render: (h) => h(AppLayout, [h("p", "notFound")]),
   });
 }
 

@@ -259,3 +259,11 @@ pdc:
     title: Papers
     goToSession: Go to session
     downloadPdf: Download PDF
+
+#
+# New stuff
+#
+
+generic:
+  general:
+    backHome: Back to home page
