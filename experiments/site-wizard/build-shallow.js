@@ -10,21 +10,19 @@ import cp from "child_process";
 
 import dedent from "dedent";
 import serveHandler from "serve-handler";
-import { Parcel } from "@parcel/core";
 import { globby } from "globby";
 import nunjucks from "nunjucks";
 import minio from "minio";
 
+import { build } from "vite";
+import vue from "@vitejs/plugin-vue2";
+import yaml from "@rollup/plugin-yaml";
+
 import { getConfig } from "./config.js";
 import { find } from "./json-xpath.js";
 
-const {
-  NODE_ENV = "production",
-  S3_ACCESS_KEY,
-  S3_BUCKET_NAME,
-  S3_ENDPOINT,
-  S3_SECRET_KEY,
-} = process.env;
+const { S3_ACCESS_KEY, S3_BUCKET_NAME, S3_ENDPOINT, S3_SECRET_KEY } =
+  process.env;
 const exec = promisify(cp.exec);
 
 // TODO:
@@ -182,29 +180,39 @@ async function main() {
 
     env.addFilter("staticAsset", (file) => {
       console.debug("staticAsset path=%o", file);
-      const url = new URL(path.join(s3Prefix, file), cdnUrl);
-      return url.toString();
+      // const url = new URL(path.join(s3Prefix, file), cdnUrl);
+      // return url.toString();
+      return path.join("assets", file);
     });
 
     const templates = await globby(`${tmpdir}/**/*.njk`);
     for (const file of templates) {
       await fs.writeFile(file.replace(/\.njk$/, ""), env.render(file, context));
+      await fs.unlink(file);
     }
 
     // 4. Bundle the app
-    const bundler = new Parcel({
-      entries: [path.join(tmpdir, "index.html")],
-      defaultConfig: "@parcel/config-default",
-      defaultTargetOptions: {
-        distDir: "output/shallow",
-        engines: {
-          browsers: ["last 2 versions"],
+    await build({
+      root: tmpdir,
+      build: {
+        outDir: "../output/shallow",
+        emptyOutDir: true,
+        sourcemap: true,
+      },
+      resolve: {
+        alias: {
+          "~bulma": "bulma",
         },
       },
-      // mode: NODE_ENV,
+      plugins: [vue(), yaml()],
+      css: {
+        preprocessorOptions: {
+          scss: {
+            additionalData: '@import "base.scss";',
+          },
+        },
+      },
     });
-
-    await bundler.run();
 
     await fs.mkdir(path.join("output/shallow/assets"), { recursive: true });
     await exec(`cp -R ${tmpdir}/assets/ output/shallow/assets/`);

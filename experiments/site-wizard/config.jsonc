@@ -376,7 +376,7 @@
 
   // To be merged-in to i18n strings
   "i18n": {
-    "general.search.title": "Search Sessions:"
+    "general.search.title": { "en": "Search Sessions:" }
   },
 
   "branding": {

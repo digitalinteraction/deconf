@@ -19,19 +19,12 @@ import {
   tuple,
   type,
   union,
-  coerce,
-  define,
 } from "superstruct";
 
 const faIcon = () => tuple([string(), string()]);
 const localised = () => record(string(), string());
 const access = () => enums(["public", "private", "other"]);
 const jsonDate = () => string();
-
-const url = () =>
-  coerce(string(), string(), (value) => {
-    return new URL(value, "file:").toString();
-  });
 
 const widgetV0 = () =>
   union([
@@ -270,7 +263,7 @@ const AppConfig = type({
     })
   ),
 
-  i18n: record(string(), string()),
+  i18n: record(string(), record(string(), string())),
 
   footer: type({
     content: localised(),

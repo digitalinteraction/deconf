@@ -1,9 +1,9 @@
 import Vue from "vue";
 
-// import App from "./App.vue";
+import App from "./App.vue";
 import { router } from "./router.js";
-// import { store } from "./store.js";
-// import { i18n } from "./i18n.js";
+import { store } from "./store.js";
+import { i18n } from "./i18n.js";
 
 import { env } from "./config.js";
 
@@ -31,9 +31,11 @@ Vue.use(MetricsPlugin);
 Vue.use(GenericDeconfPlugin);
 Vue.use(DialogPlugin);
 
+console.log(App);
+
 new Vue({
   router,
-  // store,
-  // i18n,
-  // render: (h) => h(App),
+  store,
+  i18n,
+  render: (h) => h(App),
 }).$mount("#app");

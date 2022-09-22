@@ -10,8 +10,6 @@ Vue.use(VueRouter);
 const routes = [{ path: "/", redirect: { name: "/home" } }];
 
 for (const page of appConfig.pages) {
-  // TODO: add nested pages too ...
-
   routes.push({
     path: "/" + page.id,
     name: page.id,
@@ -20,7 +18,20 @@ for (const page of appConfig.pages) {
       // TODO: put meta somewhere inside config.json
     },
   });
+
+  // TODO: add nested pages too ...
+  // if (page.type === "sessionTimeline") {
+  //   routes.push({
+  //     path: `/${page.id}/:sessionId`,
+  //     props: true,
+  //     name: page.id + "-session",
+  //     // TODO: do nested pages need their own config from parent "page"?
+  //     component: views.v0.session(page, appConfig),
+  //   });
+  // }
 }
+
+// TODO: a default "session" page too
 
 routes.push({
   path: "/_token",
@@ -55,8 +66,6 @@ routes.push({
   path: "*",
   component: views.v0.notFound(appConfig),
 });
-
-console.log(routes);
 
 // TODO: scroll offset stuff and document.title setting
 
