@@ -126,12 +126,6 @@ deconf:
     dangerLabel: Danger zone
     deleteButton: Delete account
     deleteText: This is permenant, are you sure?
-    pdc:
-      emailText: Email
-      localeText: Chosen language
-      whenText: Logged in
-      registeredText: Registered
-      nameText: Name
 
   schedule:
     allSessions: Full Schedule
@@ -152,8 +146,6 @@ deconf:
     teamsLink: Teams Meeting
     miroLink: Miro Board
     generalLink: Link
-    pdc:
-      backButton: Back to Schedule
 
   interestSection:
     message: Register your interest
@@ -174,98 +166,13 @@ deconf:
     copied: copied
     info: Use this link to subscribe to "My Schedule" in your personal calendar.
 
-pdc:
-  general:
-    appName: PDC 2022
-    backToAtrium: Back to home page
-    "yes": "Yes"
-    "no": "No"
-    noResults: No results
-
-  atrium:
-    heading: PDC 2022
-    logIn: Log in
-    onlineUsers: Online now
-    registerSubtitle: Registration is now available for PDC 2022.
-    registerTitle: Register now!
-    registerUrl: https://forms.ncl.ac.uk/view.php?id=14468460
-    subtitle: A hybrid conference, 19th August - 1st September 2022
-    title: Welcome to PDC 2022
-    twitterSubtitle: Share the sessions you're most excited about attending.
-    twitterTitle: "Tweet #pdc2022"
-    twitterUrl: https://twitter.com/hashtag/pdc2022
-    situatedActionsTitle: Situated Actions
-    situatedActionsSubtitle: Register for a Situated Action
-    situatedActionsUrl: https://www.eventbrite.com/cc/pdc-conference-situated-actions-695819
-    calendarHelpTitle: Calendar Sync
-    calendarHelpSubtitle: Sync My Schedule with your online calendar
-    calendarHelpUrl: /calendar-help
-    a11yScheduleTitle: Screen Assisted
-    a11yScheduleSubtitle: A full day-by-day screen assisted version of the programme is available here.
-    a11yScheduleUrl: https://docs.google.com/spreadsheets/d/1MEgC6KRasLOguSh3vHh-b9FQQzXrSQAb/edit
-
-  footer:
-    appName: PDC 2022
-    guidelines: Being Together Guide
-    guidelinesUrl: https://pdc2022.org/wp-content/uploads/2021/10/PDC-2022-BeingTogetherGuide-v1.pdf
-    privacy: Privacy
-    privacyUrl: https://webstore.ncl.ac.uk/help/privacy-notice
-    terms: Terms & Conditions
-    termsUrl: https://webstore.ncl.ac.uk/help/terms-and-conditions
-
-  pageTitles:
-    atrium: Home
-    about: About
-    login: Log in
-    profile: Your Profile
-    schedule: Programme
-    session: View Session
-    social: Social
-    help: Help Desk
-    keynotes: Keynotes
-    places: Places
-    papers: Papers
-    newcastle: Newcastle
-    privacy: Privacy
-    terms: Terms
-    calendarHelp: Calendar Help
-
-  notFound:
-    title: Page Not Found
-    info: We can't find the page you're looking for
-
-  serverError:
-    unknown:
-      title: Something went wrong
-      info: An unknown error occured, please try again. If the problem persists, please contact us.
-      email: festival@mozilla.org
-    loginExpired:
-      title: Expired magic link
-      info: Your magic link to login has expired, they only last for 30 minutes for security reasons. Use the button below to start again.
-      action: Log in again
-
-  addUserCalendar:
-    title: Private calendar
-    generate: Generate url
-    info: Use this link to subscribe to "My Schedule" in your own calendar. Your calendar will refresh periodically to fetch the latest information and show you the events you have added to "My Schedule".
-    copy: copy
-    copied: copied
-
-  places:
-    title: Places
-    noResults: Coming soon
-
-  papers:
-    title: Papers
-    goToSession: Go to session
-    downloadPdf: Download PDF
-
 #
 # New stuff
 #
 
 generic:
   general:
+    back: "Back"
     backHome: Back to home page
   profile:
     emailText: Email

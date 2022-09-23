@@ -2,7 +2,7 @@ import Vue from "vue";
 import Vuex from "vuex";
 
 import { appConfig, env } from "./config.js";
-import { authTokenKey, setLocale } from "./lib.js";
+import { assetUrl, setLocale } from "./lib.js";
 import {
   createMetricsStoreModule,
   DeconfApiClient,
@@ -28,7 +28,8 @@ function apiModule() {
     return async (...args) => {
       const schedule = await fn.bind(apiClient)(...args);
       for (const speaker of schedule.speakers) {
-        speaker.headshot = speaker.headshot ?? appConfig.site.defaultHeadshot;
+        speaker.headshot =
+          speaker.headshot ?? assetUrl(appConfig.site.defaultHeadshot);
       }
       return schedule;
     };

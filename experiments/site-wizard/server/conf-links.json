@@ -4,13 +4,13 @@
       "type": "",
       "url": "https://zoom.us/j/123456789",
       "title": "Main meeting",
-      "language": "*"
+      "language": "en"
     },
     {
       "type": "",
       "url": "https://drive.google.com",
       "title": "Google Doc",
-      "language": "*"
+      "language": "en"
     }
   ]
 }

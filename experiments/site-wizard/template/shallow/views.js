@@ -8,7 +8,11 @@ import UtilLayout from "./components/UtilLayout.vue";
 function viewify(mod, props = {}) {
   return Vue.extend({
     name: "DeconfInjectedView",
-    render: (h) => h(mod.default, { props }),
+    render(h) {
+      return h(mod.default, {
+        props: { ...props, ...this.$attrs },
+      });
+    },
   });
 }
 function fakeView(text, layout = AppLayout) {
@@ -32,12 +36,8 @@ function sessionGridV0(page) {
   return async () => viewify(await import("./v0/SessionGrid.vue"), props);
 }
 function sessionV0(page) {
-  return Vue.extend({
-    props: { sessionId: String, required: true },
-    render(h) {
-      return h(AppLayout, [h("p", `session id=${this.sessionId}`)]);
-    },
-  });
+  const props = { page };
+  return async () => viewify(await import("./v0/Session.vue"), props);
 }
 function myScheduleV0(page) {
   return async () => fakeView("mySchedule");
