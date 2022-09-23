@@ -31,11 +31,6 @@ export default Vue.extend({
       return marked(localise(this.content));
     },
   },
-  methods: {
-    marked(str) {
-      return marked(str);
-    },
-  },
 });
 </script>
 

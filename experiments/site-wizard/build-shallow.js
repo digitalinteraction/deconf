@@ -53,6 +53,7 @@ const assetPaths = [
   "/site/customStyles/*",
   "/site/opengraph/image",
   "/navigation/*/icon",
+  "/pages/*/home/hero/image",
   "/pages/*/home/sponsors/*/sponsors/*/image",
   "/branding/primary/url",
   "/branding/secondary/url",
@@ -146,7 +147,7 @@ async function main() {
     build: {
       outDir: "../../output/shallow",
       emptyOutDir: true,
-      // sourcemap: true,
+      sourcemap: true,
       watch: flags.watch,
     },
 

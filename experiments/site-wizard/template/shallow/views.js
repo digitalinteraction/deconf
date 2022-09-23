@@ -14,9 +14,8 @@ function viewify(mod, props = {}) {
 // TODO: generators for views
 
 function homeV0(page) {
-  return Vue.extend({
-    render: (h) => h(AppLayout, [h("p", "home")]),
-  });
+  const props = { page };
+  return async () => viewify(await import("./v0/Home.vue"), props);
 }
 function sessionTimelineV0(page) {
   return Vue.extend({

@@ -96,10 +96,10 @@
         "hero": {
           "title": { "en": "Welcome to Dog Con!!" },
           "subtitle": { "en": "Get your dog on" },
-          "image": ""
+          "image": "uploads/atrium.png"
         },
         "content": {
-          "en": "## Dog con is now\n\nLorem ipsum sil dor amet"
+          "en": "## Dog con is now\n\nQuis doloremque qui est modi quas sunt. Minima ea voluptate et beatae. Ipsam placeat dolorum earum iure corporis est doloribus. Est saepe quia culpa perspiciatis eligendi reprehenderit voluptate. Beatae minima animi incidunt enim in minus. Eos ut omnis est et optio nemo omnis.\n\nEst quos dolor alias. Similique velit excepturi qui tempore animi. Dolorem iusto voluptate iure.\n\nCorporis inventore repudiandae provident quidem alias rem. Et placeat mollitia praesentium voluptates odio vitae. Est id aut omnis eum quasi.\n\nDolore modi quisquam ullam ducimus vel iusto. Et ut quisquam atque. Porro officia voluptatem ipsa in culpa."
         },
         "widgets": [
           // Widget IDs for usage analytics? and allow custom CSS styling
