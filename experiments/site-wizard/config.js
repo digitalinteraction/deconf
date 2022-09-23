@@ -155,7 +155,8 @@ const sessionTimelineV0 = () =>
     access: access(),
     sessionTimeline: type({
       title: localised(),
-      subtitle: localised(),
+      info: localised(),
+      empty: localised(),
       primaryFilters: array(filtersV0()),
       secondaryFilters: array(filtersV0()),
       tiles: tilesV0(),
@@ -173,7 +174,8 @@ const sessionGridV0 = () =>
     access: access(),
     sessionGrid: type({
       title: localised(),
-      subtitle: localised(),
+      info: localised(),
+      empty: localised(),
       primaryFilters: array(filtersV0()),
       secondaryFilters: array(filtersV0()),
       tiles: tilesV0(),
@@ -227,6 +229,7 @@ const AppConfig = type({
       image: string(),
       twitter: string(),
     }),
+    defaultHeadshot: string(),
   }),
 
   login: type({

@@ -46,6 +46,7 @@ const assetPaths = [
   "/site/customScripts/*",
   "/site/customStyles/*",
   "/site/opengraph/image",
+  "/site/defaultHeadshot",
   "/navigation/*/icon",
   "/pages/*/home/hero/image",
   "/pages/*/home/sponsors/*/sponsors/*/image",

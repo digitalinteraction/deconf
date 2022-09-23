@@ -3,11 +3,17 @@
 import Vue from "vue";
 
 import AppLayout from "./components/AppLayout.vue";
+import UtilLayout from "./components/UtilLayout.vue";
 
 function viewify(mod, props = {}) {
   return Vue.extend({
     name: "DeconfInjectedView",
     render: (h) => h(mod.default, { props }),
+  });
+}
+function fakeView(text, layout = AppLayout) {
+  return Vue.extend({
+    render: (h) => h(layout, [h("p", text)]),
   });
 }
 
@@ -18,14 +24,11 @@ function homeV0(page) {
   return async () => viewify(await import("./v0/Home.vue"), props);
 }
 function sessionTimelineV0(page) {
-  return Vue.extend({
-    render: (h) => h(AppLayout, [h("p", "sessionTimeline")]),
-  });
+  const props = { page };
+  return async () => viewify(await import("./v0/SessionTimeline.vue"), props);
 }
 function sessionGridV0(page) {
-  return Vue.extend({
-    render: (h) => h(AppLayout, [h("p", "sessionGrid")]),
-  });
+  return async () => fakeView("sessionGrid");
 }
 function sessionV0(page) {
   return Vue.extend({
@@ -36,41 +39,29 @@ function sessionV0(page) {
   });
 }
 function myScheduleV0(page) {
-  return Vue.extend({
-    render: (h) => h(AppLayout, [h("p", "mySchedule")]),
-  });
+  return async () => fakeView("mySchedule");
 }
 function contentV0(page) {
   const props = { content: page.content.body };
   return async () => viewify(await import("./v0/Content.vue"), props);
 }
 function tokenCaptureV0() {
-  return Vue.extend({
-    render: (h) => h(AppLayout, [h("p", "tokenCapture")]),
-  });
+  return async () => fakeView("tokenCapture", UtilLayout);
 }
 function loginV0() {
   return async () => viewify(await import("./v0/Login.vue"));
 }
 function registerV0() {
-  return Vue.extend({
-    render: (h) => h(AppLayout, [h("p", "register")]),
-  });
+  return async () => fakeView("register", UtilLayout);
 }
 function profileV0() {
-  return Vue.extend({
-    render: (h) => h(AppLayout, [h("p", "profile")]),
-  });
+  return async () => fakeView("profile", UtilLayout);
 }
 function errorV0() {
-  return Vue.extend({
-    render: (h) => h(AppLayout, [h("p", "error")]),
-  });
+  return async () => fakeView("error", UtilLayout);
 }
 function notFoundV0() {
-  return Vue.extend({
-    render: (h) => h(AppLayout, [h("p", "notFound")]),
-  });
+  return async () => fakeView("notFound", UtilLayout);
 }
 
 export const views = {

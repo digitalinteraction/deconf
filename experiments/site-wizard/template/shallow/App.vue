@@ -1,12 +1,11 @@
 <template>
   <div id="app">
-    <!-- <ApiError v-if="apiState === 'error'" :home-route="homeRoute">
+    <ApiError v-if="apiState === 'error'" :home-route="homeRoute">
       <BrandAsset slot="brand" :image="appConfig.branding.primary" />
       <PageFooter slot="footer" />
-    </ApiError> -->
-    <!-- <router-view v-else-if="apiState === 'ready'" /> -->
-    <!-- <AppLoading v-else /> -->
-    <router-view />
+    </ApiError>
+    <router-view v-else-if="apiState === 'ready'" />
+    <AppLoading v-else />
 
     <DevControl
       :dev-plugin="$dev"

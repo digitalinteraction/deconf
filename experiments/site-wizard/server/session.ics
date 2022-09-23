@@ -1,0 +1,27 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+CALSCALE:GREGORIAN
+PRODID:adamgibbons/ics
+METHOD:PUBLISH
+X-WR-CALNAME:My MozFest 2022 Schedule
+X-PUBLISHED-TTL:PT1H
+BEGIN:VEVENT
+UID:_HIy99-zb2bi0F7R7Ny8Z
+SUMMARY:Open panel discussion
+DTSTAMP:20220824T145800Z
+DTSTART:20220926T080000Z
+DTEND:20220926T100000Z
+DESCRIPTION:An open panel in Copenhagen/Malmö where a series of curated art
+	icles from the conference that are matching the topic of public digitaliza
+	tion will be presented and discussed. In this way we aim to reach a broade
+	r community\, inviting local researchers\, but also practitioners and non-
+	academics to join.\n\n**Location**\nIf you wish to join this online exhibi
+	tion please register using the Eventbrite link below.\n\n\n[https://www.ev
+	entbrite.dk/e/digitalization-of-public-services-open-panel-discussion-tick
+	ets-409838316437](https://www.eventbrite.dk/e/digitalization-of-public-ser
+	vices-open-panel-discussion-tickets-409838316437)\n\n\n\n\n**For more info
+	rmation**\n[ago@create.aau.dk](mailto:ago@create.aau.dk)\n
+LOCATION:https://schedule.pdc2022.org/session/ef73a970-c55d-4a8f-902c-67323
+	5fc8f32
+END:VEVENT
+END:VCALENDAR

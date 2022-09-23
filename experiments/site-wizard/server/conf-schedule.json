@@ -1,0 +1,355 @@
+{
+  "slots": [
+    {
+      "id": "slot-a",
+      "start": "2022-08-01T09:00:00.000Z",
+      "end": "2022-08-01T09:45:00.000Z"
+    },
+    {
+      "id": "slot-b",
+      "start": "2022-08-01T10:00:00.000Z",
+      "end": "2022-08-01T10:30:00.000Z"
+    },
+    {
+      "id": "slot-c",
+      "start": "2022-08-01T10:30:00.000Z",
+      "end": "2022-08-01T12:00:00.000Z"
+    },
+    {
+      "id": "slot-d",
+      "start": "2022-08-01T12:00:00.000Z",
+      "end": "2022-08-01T14:30:00.000Z"
+    },
+    {
+      "id": "slot-e",
+      "start": "2022-08-01T14:30:00.000Z",
+      "end": "2022-08-01T17:00:00.000Z"
+    }
+  ],
+  "themes": [
+    {
+      "id": "theme-a",
+      "title": {
+        "en": "Inclusivity"
+      }
+    },
+    {
+      "id": "theme-b",
+      "title": {
+        "en": "Awareness"
+      }
+    },
+    {
+      "id": "theme-c",
+      "title": {
+        "en": "Engagement"
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "id": "track-a",
+      "title": {
+        "en": "AI and Agriculture"
+      }
+    },
+    {
+      "id": "track-b",
+      "title": {
+        "en": "Machine Learning with Fish"
+      }
+    },
+    {
+      "id": "track-c",
+      "title": {
+        "en": "Block Chain Horoscopes"
+      }
+    }
+  ],
+  "types": [
+    {
+      "id": "plenary",
+      "iconGroup": "fas",
+      "iconName": "video",
+      "layout": "plenary",
+      "title": {
+        "en": "Plenary"
+      }
+    },
+    {
+      "id": "workshop",
+      "iconGroup": "fas",
+      "iconName": "object-group",
+      "layout": "workshop",
+      "title": {
+        "en": "Workshop"
+      }
+    }
+  ],
+  "speakers": [
+    {
+      "id": "speaker-a",
+      "name": "Geoff Testington",
+      "role": {
+        "en": "Chief Financial Officer"
+      },
+      "bio": {
+        "en": "Deserunt accusamus vel culpa neque nihil modi autem est. Iure tempore minima sunt sint mollitia laborum non. Itaque consequatur vel iure a dolorem aliquid adipisci pariatur. Veniam et explicabo atque minima perspiciatis sed occaecati vel. Minus repellat error ea voluptatem qui. Quod est suscipit assumenda culpa beatae adipisci dicta.\n\nEa maxime ex doloremque repellat mollitia cumque officia. Id alias explicabo placeat. Est temporibus temporibus optio ad. In nemo est ut quos est explicabo."
+      },
+      "headshot": null
+    },
+    {
+      "id": "speaker-b",
+      "name": "Felicity Wainwright",
+      "role": {
+        "en": "Chief Technical Officer"
+      },
+      "bio": {
+        "en": "Deserunt accusamus vel culpa neque nihil modi autem est. Iure tempore minima sunt sint mollitia laborum non. Itaque consequatur vel iure a dolorem aliquid adipisci pariatur. Veniam et explicabo atque minima perspiciatis sed occaecati vel. Minus repellat error ea voluptatem qui. Quod est suscipit assumenda culpa beatae adipisci dicta.\n\nEa maxime ex doloremque repellat mollitia cumque officia. Id alias explicabo placeat. Est temporibus temporibus optio ad. In nemo est ut quos est explicabo."
+      },
+      "headshot": null
+    },
+    {
+      "id": "speaker-c",
+      "name": "David Edge",
+      "role": {
+        "en": "Internal Interactions Designer"
+      },
+      "bio": {
+        "en": "Deserunt accusamus vel culpa neque nihil modi autem est. Iure tempore minima sunt sint mollitia laborum non. Itaque consequatur vel iure a dolorem aliquid adipisci pariatur. Veniam et explicabo atque minima perspiciatis sed occaecati vel. Minus repellat error ea voluptatem qui. Quod est suscipit assumenda culpa beatae adipisci dicta.\n\nEa maxime ex doloremque repellat mollitia cumque officia. Id alias explicabo placeat. Est temporibus temporibus optio ad. In nemo est ut quos est explicabo."
+      },
+      "headshot": null
+    },
+    {
+      "id": "speaker-d",
+      "name": "Lorena Bernal",
+      "role": {
+        "en": "Principle Metrics Specialist"
+      },
+      "bio": {
+        "en": "Deserunt accusamus vel culpa neque nihil modi autem est. Iure tempore minima sunt sint mollitia laborum non. Itaque consequatur vel iure a dolorem aliquid adipisci pariatur. Veniam et explicabo atque minima perspiciatis sed occaecati vel. Minus repellat error ea voluptatem qui. Quod est suscipit assumenda culpa beatae adipisci dicta.\n\nEa maxime ex doloremque repellat mollitia cumque officia. Id alias explicabo placeat. Est temporibus temporibus optio ad. In nemo est ut quos est explicabo."
+      },
+      "headshot": null
+    },
+    {
+      "id": "speaker-e",
+      "name": "Katlyn Swift",
+      "role": {
+        "en": "Lead Implementation Coordinator"
+      },
+      "bio": {
+        "en": "Deserunt accusamus vel culpa neque nihil modi autem est. Iure tempore minima sunt sint mollitia laborum non. Itaque consequatur vel iure a dolorem aliquid adipisci pariatur. Veniam et explicabo atque minima perspiciatis sed occaecati vel. Minus repellat error ea voluptatem qui. Quod est suscipit assumenda culpa beatae adipisci dicta.\n\nEa maxime ex doloremque repellat mollitia cumque officia. Id alias explicabo placeat. Est temporibus temporibus optio ad. In nemo est ut quos est explicabo."
+      },
+      "headshot": null
+    }
+  ],
+  "settings": {
+    "atrium": { "enabled": true, "visible": true, "readonly": false },
+    "schedule": { "enabled": true, "visible": true, "readonly": false },
+    "keynotes": { "enabled": true, "visible": true, "readonly": false },
+    "places": { "enabled": true, "visible": true, "readonly": false },
+    "papers": { "enabled": true, "visible": true, "readonly": false },
+    "newcastle": { "enabled": true, "visible": true, "readonly": false },
+    "social": { "enabled": true, "visible": true, "readonly": false },
+    "help": { "enabled": true, "visible": true, "readonly": false },
+    "about": { "enabled": true, "visible": true, "readonly": false },
+    "navigation": {
+      "showProfile": true,
+      "showLogin": true,
+      "showRegister": false
+    },
+    "widgets": {
+      "siteVisitors": true,
+      "twitter": true,
+      "login": true,
+      "register": false,
+      "situatedActions": true,
+      "a11ySchedule": true,
+      "calendarHelp": true
+    }
+  },
+  "sessions": [
+    {
+      "id": "1",
+      "type": "plenary",
+      "slot": "slot-a",
+      "track": "track-a",
+      "themes": ["theme-a", "theme-b", "theme-c"],
+      "title": {
+        "en": "Opening Plenary"
+      },
+      "content": {
+        "en": "Praesentium tenetur dicta nam. Aperiam modi dolores nisi eos repellendus odio dolores. Est aut consectetur et exercitationem. Ratione culpa ea ut est aut corporis. Quae repellat unde neque qui commodi aut enim."
+      },
+      "coverImage": null,
+      "links": [],
+      "hostLanguages": ["en"],
+      "enableInterpretation": false,
+      "speakers": ["speaker-a", "speaker-e"],
+      "hostOrganisation": { "en": "DogCon 22" },
+      "isRecorded": false,
+      "isOfficial": false,
+      "isFeatured": true,
+      "visibility": "public",
+      "state": "confirmed",
+      "participantCap": null,
+      "hideFromSchedule": false
+    },
+    {
+      "id": "2",
+      "type": "plenary",
+      "slot": "slot-b",
+      "track": "track-b",
+      "themes": ["theme-b"],
+      "title": {
+        "en": "Getting started"
+      },
+      "content": {
+        "en": "Voluptas iste et qui. Et nihil eos neque ducimus. Et in iste est nam. Ut molestiae placeat qui et sed vel maiores voluptas. Consequuntur qui perspiciatis autem eaque modi."
+      },
+      "coverImage": null,
+      "links": [],
+      "hostLanguages": ["en"],
+      "enableInterpretation": false,
+      "speakers": ["speaker-d", "speaker-b"],
+      "hostOrganisation": { "en": "DogCon 22" },
+      "isRecorded": false,
+      "isOfficial": false,
+      "isFeatured": true,
+      "visibility": "public",
+      "state": "confirmed",
+      "participantCap": null,
+      "hideFromSchedule": false
+    },
+    {
+      "id": "3",
+      "type": "workshop",
+      "slot": "slot-c",
+      "track": "track-a",
+      "themes": ["theme-a"],
+      "title": {
+        "en": "The thing about chains"
+      },
+      "content": {
+        "en": "Ea maxime ex doloremque repellat mollitia cumque officia. Id alias explicabo placeat. Est temporibus temporibus optio ad. In nemo est ut quos est explicabo."
+      },
+      "coverImage": null,
+      "links": [],
+      "hostLanguages": ["en"],
+      "enableInterpretation": false,
+      "speakers": ["speaker-a"],
+      "hostOrganisation": { "en": "DogCon 22" },
+      "isRecorded": false,
+      "isOfficial": false,
+      "isFeatured": true,
+      "visibility": "public",
+      "state": "confirmed",
+      "participantCap": null,
+      "hideFromSchedule": false
+    },
+    {
+      "id": "4",
+      "type": "workshop",
+      "slot": "slot-c",
+      "track": "track-b",
+      "themes": ["theme-b"],
+      "title": {
+        "en": "And thats why you don't do that"
+      },
+      "content": {
+        "en": "Quae expedita natus magni fuga unde est sit quaerat. Neque aut ab voluptatem velit saepe eius quos nisi. Accusantium totam optio placeat et. Cum sapiente qui inventore et aliquam eligendi et."
+      },
+      "coverImage": null,
+      "links": [],
+      "hostLanguages": ["en"],
+      "enableInterpretation": false,
+      "speakers": ["speaker-b"],
+      "hostOrganisation": { "en": "DogCon 22" },
+      "isRecorded": false,
+      "isOfficial": false,
+      "isFeatured": true,
+      "visibility": "public",
+      "state": "confirmed",
+      "participantCap": null,
+      "hideFromSchedule": false
+    },
+    {
+      "id": "5",
+      "type": "workshop",
+      "slot": "slot-c",
+      "track": "track-c",
+      "themes": ["theme-c"],
+      "title": {
+        "en": "So please do these things"
+      },
+      "content": {
+        "en": "Mollitia eum ab sit maiores. Laborum nihil rerum corrupti. Beatae illum aut recusandae sed ex. Quia aperiam minus rerum molestiae deserunt neque. Deserunt asperiores accusantium maiores earum ipsum."
+      },
+      "coverImage": null,
+      "links": [],
+      "hostLanguages": ["en"],
+      "enableInterpretation": false,
+      "speakers": ["speaker-c"],
+      "hostOrganisation": { "en": "DogCon 22" },
+      "isRecorded": false,
+      "isOfficial": false,
+      "isFeatured": true,
+      "visibility": "public",
+      "state": "confirmed",
+      "participantCap": null,
+      "hideFromSchedule": false
+    },
+    {
+      "id": "6",
+      "type": "plenary",
+      "slot": "slot-d",
+      "track": "track-b",
+      "themes": ["theme-a", "theme-b", "theme-c"],
+      "title": {
+        "en": "The big panel"
+      },
+      "content": {
+        "en": "Deserunt accusamus vel culpa neque nihil modi autem est. Iure tempore minima sunt sint mollitia laborum non. Itaque consequatur vel iure a dolorem aliquid adipisci pariatur. Veniam et explicabo atque minima perspiciatis sed occaecati vel. Minus repellat error ea voluptatem qui. Quod est suscipit assumenda culpa beatae adipisci dicta."
+      },
+      "coverImage": null,
+      "links": [],
+      "hostLanguages": ["en"],
+      "enableInterpretation": false,
+      "speakers": ["speaker-a", "speaker-b", "speaker-c"],
+      "hostOrganisation": { "en": "DogCon 22" },
+      "isRecorded": false,
+      "isOfficial": false,
+      "isFeatured": true,
+      "visibility": "public",
+      "state": "confirmed",
+      "participantCap": null,
+      "hideFromSchedule": false
+    },
+    {
+      "id": "7",
+      "type": "plenary",
+      "slot": "slot-e",
+      "track": "track-c",
+      "themes": ["theme-a", "theme-b"],
+      "title": {
+        "en": "Closing ceremony"
+      },
+      "content": {
+        "en": "Dolorem et omnis quae et eveniet nemo. Nesciunt aperiam in consequatur dolorem quaerat. Dolorem minima non et omnis ut nisi tempora."
+      },
+      "coverImage": null,
+      "links": [],
+      "hostLanguages": ["en"],
+      "enableInterpretation": false,
+      "speakers": ["speaker-c", "speaker-d", "speaker-e"],
+      "hostOrganisation": { "en": "DogCon 22" },
+      "isRecorded": false,
+      "isOfficial": false,
+      "isFeatured": true,
+      "visibility": "public",
+      "state": "confirmed",
+      "participantCap": null,
+      "hideFromSchedule": false
+    }
+  ]
+}

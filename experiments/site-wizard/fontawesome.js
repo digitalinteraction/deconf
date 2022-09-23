@@ -39,4 +39,7 @@ export const baseFaIcons = [
   ["fas", "ticket-alt"],
   ["fas", "sync"],
   ["fas", "arrow-down"],
+
+  // TEMP while migrating conf-schedule.json
+  ["fas", "object-group"],
 ];

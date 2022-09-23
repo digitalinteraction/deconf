@@ -1,0 +1,14 @@
+{
+  "registration": {
+    "id": 1,
+    "created": "2022-07-29T16:46:00.903Z",
+    "name": "Geoff Testington",
+    "email": "geoff@example.com",
+    "language": "en",
+    "country": "",
+    "affiliation": "",
+    "verified": true,
+    "consented": "2022-07-29T16:46:00.903Z",
+    "userData": {}
+  }
+}

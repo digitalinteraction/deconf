@@ -1,0 +1,130 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+CALSCALE:GREGORIAN
+PRODID:adamgibbons/ics
+METHOD:PUBLISH
+X-WR-CALNAME:My MozFest 2022 Schedule
+X-PUBLISHED-TTL:PT1H
+BEGIN:VEVENT
+UID:VkZcn4KLd26kYmxMkoOW_
+SUMMARY:Welcome from the Conference Chairs for Europe\, Africa\, and the Au
+	stralasia timezones!
+DTSTAMP:20220824T145800Z
+DTSTART:20220819T070000Z
+DTEND:20220819T073000Z
+DESCRIPTION:Formal opening welcome from the Conference General Chairs for a
+	ttendees in Europe\, Africa\, and the Australasia-Pacific timezones.\n\n\n
+	\n
+LOCATION:https://schedule.pdc2022.org/session/acf5a34f-6c11-4830-b3de-d9b5c
+	1a470ea
+END:VEVENT
+BEGIN:VEVENT
+UID:kdjMXoTXz1oVMF7Q5rvJL
+SUMMARY:PDC Places Showcase
+DTSTAMP:20220824T145800Z
+DTSTART:20220819T084500Z
+DTEND:20220819T094500Z
+DESCRIPTION:<div class="iframeEmbed"><iframe class="iframeEmbed-iframe" wid
+	th="100%" height="100%" title="YouTube video player" allow="clipboard-writ
+	e\; encrypted-media\; picture-in-picture" allowfullscreen="" src="https://
+	www.youtube-nocookie.com/embed/yuSHdP6TojA"></iframe></div>\n\nPDC Places 
+	from Europe\, Africa and the Asia Pacific Region present their work. This 
+	is a chance to learn more about the exciting activities that are taking pl
+	ace at PDC Places around the world. \n\n\n**Chair: Andy Dearden\, Sheffiel
+	d Hallam University\, UK**\n\n\n**Presenters:\nKagonya Awori\, Microsoft\,
+	 Kenya\nLuisa Himler\, Leuphana University\, Germany\nZoe Rush\, Independe
+	nt researcher\, Ireland\nFrancisca Lucas Dias\, UA\, Portugal\nDiego Alato
+	rre Guzmán\, UNAM & UC\, Mexico & Portugal**\n\n\n\n
+LOCATION:https://schedule.pdc2022.org/session/4f40abfc-eb09-4c75-b8e8-a751d
+	1986dc5
+END:VEVENT
+BEGIN:VEVENT
+UID:xcDCBo5FfoQYx66Z7SDaB
+SUMMARY:Expanding Learning in Participatory Design: Mapping the Field of Le
+	arning Theory and Practice in PD
+DTSTAMP:20220824T145800Z
+DTSTART:20220822T070000Z
+DTEND:20220822T110000Z
+DESCRIPTION:**_** If you wish to attend this workshop please contact the or
+	ganisers in advance via the email addresses below **_**\n\n\n**Expanding L
+	earning in Participatory Design: Mapping the Field of Learning Theory and 
+	Practice in PD**\n\n\n[https://learninginpd.wixsite.com/workshop](https://
+	learninginpd.wixsite.com/workshop)\n\n\n**_Mette Agger Eriksen_**\nInstitu
+	te of Visual Design\, The Royal\nDanish Academy\, Denmark\n[meri@kglakadem
+	i.dk](mailto:meri@kglakademi.dk)\n\n\n**_Seppe De Blust_**\nDepartment of 
+	Architecture\, ETH\,\nZürich\, Switzerland\,\n[deblust@arch.ethz.ch](mailt
+	o:deblust@arch.ethz.ch)\n\n\n**_Oswald Devisch_**\nFaculty of Architecture
+	 & Arts\,\nUHasselt\, Hasselt\, Belgium\n[oswald.devisch@uhasselt.be](mail
+	to:oswald.devisch@uhasselt.be)\n\n\n**_Christian Dindler_**\nCenter for Co
+	mputational Thinking\nand Design\, Aarhus University\,\nAarhus\, Denmark\n
+	[dindler@cc.au.dk](mailto:dindler@cc.au.dk)\n\n\n**_Carl DiSalvo_**\nSchoo
+	l of Interactive Computing\,\nGeorgia Institute of Technology\,\nAtlanta\,
+	 Georgia USA\n[cdisalvo@gatech.edu](mailto:cdisalvo@gatech.edu)\n\n\n**_An
+	na Seravalli∗_**\nSchool of Arts and Communication\,\nMalmö University\, S
+	weden\n[anna.seravalli@mau.se](mailto:anna.seravalli@mau.se)\n\n\n**_Majke
+	n Toftager Larsen_**\nDepartment of People and\nTechnology\, Aarhus Univer
+	sity\,\nDenmark [matola@ruk.dk](mailto:matola@ruk.dk)\n\n\nThis workshop e
+	xplores learning in Participatory Design (PD). We invite the PD community 
+	to reflect on the multiple ways learning can strengthen and expand how we 
+	frame and drive participatory design to reflect on how we can expand learn
+	ing in PD to gain an understanding for the complex system we are all part 
+	of\, for the interdependence of social\, ecological and economic systems. 
+	Through this workshop\, we will invite participants to address questions s
+	uch as: What theories and concepts can be used to understand learning in P
+	D? What kind of approaches are used to foster learning in PD? How is learn
+	ing evaluated in PD? The workshop will bring together members of the PD co
+	mmunity interested in these questions\, and serve as the basis for develop
+	ing ongoing and new collaborations around the topic of learning in PD.\n\n
+	\nThis workshop runs over two half days with some activity taking place at
+	 the [Nordic PDCPlace](/085ef3a7eb14469189e9f182a6602958) on 26th Septembe
+	r 12:00 pm to 3:00 pm UTC. [Please check the workshop website for further 
+	details.](https://learninginpd.wixsite.com/workshop)\n\n\n\n
+LOCATION:https://schedule.pdc2022.org/session/52ba4008-e68e-481b-b312-f714e
+	5f0f74e
+END:VEVENT
+BEGIN:VEVENT
+UID:yjEDxIZBh3wY0gUNNbG8y
+SUMMARY:The Local & the Global\, Decolonisation & Cosmopolitanism\, The Uni
+	versal and the Common: A Reflection on Relations\, Participation\, & Desig
+	n
+DTSTAMP:20220824T145800Z
+DTSTART:20220819T073000Z
+DTEND:20220819T083000Z
+DESCRIPTION:<div class="iframeEmbed"><iframe class="iframeEmbed-iframe" wid
+	th="100%" height="100%" title="YouTube video player" allow="clipboard-writ
+	e\; encrypted-media\; picture-in-picture" allowfullscreen="" src="https://
+	www.youtube-nocookie.com/embed/daolYbdjkB0"></iframe></div>\n\n\n\n\nThis 
+	talk briefly sketches out some thoughts on the possibility of a design pra
+	ctice that has the capacity to comprehend the contradictions of an incredi
+	bly and irreducibly complex and interconnected world. I propose that throu
+	gh an understanding of culture as that which emerges through relations\, w
+	hich are themselves constituted through scalar movements between concepts\
+	, subjects etc.\, rather than as something essential - an understanding of
+	 culture as emerging from ‘dialogues of difference’ - is a fruitful way wi
+	th which to begin to think participation and the forging of both local and
+	 global solidarities in modern\, cosmopolitan societies. \n\n\nThe longer 
+	version of the keynote can be [accessed via the link](https://docs.google.
+	com/document/d/1-aJk2LivHjrYuthaQLbgfoe4oiL2eFVryvj0NHuJdUA/edit?usp=shari
+	ng).\n\n\nAhmed Ansari is an Industry Assistant Professor at New York Univ
+	ersity at the Integrated Digital Media program in the department of Techno
+	logy\, Culture & Society\, where he teaches courses in interaction and sys
+	temic design\, design research\, and design studies\, and directs the PhD 
+	program in Human-Centered Design\, Technology and Innovation. His interest
+	s intersect between critical design studies and history\, postcolonial and
+	 decolonial theory\, and the philosophy and history of design and technolo
+	gy with an area focus on the Indian subcontinent. He is a founder of the D
+	ecolonising Design platform and the Architectural Design Research Lab in K
+	arachi\, and also does academic consulting focusing on curriculum developm
+	ent at the undergraduate level\, having designed curricula for design prog
+	rams at the Indus Valley School of Art and Architecture (IVSAA) and Habib 
+	University (HU) in Karachi. More recently\, he has been working on an [NEH
+	 grant](https://nyuhumanities.org/program/inverting-the-wunderkammer/) tha
+	t brings together perspectives from the natural sciences\, humanities\, an
+	d design on the smallest of things\, moss\, in order to rethink how we mig
+	ht redesign public digital humanities archives. Dr. Ansari received his Ph
+	D in Design Studies and MDes in Interaction Design from Carnegie Mellon Un
+	iversity\, and his BDes in Communication Design from IVSAA.\n\n\n\n
+LOCATION:https://schedule.pdc2022.org/session/d0acf592-767d-4d81-bc0d-93153
+	b281839
+END:VEVENT
+END:VCALENDAR

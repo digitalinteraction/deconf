@@ -58,6 +58,7 @@
       "image": "uploads/opengraph.png",
       "twitter": "@DogCon"
     },
+    "defaultHeadshot": "uploads/default-headshot.png",
 
     // Absolute paths?
     // new URL("uploads/script.js", "file:")
@@ -152,7 +153,7 @@
             "url": {
               "url": "https://twitter.com/Robbb_J",
               "faIcon": ["fab", "twitter"],
-              "title": { "en": "Follup us!" },
+              "title": { "en": "Folluw us!" },
               "subtitle": { "en": "Get the latest info" }
             }
           }
@@ -192,8 +193,11 @@
         "title": {
           "en": "Programme"
         },
-        "subtitle": {
+        "info": {
           "en": "Search for sessions that are interesting to you"
+        },
+        "empty": {
+          "en": "No results"
         },
         "primaryFilters": [
           { "type": "builtin", "builtin": "search" },
@@ -266,8 +270,12 @@
         "title": {
           "en": "What's on"
         },
-        "subtitle": {
+        "info": {
           "en": "Take a sneak peak at whats coming your way"
+        },
+        // TODO: could just be an i18n fallback?
+        "empty": {
+          "en": "No results"
         },
         "primaryFilters": [{ "type": "builtin", "builtin": "search" }],
         "secondaryFilters": [],
@@ -347,6 +355,7 @@
     ]
   },
 
+  // TODO: conform these with conf-schedule.json
   "taxonomies": [
     {
       "id": "type",
