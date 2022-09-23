@@ -12,60 +12,61 @@ for (const page of appConfig.pages) {
   routes.push({
     path: "/" + page.id,
     name: page.id,
-    component: views[page.version][page.type](page, appConfig),
+    component: views[page.version][page.type](page),
     meta: {}, // TODO: put meta somewhere inside config.json
   });
 
-  // TODO: add nested pages too ...
-  // if (page.type === "sessionTimeline") {
-  //   routes.push({
-  //     path: `/${page.id}/:sessionId`,
-  //     props: true,
-  //     name: page.id + "-session",
-  //     // TODO: do nested pages need their own config from parent "page"?
-  //     component: views.v0.session(page, appConfig),
-  //   });
-  // }
+  if (page.type === "sessionTimeline" || page.type === "sessionGrid") {
+    routes.push({
+      path: `/${page.id}/:sessionId`,
+      props: true,
+      name: page.id + "-session",
+      // TODO: do nested pages need their own config from parent "page"?
+      component: views.v0.session(page),
+    });
+  }
+
+  // TODO: more pages with nested pages?
 }
 
-// TODO: a default "session" page too
+// TODO: a default "session" page too?
 
 routes.push({
   path: "/_token",
   name: Routes.TokenCapture,
-  component: views.v0.tokenCapture(appConfig),
+  component: views.v0.tokenCapture(),
 });
 routes.push({
   path: "/login",
   name: Routes.Login,
-  component: views.v0.login(appConfig),
+  component: views.v0.login(),
 });
 routes.push({
   path: "/register",
   name: Routes.Register,
-  component: views.v0.register(appConfig),
+  component: views.v0.register(),
 });
 routes.push({
   path: "/profile",
   name: Routes.Profile,
-  component: views.v0.profile(appConfig),
+  component: views.v0.profile(),
 });
 routes.push({
   path: "/error/:code",
-  component: views.v0.error(appConfig),
+  component: views.v0.error(),
   props: true,
 });
 routes.push({
   path: "/error",
-  component: views.v0.error(appConfig),
+  component: views.v0.error(),
 });
 routes.push({
   path: "/not-found",
-  component: views.v0.notFound(appConfig),
+  component: views.v0.notFound(),
 });
 routes.push({
   path: "*",
-  component: views.v0.notFound(appConfig),
+  component: views.v0.notFound(),
 });
 
 // TODO: scroll offset stuff and document.title setting

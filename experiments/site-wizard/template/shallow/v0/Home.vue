@@ -5,7 +5,7 @@
         slot="top"
         :title="localise(page.home.hero.title)"
         :subtitle="localise(page.home.hero.subtitle)"
-        :cover-image="page.home.hero.image"
+        :cover-image="assetUrl(page.home.hero.image)"
       />
 
       <BoxContent slot="left">
@@ -39,7 +39,7 @@ import {
   SponsorGrid,
 } from "@openlab/deconf-ui-toolkit";
 
-import { localise } from "../lib.js";
+import { assetUrl, localise } from "../lib.js";
 import { router } from "../router.js";
 
 const builtinActions = {
@@ -81,10 +81,12 @@ const widgetFactory = {
   },
   url(widget) {
     const { url, faIcon, title, subtitle } = widget.url;
+    let kind = "secondary";
+    if (url.includes("twitter.com")) kind = "twitter";
     return {
       ...baseWidget(widget.id, title, subtitle, faIcon),
       href: url,
-      kind: "secondary",
+      kind: kind,
     };
   },
 };
@@ -105,7 +107,7 @@ export default Vue.extend({
     page: { type: Object, required: true },
   },
   data() {
-    return { localise, siteVisitors: 123 };
+    return { assetUrl, localise, siteVisitors: 123 };
   },
   computed: {
     ...mapApiState("api", ["user"]),
@@ -124,7 +126,7 @@ export default Vue.extend({
         sponsors: group.sponsors.map((sponsor) => ({
           _id: sponsor.id, // TODO: id here for later metrics?
           title: localise(sponsor.name),
-          image: sponsor.image,
+          image: assetUrl(sponsor.image),
           href: sponsor.url,
         })),
       }));

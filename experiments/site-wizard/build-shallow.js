@@ -5,8 +5,6 @@ import "dotenv/config";
 import fs from "fs/promises";
 import path from "path";
 import { createServer } from "http";
-import { promisify } from "util";
-import cp from "child_process";
 
 import serveHandler from "serve-handler";
 import { globby } from "globby";
@@ -29,17 +27,13 @@ const {
   S3_ENDPOINT,
   S3_SECRET_KEY,
 } = process.env;
-const exec = promisify(cp.exec);
-
-// TODO:
-// - embed SVG icons
 
 //
 // Configuration that should be passed to ths wizard as parameters
 //
 const deploymentUrl = new URL("https://v1.dog-conf.deconf.app");
 const s3Prefix = "site-wizard/shallow/";
-const cdnUrl = new URL("https://deconf-labs.ams3.cdn.digitaloceanspaces.com");
+// const cdnUrl = new URL("https://deconf-labs.ams3.cdn.digitaloceanspaces.com");
 
 const s3 = new minio.Client({
   endPoint: S3_ENDPOINT,
@@ -68,9 +62,36 @@ const iconPaths = [
   "/taxonomies/*/options/*/faIcon",
 ];
 
+const markdownPaths = [
+  "/login/text",
+  "/pages/*/home/content/subtitle",
+  "/pages/*/sessionTimeline/subtitle",
+  "/pages/*/sessionGrid/subtitle",
+  "/pages/*/mySchedule/subtitle",
+  "/pages/*/content/body",
+];
+
 async function isFile(file) {
   const stat = await fs.stat(file).catch(() => null);
   return stat?.isFile ?? false;
+}
+
+/** @param {Record<string,string>[]} allMarkdown */
+function processMarkdown(allMarkdown) {
+  const newAssets = [];
+  for (const md of allMarkdown) {
+    for (const locale in md) {
+      // Make relative links absolute
+      md[locale] = md[locale].replace(
+        /!\[(.+)\]\((.+)\)/g,
+        (substring, text, url) => {
+          newAssets.push(url);
+          return `![${text}](/${url})`;
+        }
+      );
+    }
+  }
+  return { newAssets };
 }
 
 async function cacheObject(name, dir) {
@@ -101,19 +122,27 @@ async function main() {
     serve: process.argv.includes("--serve"),
   };
 
-  // 1. Clone the template
+  // 1. Start with the template directory
   const tpldir = "template/shallow";
 
-  // 2. Prep assets
+  //
+  // 2. Prep assets and process config
+  //
   const allAssets = assetPaths.flatMap((p) => find(config, p));
   const faIcons = baseFaIcons.concat(iconPaths.flatMap((p) => find(config, p)));
+  const markdownResult = processMarkdown(
+    markdownPaths.flatMap((p) => find(config, p))
+  );
+  allAssets.push(...markdownResult.newAssets);
 
   const cacheDir = path.join(tpldir, "public");
   await Promise.all(
     Array.from(new Set(allAssets)).map((name) => cacheObject(name, cacheDir))
   );
 
+  //
   // 3. Process the template
+  //
   await fs.writeFile(
     path.join(tpldir, "config.js"),
     getConfigJs(config, appEnv)
@@ -140,17 +169,18 @@ async function main() {
     await fs.writeFile(file.replace(/\.njk$/, ""), env.render(file, context));
   }
 
+  //
   // 4. Bundle the app
+  //
   await build({
     mode: NODE_ENV,
     root: tpldir,
     build: {
       outDir: "../../output/shallow",
       emptyOutDir: true,
-      sourcemap: true,
+      // sourcemap: true,
       watch: flags.watch,
     },
-
     resolve: {
       alias: { "~bulma": "bulma" },
     },

@@ -1,17 +1,11 @@
 {
   //
   // Notes:
-  // - Multiple-levels for future support?
   // - Wizard will need to download and embed the SVG icons
   //   and sort out the `currentColor`
-  // - relative icon paths or from the CDN?
   // - [type] fields should be camelCase to make js access easier
   // - How can the platform support custom markdown widgets?
-  // - Versioned page types "atriumV1" / "mySchedulev3"?
-  //   or a seperate "version" key?
   // - Should all polymorphics have "[type]" as an object?
-  // - A fallback-system for taxonomies to pick icons from
-  //
   //
   "navigation": [
     {
@@ -150,6 +144,16 @@
               "faIcon": ["fas", "link"],
               "title": { "en": "Duck…" },
               "subtitle": { "en": "…DuckGo" }
+            }
+          },
+          {
+            "id": "widget-f",
+            "type": "url",
+            "url": {
+              "url": "https://twitter.com/Robbb_J",
+              "faIcon": ["fab", "twitter"],
+              "title": { "en": "Follup us!" },
+              "subtitle": { "en": "Get the latest info" }
             }
           }
         ],
@@ -329,8 +333,7 @@
       "access": "public",
       "content": {
         "body": {
-          // TODO: could the markdown reference local images ?!
-          "en": "# Help!\n\n![Cover image](https://pdc-2022.ams3.cdn.digitaloceanspaces.com/notion/NaykM4KG8GHUaAWdy1dwHlo0IQo2SNbiLnCPF6AoHPo.gif)\n\nQuis doloremque qui est modi quas sunt. Minima ea voluptate et beatae. Ipsam placeat dolorum earum iure corporis est doloribus. Est saepe quia culpa perspiciatis eligendi reprehenderit voluptate. Beatae minima animi incidunt enim in minus. Eos ut omnis est et optio nemo omnis.\n\nEst quos dolor alias. Similique velit excepturi qui tempore animi. Dolorem iusto voluptate iure.\n\nCorporis inventore repudiandae provident quidem alias rem. Et placeat mollitia praesentium voluptates odio vitae. Est id aut omnis eum quasi.\n\nDolore modi quisquam ullam ducimus vel iusto. Et ut quisquam atque. Porro officia voluptatem ipsa in culpa."
+          "en": "# Help!\n\n![Cover image](uploads/help.gif)\n\nQuis doloremque qui est modi quas sunt. Minima ea voluptate et beatae. Ipsam placeat dolorum earum iure corporis est doloribus. Est saepe quia culpa perspiciatis eligendi reprehenderit voluptate. Beatae minima animi incidunt enim in minus. Eos ut omnis est et optio nemo omnis.\n\nEst quos dolor alias. Similique velit excepturi qui tempore animi. Dolorem iusto voluptate iure.\n\nCorporis inventore repudiandae provident quidem alias rem. Et placeat mollitia praesentium voluptates odio vitae. Est id aut omnis eum quasi.\n\nDolore modi quisquam ullam ducimus vel iusto. Et ut quisquam atque. Porro officia voluptatem ipsa in culpa."
         }
       }
     }

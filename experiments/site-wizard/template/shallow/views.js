@@ -29,7 +29,10 @@ function sessionGridV0(page) {
 }
 function sessionV0(page) {
   return Vue.extend({
-    render: (h) => h(AppLayout, [h("p", "session")]),
+    props: { sessionId: String, required: true },
+    render(h) {
+      return h(AppLayout, [h("p", `session id=${this.sessionId}`)]);
+    },
   });
 }
 function myScheduleV0(page) {

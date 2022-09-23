@@ -13,3 +13,7 @@ export function localise(object) {
 
 export { navIcons, FontawesomePlugin } from "./icons.js";
 export { appConfig, env } from "./config.js";
+
+export function assetUrl(input) {
+  return "/" + input;
+}
