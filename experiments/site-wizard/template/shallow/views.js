@@ -28,7 +28,8 @@ function sessionTimelineV0(page) {
   return async () => viewify(await import("./v0/SessionTimeline.vue"), props);
 }
 function sessionGridV0(page) {
-  return async () => fakeView("sessionGrid");
+  const props = { page };
+  return async () => viewify(await import("./v0/SessionGrid.vue"), props);
 }
 function sessionV0(page) {
   return Vue.extend({
@@ -46,7 +47,7 @@ function contentV0(page) {
   return async () => viewify(await import("./v0/Content.vue"), props);
 }
 function tokenCaptureV0() {
-  return async () => fakeView("tokenCapture", UtilLayout);
+  return async () => viewify(await import("./v0/TokenCapture.vue"));
 }
 function loginV0() {
   return async () => viewify(await import("./v0/Login.vue"));
@@ -55,7 +56,7 @@ function registerV0() {
   return async () => fakeView("register", UtilLayout);
 }
 function profileV0() {
-  return async () => fakeView("profile", UtilLayout);
+  return async () => viewify(await import("./v0/Profile.vue"));
 }
 function errorV0() {
   return async () => fakeView("error", UtilLayout);

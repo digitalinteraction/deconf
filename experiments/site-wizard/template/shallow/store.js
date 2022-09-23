@@ -2,11 +2,13 @@ import Vue from "vue";
 import Vuex from "vuex";
 
 import { appConfig, env } from "./config.js";
+import { authTokenKey, setLocale } from "./lib.js";
 import {
   createMetricsStoreModule,
   DeconfApiClient,
   createApiStoreModule,
   createApiStoreActions,
+  decodeJwt,
 } from "@openlab/deconf-ui-toolkit";
 
 // ...
@@ -39,8 +41,25 @@ function apiModule() {
     },
     actions: {
       ...createApiStoreActions(apiClient),
-      authenticate() {
-        // TODO: ...
+      async authenticate({ commit, dispatch }, { token }) {
+        const user = decodeJwt(token);
+
+        // TODO: centralise this
+
+        if (user.iss !== env.JWT_ISSUER) {
+          console.error("JWT signed by unknown issuer %o", user.iss);
+          commit("user", null);
+          return;
+        }
+
+        commit("user", user);
+        setLocale(user.user_lang);
+
+        apiClient.setAuthToken(token);
+        // TODO: SocketIoPlugin.authenticate(token)
+
+        await dispatch("fetchData");
+        await dispatch("fetchUserAttendance");
       },
       unauthenticate() {
         // TODO: ...

@@ -267,3 +267,9 @@ pdc:
 generic:
   general:
     backHome: Back to home page
+  profile:
+    emailText: Email
+    localeText: Chosen language
+    whenText: Logged in
+    registeredText: Registered
+    nameText: Name

@@ -75,7 +75,17 @@
     }
   },
   "register": { "enabled": true },
-  "profile": { "enabled": true },
+  "profile": {
+    "enabled": true
+    // TODO: extra configuration here?
+    // "fields": [
+    //   {
+    //     "text": {"en": "Name"},
+    //     "type": "builtin",
+    //     "builtin": "name"
+    //   }
+    // ]
+  },
 
   // "type" + "[type]" structure from the Notion API
   "pages": [
@@ -153,7 +163,7 @@
             "url": {
               "url": "https://twitter.com/Robbb_J",
               "faIcon": ["fab", "twitter"],
-              "title": { "en": "Folluw us!" },
+              "title": { "en": "Follow us!" },
               "subtitle": { "en": "Get the latest info" }
             }
           }
@@ -204,6 +214,7 @@
           { "type": "builtin", "builtin": "date" }
         ],
         "secondaryFilters": [
+          { "type": "builtin", "builtin": "language" },
           {
             "type": "taxonomy",
             "taxonomy": { "id": "space" }
@@ -278,7 +289,10 @@
           "en": "No results"
         },
         "primaryFilters": [{ "type": "builtin", "builtin": "search" }],
-        "secondaryFilters": [],
+        "secondaryFilters": [
+          { "type": "builtin", "builtin": "date" },
+          { "type": "builtin", "builtin": "language" }
+        ],
         "tiles": {
           "title": { "enabled": true },
           "content": { "enabled": true },

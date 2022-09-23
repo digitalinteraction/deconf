@@ -32,7 +32,7 @@ const widgetV0 = () =>
       id: string(),
       type: literal("builtin"),
       builtin: type({
-        action: enums(["login", "register", "siteVisitors"]),
+        action: enums(["login", "register", "profile", "siteVisitors"]),
         faIcon: faIcon(),
         title: optional(localised()),
         subtitle: optional(localised()),
@@ -95,7 +95,7 @@ const filtersV0 = () =>
   union([
     type({
       type: literal("builtin"),
-      builtin: string(),
+      builtin: enums(["search", "date", "language"]),
     }),
     type({
       type: literal("taxonomy"),

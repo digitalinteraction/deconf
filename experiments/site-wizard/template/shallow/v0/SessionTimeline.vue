@@ -33,13 +33,12 @@ export default Vue.extend({
     page: { type: Object, required: true },
   },
   data() {
-    return { localise };
+    const options = scheduleOptions(this.page, this.page.sessionTimeline);
+    return { localise, options };
   },
   computed: {
-    ...mapApiState("api", ["schedule", "userSessions"]),
-    options() {
-      return scheduleOptions(this.page, this.page.sessionTimeline);
-    },
+    ...mapApiState("api", ["user", "schedule", "userSessions"]),
+
     scheduleDate() {
       return this.$dev?.scheduleDate ?? this.$temporal.date;
     },

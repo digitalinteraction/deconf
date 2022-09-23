@@ -3,9 +3,10 @@ import { appConfig } from "./config.js";
 import { localiseFromObject, Routes } from "@openlab/deconf-ui-toolkit";
 
 export const homeRoute = { name: Routes.Atrium };
+export const authTokenKey = "authToken";
 
 export function setLocale(newLocale) {
-  // ...
+  i18n.locale = newLocale;
 }
 
 export function localise(object) {
@@ -26,19 +27,31 @@ export function guardPage(page, user, router) {
 
 // TODO: customise more with data ...
 export function scheduleOptions(page, data) {
+  const filterNames = {
+    search: "query",
+    date: "date",
+    language: "language",
+  };
+
   const filters = [...data.primaryFilters, ...data.secondaryFilters]
     .filter((f) => f.type === "builtin")
-    .map((f) => f.builtin);
+    .map((f) => filterNames[f.builtin])
+    .filter((f) => f);
 
   return {
     predicate(session) {
       return true;
-      // return !trackBlockList.has(session.track)
     },
     filtersKey: `schedule_${page.id}_filters`,
     scheduleConfig: {
       tileHeader: ["type"],
       tileAttributes: ["track", "themes"],
+      getSessionRoute(session) {
+        // TODO: BUG: only works on titles
+        const params = { sessionId: session.id };
+        console.log({ name: page.id + "-session", params });
+        return { name: page.id + "-session", params };
+      },
     },
     enabledFilters: filters,
     languages: appConfig.languages.available.map((l) => ({

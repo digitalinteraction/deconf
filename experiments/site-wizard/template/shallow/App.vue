@@ -25,7 +25,7 @@ import {
   DevControl,
   mapApiState,
 } from "@openlab/deconf-ui-toolkit";
-import { appConfig, homeRoute, setLocale } from "./lib.js";
+import { appConfig, authTokenKey, homeRoute, setLocale } from "./lib.js";
 import BrandAsset from "./components/BrandAsset.vue";
 import PageFooter from "./components/PageFooter.vue";
 
@@ -59,11 +59,11 @@ export default Vue.extend({
   },
   methods: {
     async fetchData() {
-      const token = localStorage.getItem("authToken");
+      const token = localStorage.getItem(authTokenKey);
       if (token) {
         await this.$store.dispatch("api/authenticate", { token });
         if (this.user) setLocale(this.user.user_lang);
-        else localStorage.removeItem("authToken");
+        else localStorage.removeItem(authTokenKey);
       }
       if (!this.user) {
         await this.$store.dispatch("api/fetchData");
