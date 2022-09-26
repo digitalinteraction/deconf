@@ -6,7 +6,7 @@ const video = document.getElementById("video");
 const messages = document.getElementById("messages");
 const title = document.getElementById("title");
 const version = document.getElementById("version");
-version.innerText = "v0.0.6";
+version.innerText = "v0.0.7";
 
 let currentCall = null;
 
@@ -115,15 +115,18 @@ function setPeer(peer) {
 }
 
 // https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia
-function getUserMedia() {
-  return navigator.mediaDevices
-    .getUserMedia({
+let userMedia = null;
+async function getUserMedia() {
+  if (userMedia) return userMedia;
+  try {
+    userMedia = await navigator.mediaDevices.getUserMedia({
       video: { width: 1920, height: 1080 },
-    })
-    .catch((error) => {
-      console.error(error.name, error.message);
-      throw error;
     });
+    return userMedia;
+  } catch (error) {
+    console.error(error.name, error.message);
+    throw error;
+  }
 }
 
 /** @param {MediaStream|null} mediaStream */
