@@ -3,16 +3,18 @@
 import { createServer } from "http";
 import { readFileSync } from "fs";
 import EventEmitter from "events";
+import { parse as parsePath } from "path";
 
 import express from "express";
 import { ExpressPeerServer } from "peer";
 import { createTerminus } from "@godaddy/terminus";
+import WebSocket, { WebSocketServer } from "ws";
 
 /** @type {{ pairs: [string,string][] }} */
 const appConfig = JSON.parse(readFileSync("app-config.json"));
 
 // TODO: not really used
-const onlinePeers = new Set();
+// const onlinePeers = new Set();
 
 // An event bus for peers disconnecting
 const disconnectBus = new EventEmitter();
@@ -62,19 +64,61 @@ async function main() {
     disconnectBus.once(req.params.id, handler);
     res.on("close", () => disconnectBus.removeListener(req.params.id, handler));
   });
+  app.get("/sockets", (req, res) => {
+    res.send({ sockets: Array.from(online.keys()) });
+  });
 
   const server = createServer(app);
 
-  const peer = new ExpressPeerServer(server);
-  app.use("/peerjs", peer);
+  // const peer = new ExpressPeerServer(server);
+  // app.use("/peerjs", peer);
 
-  // Keep track of online peers, decide who calls who?
-  peer.on("connection", (client) => {
-    onlinePeers.add(client.id);
+  // // Keep track of online peers, decide who calls who?
+  // peer.on("connection", (client) => {
+  //   onlinePeers.add(client.id);
+  // });
+  // peer.on("disconnect", (client) => {
+  //   onlinePeers.delete(client.id);
+  //   disconnectBus.emit(client.id);
+  // });
+
+  const wss = new WebSocketServer({
+    server,
+    path: "/portal",
   });
-  peer.on("disconnect", (client) => {
-    onlinePeers.delete(client.id);
-    disconnectBus.emit(client.id);
+
+  /** @type {Map<string, Connection} */
+  const online = new Map();
+
+  wss.addListener("connection", (socket, request) => {
+    const url = request.url
+      ? new URL(request.url, "http://localhost:8080")
+      : null;
+    const id = url?.searchParams.get("id");
+    if (!id) return;
+
+    const connection = new Connection(id, socket);
+    online.set(id, connection);
+
+    socket.addEventListener("message", async (event) => {
+      try {
+        const message = JSON.parse(event.data);
+        const { type, target } = message;
+        console.debug("socket@message id=%o type=%o", id, type);
+
+        const other = online.get(target);
+        if (other) {
+          other.send(type, message[type]);
+        } else {
+          connection.send("notOnline", "");
+        }
+      } catch (error) {
+        console.error("socket@message", error);
+      }
+    });
+    socket.addEventListener("close", () => {
+      online.delete(id);
+    });
   });
 
   server.listen(8080, () => console.log("Listening on :8080"));
@@ -92,6 +136,18 @@ async function main() {
       peer.close();
     },
   });
+}
+
+class Connection {
+  /** @param {string} id @param {WebSocket} socket */
+  constructor(id, socket) {
+    this.id = id;
+    this.socket = socket;
+  }
+
+  send(type, message) {
+    this.socket.send(JSON.stringify({ type, [type]: message }));
+  }
 }
 
 main();

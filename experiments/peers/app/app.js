@@ -1,3 +1,5 @@
+import { getTarget } from "./lib.js";
+
 const initialTitle = document.title;
 const url = new URL(location.href);
 
@@ -31,14 +33,6 @@ function debug(message) {
       body: message,
     });
   }
-}
-
-/** @returns {Promise<{ id: string, action: string }>} */
-async function getTarget(id) {
-  const res = await fetch(`/api/pairs/${id}`);
-  if (!res.ok) throw new Error("Pair not found");
-  const peer = await res.json();
-  return peer;
 }
 
 const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
