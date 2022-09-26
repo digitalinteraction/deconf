@@ -65,7 +65,8 @@ const iconPaths = [
 
 const markdownPaths = [
   "/login/text",
-  "/pages/*/home/content/subtitle",
+  "/pages/*/home/subtitle",
+  "/pages/*/home/content",
   "/pages/*/sessionTimeline/subtitle",
   "/pages/*/sessionGrid/subtitle",
   "/pages/*/mySchedule/subtitle",

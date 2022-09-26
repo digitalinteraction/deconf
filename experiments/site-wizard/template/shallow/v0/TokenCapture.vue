@@ -7,8 +7,7 @@
 <script>
 import { createLoginFinishEvent } from "@openlab/deconf-ui-toolkit";
 import Vue from "vue";
-import { homeRoute } from "../../../shallow_chVopy/lib.js";
-import { authTokenKey } from "../lib.js";
+import { homeRoute, authTokenKey } from "../lib.js";
 
 // TODO: use official when moved from PDC
 
