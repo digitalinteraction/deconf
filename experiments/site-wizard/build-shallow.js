@@ -108,7 +108,6 @@ async function main() {
   const config = await getConfig();
   config.site.url = deploymentUrl.toString();
 
-  // TODO: should these be merged into appConfig?
   const appEnv = {
     SELF_URL: "http://localhost:8080/",
     SERVER_URL: "http://localhost:3000/",

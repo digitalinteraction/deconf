@@ -18,6 +18,7 @@
           :key="i"
           v-bind="widget"
         />
+        <!-- TODO: FeaturedSessions -->
       </div>
 
       <SponsorGrid slot="bottom" :groups="sponsorData" />

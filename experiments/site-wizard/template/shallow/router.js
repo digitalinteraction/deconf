@@ -8,28 +8,27 @@ import { appConfig } from "./config.js";
 
 const routes = [{ path: "/", redirect: { name: "home" }, name: Routes.Atrium }];
 
+const sessionPages = new Set(["sessionTimeline", "sessionGrid", "home"]);
+
 for (const page of appConfig.pages) {
   routes.push({
     path: "/" + page.id,
     name: page.id,
     component: views[page.version][page.type](page),
-    meta: {}, // TODO: put meta somewhere inside config.json
+    meta: {
+      // TODO: put meta somewhere inside config.json
+    },
   });
 
-  if (page.type === "sessionTimeline" || page.type === "sessionGrid") {
+  if (sessionPages.has(page.type)) {
     routes.push({
       path: `/${page.id}/:sessionId`,
       props: true,
       name: page.id + "-session",
-      // TODO: do nested pages need their own config from parent "page"?
       component: views.v0.session(page),
     });
   }
-
-  // TODO: more pages with nested pages?
 }
-
-// TODO: a default "session" page too?
 
 routes.push({
   path: "/_token",

@@ -1,0 +1,10 @@
+//
+// A test of generating a scss file from the config.json (needs more work)
+//
+
+{% for variable in scss.variables -%}
+${{ variable.key }}: {{ variable.value | safe }};
+{% endfor -%}
+
+@import "@openlab/deconf-ui-toolkit/common.scss";
+

@@ -21,8 +21,6 @@ function fakeView(text, layout = AppLayout) {
   });
 }
 
-// TODO: generators for views
-
 function homeV0(page) {
   const props = { page };
   return async () => viewify(await import("./v0/Home.vue"), props);
@@ -53,7 +51,7 @@ function loginV0() {
   return async () => viewify(await import("./v0/Login.vue"));
 }
 function registerV0() {
-  return async () => fakeView("register", UtilLayout);
+  return async () => viewify(await import("./v0/Register.vue"));
 }
 function profileV0() {
   return async () => viewify(await import("./v0/Profile.vue"));

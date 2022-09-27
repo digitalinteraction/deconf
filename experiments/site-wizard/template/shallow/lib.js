@@ -49,7 +49,6 @@ export function scheduleOptions(page, data) {
       getSessionRoute(session) {
         // TODO: BUG: only works on titles
         const params = { sessionId: session.id };
-        console.log({ name: page.id + "-session", params });
         return { name: page.id + "-session", params };
       },
     },

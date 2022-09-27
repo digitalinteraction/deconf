@@ -1,10 +1,7 @@
 {
   //
   // Notes:
-  // - Wizard will need to download and embed the SVG icons
-  //   and sort out the `currentColor`
   // - [type] fields should be camelCase to make js access easier
-  // - How can the platform support custom markdown widgets?
   // - Should all polymorphics have "[type]" as an object?
   //
   "navigation": [
@@ -45,7 +42,6 @@
     }
   ],
 
-  // TODO: Does it need title+description and the opengraph variants?
   "site": {
     "title": "Dog con",
     "description": "Lorem ipsum sil dor amet...",
@@ -60,9 +56,6 @@
     },
     "defaultHeadshot": "uploads/default-headshot.png",
 
-    // Absolute paths?
-    // new URL("uploads/script.js", "file:")
-    // can load both? then use the "protocol" to decide how to load
     "customStyles": ["uploads/styles.css"],
     "customScripts": ["uploads/script.js"]
   },
@@ -74,15 +67,33 @@
       "en": "We'll send you an email to confirm who you are. You need to use the same email that you registered your ticket with on Ti.to. The email will have a link in it which will log you in to your profile. It will expire after 30 minutes. If you don't recieve anything check your spam folder.\n\n[Having an issue logging in?](https://www.mozillafestival.org/en/helpdesk/mozfest-schedule-faqs/)"
     }
   },
-  "register": { "enabled": true },
+  "register": {
+    "enabled": true,
+
+    "redirect": "https://example.com/register"
+  },
   "profile": {
     "enabled": true
-    // TODO: extra configuration here?
     // "fields": [
     //   {
     //     "text": {"en": "Name"},
     //     "type": "builtin",
     //     "builtin": "name"
+    //   }
+    // ]
+
+    // "sections": [
+    //   {
+    //     "title": { "en": "Private calendar" },
+    //     "actions": [{ "type": "builtin", "builtin": "userCalendar" }]
+    //   },
+    //   {
+    //     "title": { "en": "Actions" },
+    //     "actions": [{ "type": "builtin", "builtin": "logout" }]
+    //   },
+    //   {
+    //     "title": { "en": "Danger zone" },
+    //     "actions": [{ "type": "builtin", "builtin": "unregister" }]
     //   }
     // ]
   },
@@ -264,7 +275,6 @@
               "before": "2022-09-16T09:30:00.000Z"
             }
           }
-          // TODO: other types of filter ?
         ]
       }
     },
@@ -369,7 +379,6 @@
     ]
   },
 
-  // TODO: conform these with conf-schedule.json
   "taxonomies": [
     {
       "id": "type",
@@ -415,6 +424,30 @@
     "general.search.title": { "en": "Search Sessions:" }
   },
 
+  // $white: white;
+  // $black: black;
+  // $primary: $pdc-ocean;
+  // $secondary: $pdc-navy;
+  // $link: $pdc-ocean;
+
+  // Too implementation specific?
+  // - needs to be versionable or agnostic from the implementation
+  // - can things be configured from CSS variables instead?
+  // - might be better to understand when the next ui version is designed
+  "scss": {
+    "variables": [
+      {
+        "key": "family-sans-serif",
+        "value": "system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif"
+      },
+      { "key": "white", "value": "white" },
+      { "key": "black", "value": "black" },
+      { "key": "primary", "value": "rgb(0, 120, 216)" },
+      { "key": "secondary", "value": "rgb(5, 29, 104)" },
+      { "key": "link", "value": "rgb(0, 120, 216)" }
+    ]
+  },
+
   "branding": {
     "primary": {
       "url": "uploads/primary-brand.png",
@@ -431,7 +464,6 @@
       "width": "64px",
       "height": "64px"
     }
-    // TODO: ...
   },
 
   "footer": {

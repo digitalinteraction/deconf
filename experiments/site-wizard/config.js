@@ -163,9 +163,10 @@ const sessionTimelineV0 = () =>
       sessionPredicate: array(sessionQueryV0()),
     }),
   });
-//       (v)
-// TODO: could these be merged with a "layout": "timeline|grid" field ?
-//       (^)
+//
+// Currently very similar to `sessionTimelineV0`, but let's assume they will
+// diverge in the future
+//
 const sessionGridV0 = () =>
   type({
     id: string(),
@@ -236,7 +237,10 @@ const AppConfig = type({
     enabled: boolean(),
     text: localised(),
   }),
-  register: type({ enabled: boolean() }),
+  register: type({
+    enabled: boolean(),
+    redirect: optional(string()),
+  }),
   profile: type({ enabled: boolean() }),
 
   pages: array(

@@ -38,9 +38,75 @@ Exploring how can a deconf client app be generated from a single input
     and icons to be embedded.
   - `index.html` is generated through nunjucks with special filters for assets
 - You can generate code with string templating which is quick and dirty
+- Its important to keep the configuration agnostic of the implementation (e.g. vue/scss)
+- Its important to decide what should be `appConfig` vs the `env`,
+  if not they should be merged.
+- It probably makes sense to have different levels of navigation that can be configured,
+  or at lease make the current navigation structure support more versions in the future.
+  e.g. nesting the current `navigation` as `navigation.primary`.
+- The `site.opengraph.{title,description}` can be removed in favour of the `site`
+  values for now.
+- It might be useful to have a custom protocol for the s3 assets, e.g. `deconf://uploads/asset.png`
+  `new URL("uploads/script.js", "file:")` might also be an option to load any.
+- It would be best to have as many strings in the config rather than i18n.
 
 ## links
 
-- ...
+- https://github.com/digitalinteraction/deconf-ui-toolkit
 
 ## experiment
+
+**prerequisites**
+
+- [Node.js v18+](https://nodejs.org/en/)
+- [httpie](https://httpie.io/cli)
+
+**setup**
+
+```sh
+# cd to/this/folder
+
+# Install node dependencies for server & client
+npm install
+```
+
+Make sure any assets referenced by `config.jsonc` are uploaded to the S3 bucket,
+or cached locally in the `uploads/` folder.
+
+**commands**
+
+```sh
+# cd to/this/folder
+
+# Run the mock deconf-api server
+node server/server.js
+
+# Run the build
+#   add --serve to serve on http://localhost:8080/
+#   add --watch to watch for template changes and rebuild the site
+node build-shallow.js
+```
+
+## future work
+
+**important**
+
+- Get the shallow template working with taxonomies
+- Design how the css can be customised, maybe injecting scss variables
+- Configure the `session` pages from their parent page
+
+**other**
+
+- Look into customising the "login", "profile" and "register" pages
+- Think about modifying the SVGs so the `currentColor` is used properly
+- Standardise the polymorphism with some notes on how it should be used
+- Work out how apps can extend the markdown parsing with custom widgets, microservices?
+- See if the login/register/profile pages can be customised via the "pages" array
+- Evaluate use of relative files vs absolute vs custom schema.
+- Embed the "title" for `LoginView` in the markdown
+- Explore deeper builds with next versions of the framework
+- Are there more types of filters that need to be defined?
+- Evaluate the naming of the `branding` section and maybe include css customisation there too.
+- Code `TODO:`'s in the shallow template
+- Add route `meta` fields to customise the page title
+- Add rest of the `views`
