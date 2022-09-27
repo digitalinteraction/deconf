@@ -6,15 +6,12 @@ import EventEmitter from "events";
 import { parse as parsePath } from "path";
 
 import express from "express";
-import { ExpressPeerServer } from "peer";
+// import { ExpressPeerServer } from "peer";
 import { createTerminus } from "@godaddy/terminus";
 import WebSocket, { WebSocketServer } from "ws";
 
 /** @type {{ pairs: [string,string][] }} */
 const appConfig = JSON.parse(readFileSync("app-config.json"));
-
-// TODO: not really used
-// const onlinePeers = new Set();
 
 // An event bus for peers disconnecting
 const disconnectBus = new EventEmitter();
@@ -39,7 +36,6 @@ async function main() {
 
     res.send({
       id: pair[otherIndex],
-      // action: onlinePeers.has(pair[otherIndex]) ? "call" : "wait",
       action: otherIndex === 1 ? "call" : "wait",
     });
   });
@@ -73,15 +69,6 @@ async function main() {
   // const peer = new ExpressPeerServer(server);
   // app.use("/peerjs", peer);
 
-  // // Keep track of online peers, decide who calls who?
-  // peer.on("connection", (client) => {
-  //   onlinePeers.add(client.id);
-  // });
-  // peer.on("disconnect", (client) => {
-  //   onlinePeers.delete(client.id);
-  //   disconnectBus.emit(client.id);
-  // });
-
   const wss = new WebSocketServer({
     server,
     path: "/portal",
@@ -100,6 +87,8 @@ async function main() {
     const connection = new Connection(id, socket);
     online.set(id, connection);
 
+    console.debug("socket@connect id=%o", id);
+
     socket.addEventListener("message", async (event) => {
       try {
         const message = JSON.parse(event.data);
@@ -110,13 +99,14 @@ async function main() {
         if (other) {
           other.send(type, message[type]);
         } else {
-          connection.send("notOnline", "");
+          connection.send("notOnline");
         }
       } catch (error) {
         console.error("socket@message", error);
       }
     });
     socket.addEventListener("close", () => {
+      console.debug("socket@close id=%o", id);
       online.delete(id);
     });
   });

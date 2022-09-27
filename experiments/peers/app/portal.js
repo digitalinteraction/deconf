@@ -2,6 +2,7 @@ import { debounce } from "./lib.js";
 
 // https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Perfect_negotiation
 // https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Using_data_channels
+// https://www.npmjs.com/package/ws#multiple-servers-sharing-a-single-https-server
 
 const options = {
   /** @type {RTCConfiguration} */
@@ -20,7 +21,8 @@ const options = {
 /** @typedef {{ id: string, target: string, server: URL }} PortalOptions */
 
 export class SignalingChannel {
-  /** @type {string[]} */ messages = [];
+  /** @type {string[]} */ upstream = [];
+  /** @type {string[]} */ downstream = [];
   /** @type {null | (event: MessageEvent) => void} */ onmessage = null;
   /** @type {WebSocket} */ socket = null;
 
@@ -36,11 +38,16 @@ export class SignalingChannel {
     this.socket = new WebSocket(url);
     this.socket.onmessage = (event) => {
       const message = JSON.parse(event.data);
-      this.onmessage?.(message.type, message[message.type]);
+      if (!this.onmessage) return this.downstream.push(message);
+
+      for (const msg of this.downstream.concat(message)) {
+        this.onmessage?.(msg.type, msg[msg.type]);
+      }
+      this.downstream = [];
     };
     this.socket.onopen = () => {
-      for (const msg of this.messages) this.socket.send(msg);
-      this.messages = [];
+      for (const msg of this.upstream) this.socket.send(msg);
+      this.upstream = [];
     };
     this.socket.onerror = (event) => {
       console.error("socket@error", event);
@@ -57,7 +64,7 @@ export class SignalingChannel {
       target: this.target,
     });
     if (this.socket.readyState === WebSocket.OPEN) this.socket.send(message);
-    else this.messages.push(message);
+    else this.upstream.push(message);
   }
 }
 
@@ -66,12 +73,13 @@ export class Portal {
   stream = null;
 
   /** @param {SignalingChannel} signaler */
-  constructor(signaler, polite, cb) {
+  constructor(signaler, polite) {
     console.log("Portal polite=%o", polite);
     this.signaler = signaler;
     this.polite = polite;
     this.peerConnection = new RTCPeerConnection(options.rtc);
-    this.cb = cb;
+    this.makingOffer = false;
+    this.ignoreOffer = false;
   }
 
   /** @return {Promise<MediaStream>} */
@@ -94,21 +102,19 @@ export class Portal {
     //   this.peerConnection.addTrack(track, stream);
     // }
 
-    let makingOffer = false;
     this.peerConnection.onnegotiationneeded = async (event) => {
       try {
-        makingOffer = true;
+        this.makingOffer = true;
         await this.peerConnection.setLocalDescription();
         this.signaler.send("description", this.peerConnection.localDescription);
       } catch (error) {
         console.error(error);
       } finally {
-        makingOffer = false;
+        this.makingOffer = false;
       }
     };
 
     this.peerConnection.onicecandidate = (event) => {
-      console.log("pc@icecandidate");
       this.signaler.send("candidate", event.candidate);
     };
 
@@ -120,43 +126,62 @@ export class Portal {
       if (this.peerConnection.iceConnectionState === "failed") {
         this.peerConnection.restartIce();
       }
+      if (this.peerConnection.iceConnectionState === "disconnected") {
+        this.peerConnection.restartIce();
+      }
     };
 
     const retry = debounce(2_000, () => {
       console.debug("retrying");
+      this.peerConnection.restartIce();
     });
 
-    let ignoreOffer = false;
+    setInterval(() => {
+      console.log({
+        iceGather: this.peerConnection.iceGatheringState,
+        iceConnection: this.peerConnection.iceConnectionState,
+        signal: this.peerConnection.signalingState,
+      });
+    }, 5_000);
+
     this.signaler.onmessage = async (type, payload) => {
-      console.log("signaler@message type=%o", type);
+      try {
+        console.log("signaler@message type=%o", type);
 
-      if (type === "description") {
-        const offerCollision =
-          payload.type === "offer" &&
-          (makingOffer || this.peerConnection.signalingState !== "stable");
+        if (type === "description") {
+          const offerCollision =
+            payload.type === "offer" &&
+            (this.makingOffer ||
+              this.peerConnection.signalingState !== "stable");
 
-        ignoreOffer = !this.polite && offerCollision;
-        if (ignoreOffer) return;
+          this.ignoreOffer = !this.polite && offerCollision;
+          if (this.ignoreOffer) return;
 
-        await this.peerConnection.setRemoteDescription(payload);
+          await this.peerConnection.setRemoteDescription(payload);
 
-        if (payload.type === "offer") {
-          await this.peerConnection.setLocalDescription();
-          this.signaler.send(
-            "description",
-            this.peerConnection.localDescription
-          );
+          if (payload.type === "offer") {
+            await this.peerConnection.setLocalDescription();
+            this.signaler.send(
+              "description",
+              this.peerConnection.localDescription
+            );
+          }
+        } else if (type === "candidate") {
+          try {
+            await this.peerConnection.addIceCandidate(payload);
+          } catch (err) {
+            if (!this.ignoreOffer) throw err;
+          }
+        } else if (type === "notOnline") {
+          retry();
+        } else if (type === "polite") {
+          console.log("polite=%o", payload);
+          this.polite = payload;
+        } else {
+          console.error("Unknown message type=%o", type, payload);
         }
-      } else if (type === "candidate") {
-        try {
-          await this.peerConnection.addIceCandidate(payload);
-        } catch (err) {
-          if (!ignoreOffer) throw err;
-        }
-      } else if (type === "notOnline") {
-        retry();
-      } else {
-        console.error("Unknown message type=%o", type, payload);
+      } catch (error) {
+        console.error("signaler@message", error);
       }
     };
 

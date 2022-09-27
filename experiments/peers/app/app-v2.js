@@ -22,24 +22,22 @@ async function main() {
 
   const connection = await portal.start();
 
-  // const data = connection.createDataChannel("dms");
+  const data = connection.createDataChannel("dms", { negotiated: false });
+  video.addEventListener("click", () => data.send("click"));
 
-  // data.addEventListener("open", () => {
-  //   console.log("data@open");
+  data.addEventListener("open", () => {
+    console.log("data@open");
 
-  //   data.send("hi");
-  // });
-  // data.addEventListener("message", (event) => {
-  //   console.log("data@message", event.data);
-  // });
-
-  // this.peerConnection.ontrack = (event) => {
-  //   console.log("pc@track");
-  //   event.track.onunmute = () => {
-  //     if (this.video.srcObject) return;
-  //     this.video.srcObject = event.streams[0];
-  //   };
-  // };
+    data.send("hi");
+  });
+  connection.addEventListener("datachannel", (event) => {
+    event.channel.addEventListener("message", (event) => {
+      console.log("datachannel@data@message", event.data);
+    });
+  });
+  data.addEventListener("message", (event) => {
+    console.log("data@message", event.data);
+  });
 
   const stream = await portal.getStream();
   for (const track of stream.getTracks()) {
@@ -51,7 +49,17 @@ async function main() {
     event.track.onunmute = () => {
       if (video.srcObject) return;
       video.srcObject = event.streams[0];
+      video.removeAttribute("aria-hidden");
     };
+    event.track.onended = () => {
+      console.log("track@ended");
+    };
+  });
+  connection.addEventListener("iceconnectionstatechange", () => {
+    if (connection.iceConnectionState === "disconnected") {
+      video.srcObject = null;
+      video.setAttribute("aria-hidden", "true");
+    }
   });
 
   // connection.addEventListener("datachannel", (event) => {
