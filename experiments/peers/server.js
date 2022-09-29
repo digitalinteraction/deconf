@@ -77,30 +77,37 @@ async function main() {
   /** @type {Map<string, Connection} */
   const online = new Map();
 
+  function getInfo(id) {
+    const peer = getPair(id);
+    const target = peer[0] === id ? peer[1] : peer[0];
+    const action = online.has(target) ? "call" : "wait";
+    return { id, target, action };
+  }
+
   wss.addListener("connection", (socket, request) => {
     const url = request.url
       ? new URL(request.url, "http://localhost:8080")
       : null;
     const id = url?.searchParams.get("id");
-    if (!id) return;
+    const peer = id ? getPair(id) : null;
+    if (!id || !peer) return;
 
+    console.debug("socket@connect id=%o", id);
+    const target = peer[0] === id ? peer[1] : peer[0];
     const connection = new Connection(id, socket);
     online.set(id, connection);
 
-    console.debug("socket@connect id=%o", id);
+    connection.send("info", getInfo(id));
 
     socket.addEventListener("message", async (event) => {
       try {
         const message = JSON.parse(event.data);
-        const { type, target } = message;
+        const { type, [type]: payload } = message;
         console.debug("socket@message id=%o type=%o", id, type);
 
         const other = online.get(target);
-        if (other) {
-          other.send(type, message[type]);
-        } else {
-          connection.send("notOnline");
-        }
+        if (other) other.send(type, payload);
+        else connection.send("info", getInfo(id));
       } catch (error) {
         console.error("socket@message", error);
       }
@@ -108,6 +115,8 @@ async function main() {
     socket.addEventListener("close", () => {
       console.debug("socket@close id=%o", id);
       online.delete(id);
+
+      online.get(target)?.send("info", getInfo(target));
     });
   });
 
