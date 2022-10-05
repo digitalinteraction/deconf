@@ -8,7 +8,7 @@ export function debounce(ms, fn) {
 
 export const appVersion = "v0.0.8";
 
-export const options = {
+export const appOptions = {
   /** @type {RTCConfiguration} */
   rtc: {
     iceServers: [
@@ -45,7 +45,9 @@ let mediaStream = null;
 export async function getStream() {
   if (mediaStream !== null) return mediaStream;
   try {
-    mediaStream = await navigator.mediaDevices.getUserMedia(options.userMedia);
+    mediaStream = await navigator.mediaDevices.getUserMedia(
+      appOptions.userMedia
+    );
     return mediaStream;
   } catch (error) {
     console.error(error.name, error.message);
@@ -59,4 +61,28 @@ export function getVideoElement(id) {
   elem.muted = true;
   elem.autoplay = true;
   return elem;
+}
+
+export function pushMessage(message) {
+  console.info(message);
+
+  const messages = document.getElementById("messages");
+
+  const elem = messages.appendChild(document.createElement("p"));
+  elem.innerText = message;
+
+  pause(10_000).then(() => {
+    messages.removeChild(elem);
+  });
+}
+
+export function createDebug(id) {
+  return (message) => {
+    console.debug(message);
+
+    fetch(`/api/log/${id}`, {
+      method: "POST",
+      body: message,
+    });
+  };
 }

@@ -4,7 +4,7 @@
 // https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Using_data_channels
 // https://www.npmjs.com/package/ws#multiple-servers-sharing-a-single-https-server
 
-import { EventEmitter, options } from "./lib.js";
+import { EventEmitter, appOptions } from "./lib.js";
 
 export class SignalingChannel {
   /** @type {string[]} */ upstream = [];
@@ -26,15 +26,19 @@ export class SignalingChannel {
       this.events.emit(type, payload);
     };
     this.socket.onopen = () => {
+      console.debug("socket@open");
       for (const msg of this.upstream) this.socket.send(msg);
       this.upstream = [];
     };
-    this.socket.onerror = (event) => {
-      console.error("socket@error", event);
+    this.socket.onclose = (event) => {
+      console.error("socket@close", event);
       setTimeout(() => {
         console.log("SignalingChannel reconnecting...");
         this.connect(url);
       }, 2_000);
+    };
+    this.socket.onerror = (event) => {
+      console.error("socket@error", event);
     };
   }
   send(type, payload) {
@@ -57,7 +61,7 @@ class PeerConnection {
   constructor(signaler, polite = false) {
     this.signaler = signaler;
     this.polite = polite;
-    this.peer = new RTCPeerConnection(options.rtc);
+    this.peer = new RTCPeerConnection(appOptions.rtc);
     this.makingOffer = false;
     this.ignoreOffer = false;
 
