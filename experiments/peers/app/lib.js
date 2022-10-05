@@ -18,7 +18,7 @@ export const appOptions = {
   },
   /** @type {MediaStreamConstraints} */
   userMedia: {
-    video: { width: 1920, height: 1080 },
+    video: { width: 1280, height: 720 },
   },
 };
 
@@ -33,8 +33,8 @@ export class EventEmitter {
       this.#listeners.get(name)?.filter((l) => l !== listener) ?? []
     );
   }
-  emit(name, payload) {
-    this.#listeners.get(name)?.forEach((l) => l(payload));
+  emit(name, ...args) {
+    this.#listeners.get(name)?.forEach((l) => l(...args));
   }
 }
 
@@ -61,6 +61,10 @@ export function getVideoElement(id) {
   elem.muted = true;
   elem.autoplay = true;
   return elem;
+}
+
+function pause(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 export function pushMessage(message) {

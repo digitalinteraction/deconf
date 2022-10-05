@@ -2,12 +2,13 @@
 
 import { createServer } from "http";
 import { readFileSync } from "fs";
+import { randomUUID } from "crypto";
 
 import express from "express";
 import { createTerminus } from "@godaddy/terminus";
 import WebSocket, { WebSocketServer } from "ws";
 
-/** @type {{ pairs: [string,string][] }} */
+/** @type {{ rooms: string[] }} */
 const appConfig = JSON.parse(readFileSync("app-config.json"));
 
 /** @type {Map<string, Connection} */
@@ -46,34 +47,29 @@ async function main() {
     path: "/portal",
   });
 
+  const rooms = new Map(appConfig.rooms.map((id) => [id, new Room(id)]));
+
   wss.addListener("connection", (socket, request) => {
     const url = request.url ? new URL(request.url, "http://localhost") : null;
-    const id = url?.searchParams.get("id");
-    const peer = id ? getPair(id) : null;
-    if (!id || !peer) return;
+
+    const id = randomUUID();
+    const room = rooms.get(url.searchParams.get("room"));
+    if (!room) return;
 
     console.debug("socket@connect id=%o", id);
-    const target = peer[0] === id ? peer[1] : peer[0];
     const connection = new Connection(id, socket);
+    room.members.push(connection);
 
-    if (online.has(id)) {
-      connection.send("alreadyConnected", {});
-      return;
-    }
-    online.set(id, connection);
-
-    // Tell the connecter and their target what to do (if target is online)
-    connection.send("info", getInfo(id));
-    online.get(target)?.send("info", getInfo(target));
+    room.update();
 
     socket.addEventListener("message", async (event) => {
       try {
         const message = JSON.parse(event.data);
-        const { type, [type]: payload } = message;
-        console.debug("socket@message id=%o type=%o", id, type);
+        const { type, [type]: payload, target } = message;
+        console.debug("socket@message id=%o type=%o to=%o", id, type, target);
 
-        const other = online.get(target);
-        if (other) other.send(type, payload);
+        const targetConn = room.members.find((m) => m.id === message.target);
+        if (targetConn) targetConn.send(type, payload, id);
         else console.error("Peer not online");
       } catch (error) {
         console.error("socket@message", error);
@@ -81,9 +77,9 @@ async function main() {
     });
     socket.addEventListener("close", () => {
       console.debug("socket@close id=%o", id);
-      online.delete(id);
 
-      online.get(target)?.send("info", getInfo(target));
+      room.members = room.members.filter((m) => m.id !== id);
+      room.update();
     });
   });
 
@@ -104,6 +100,30 @@ async function main() {
   });
 }
 
+class Room {
+  /** @type {Connection[]} */
+  members = [];
+
+  /** @param {string} id */
+  constructor(id) {
+    this.id = id;
+  }
+
+  update() {
+    for (const conn of this.members) {
+      conn.send("info", {
+        id: conn.id,
+        members: this.members
+          .filter((m) => m.id !== conn.id)
+          .map((peer) => ({
+            id: peer.id,
+            polite: conn.id > peer.id,
+          })),
+      });
+    }
+  }
+}
+
 class Connection {
   /** @param {string} id @param {WebSocket} socket */
   constructor(id, socket) {
@@ -111,8 +131,8 @@ class Connection {
     this.socket = socket;
   }
 
-  send(type, message) {
-    this.socket.send(JSON.stringify({ type, [type]: message }));
+  send(type, message, from = null) {
+    this.socket.send(JSON.stringify({ type, [type]: message, from }));
   }
 }
 

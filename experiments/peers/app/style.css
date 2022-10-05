@@ -19,12 +19,9 @@ body {
 
 /* STYLES */
 
-main {
+body {
   color: white;
-  background-color: rebeccapurple;
-  width: 100vw;
-  height: 100vh;
-  display: flex;
+  background-color: black;
 }
 aside {
   position: fixed;
@@ -78,4 +75,24 @@ h1 {
 }
 [aria-hidden="true"] {
   display: none;
+}
+main {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  width: 100vw;
+  height: 100vh;
+}
+main > * {
+  width: 400px;
+  aspect-ratio: 16 / 9;
+  flex-grow: 1;
+}
+main > [data-video="__self__"] {
+  outline: 5px solid royalblue;
+  z-index: 1;
+}
+main > .debug {
+  background-color: coral;
+  border: 2px solid white;
 }

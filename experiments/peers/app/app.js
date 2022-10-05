@@ -1,8 +1,7 @@
-import { appVersion, getStream, getVideoElement } from "./lib.js";
-import { Portal, SignalingChannel } from "./portal.js";
+import { appVersion, getStream, getVideoElement, pushMessage } from "./lib.js";
+import { Portal, SignalingChannel } from "./portal-v2.js";
 
-const localVideo = getVideoElement("localVideo");
-const removeVideo = getVideoElement("remoteVideo");
+const grid = document.getElementById("grid");
 const title = document.getElementById("title");
 const version = document.getElementById("version");
 version.innerText = appVersion;
@@ -15,11 +14,17 @@ async function main() {
   const server = new URL("portal", url);
   server.protocol = server.protocol.replace(/^http/, "ws");
 
-  const stream = await getStream();
+  if (url.searchParams.has("grid")) {
+    for (let i = 0; i < parseInt(url.searchParams.get("grid")); i++) {
+      const elem = document.createElement("div");
+      elem.classList.add("debug");
+      grid.append(elem);
+    }
+  }
 
+  const stream = await getStream();
   if (url.searchParams.has("self")) {
-    localVideo.removeAttribute("aria-hidden");
-    localVideo.srcObject = stream;
+    setVideoStream("__self__", stream);
   }
 
   const signaler = new SignalingChannel({ id, server });
@@ -27,17 +32,19 @@ async function main() {
 
   portal.addEventListener("connection", (connection) => {
     for (const track of stream.getTracks()) {
-      connection.addTrack(track, stream);
+      connection.peer.addTrack(track, stream);
     }
 
-    connection.addEventListener("track", (event) => {
+    connection.peer.addEventListener("track", (event) => {
       console.log("connection@track");
-      event.track.onunmute = () => setRemoteStream(event.streams[0]);
+      event.track.onunmute = () => {
+        setVideoStream(connection.target, event.streams[0]);
+      };
     });
   });
 
-  portal.addEventListener("close", () => {
-    setRemoteStream(null);
+  portal.addEventListener("close", (connection) => {
+    setVideoStream(connection.target, null);
   });
 
   portal.addEventListener("error", (error) => {
@@ -45,28 +52,42 @@ async function main() {
   });
 
   signaler.addEventListener("info", (payload) => {
-    if (payload.action === "wait") title.textContent = "Waiting…";
-    if (payload.action === "call") {
-      title.textContent = payload.polite ? "Listening…" : "Calling…";
-    }
+    title.textContent = payload.members.length > 0 ? "Calling…" : "Waiting…";
   });
 }
 
-function setRemoteStream(stream) {
+function setVideoStream(id, stream) {
+  console.log("setRemoteStream", id);
+  let elem = document.querySelector(`#grid > [data-video="${id}"]`);
+
   if (stream) {
-    // if (video.srcObject) return;
-    removeVideo.srcObject = stream;
-    removeVideo.removeAttribute("aria-hidden");
+    if (!elem) {
+      elem = document.createElement("video");
+      elem.muted = true;
+      elem.autoplay = true;
+      elem.dataset.video = id;
+      grid.appendChild(elem);
+    }
+
+    elem.srcObject = stream;
+  } else if (elem) {
+    grid.removeChild(elem);
+  }
+
+  grid.style = `--elements: ${grid.children.length};`;
+
+  if (grid.hasChildNodes) {
     title.setAttribute("aria-hidden", "true");
     version.setAttribute("aria-hidden", "true");
   } else {
-    removeVideo.setAttribute("aria-hidden", "true");
     title.removeAttribute("aria-hidden");
     version.removeAttribute("aria-hidden");
+    title.textContent;
   }
 }
 
 function onError(error) {
+  pushMessage(error.message);
   title.textContent = "Error - " + error.message;
   console.error(error);
 }
