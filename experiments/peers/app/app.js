@@ -8,7 +8,7 @@ const video = document.getElementById("video");
 const messages = document.getElementById("messages");
 const title = document.getElementById("title");
 const version = document.getElementById("version");
-version.innerText = "v0.0.7";
+version.innerText = "v0.0.8";
 
 let currentCall = null;
 

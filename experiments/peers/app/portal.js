@@ -1,10 +1,10 @@
-import { debounce } from "./lib.js";
+// import { debounce } from "./lib.js";
 
 // https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Perfect_negotiation
 // https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Using_data_channels
 // https://www.npmjs.com/package/ws#multiple-servers-sharing-a-single-https-server
 
-const options = {
+export const options = {
   /** @type {RTCConfiguration} */
   rtc: {
     iceServers: [
@@ -18,17 +18,29 @@ const options = {
   },
 };
 
-/** @typedef {{ id: string, target: string, server: URL }} PortalOptions */
+class EventEmitter {
+  #listeners = new Map();
+  addEventListener(name, listener) {
+    this.#listeners.set(name, [...(this.#listeners.get(name) ?? []), listener]);
+  }
+  removeEventListener(name, listener) {
+    this.#listeners.set(
+      name,
+      this.#listeners.get(name)?.filter((l) => l !== listener) ?? []
+    );
+  }
+  emit(name, payload) {
+    this.#listeners.get(name)?.forEach((l) => l(payload));
+  }
+}
 
 export class SignalingChannel {
   /** @type {string[]} */ upstream = [];
-  /** @type {string[]} */ downstream = [];
-  /** @type {null | (event: MessageEvent) => void} */ onmessage = null;
   /** @type {WebSocket} */ socket = null;
+  events = new EventEmitter();
 
-  /** @param {PortalOptions} options */
+  /** @param {{ id: string, server: URL }} options */
   constructor(options) {
-    console.log("SignalingChannel", options);
     this.target = options.target;
     const url = new URL(options.server);
     url.searchParams.set("id", options.id);
@@ -37,13 +49,9 @@ export class SignalingChannel {
   connect(url) {
     this.socket = new WebSocket(url);
     this.socket.onmessage = (event) => {
-      const message = JSON.parse(event.data);
-      if (!this.onmessage) return this.downstream.push(message);
-
-      for (const msg of this.downstream.concat(message)) {
-        this.onmessage?.(msg.type, msg[msg.type]);
-      }
-      this.downstream = [];
+      const { type, [type]: payload } = JSON.parse(event.data);
+      console.debug("signaler@%s %O", type, payload);
+      this.events.emit(type, payload);
     };
     this.socket.onopen = () => {
       for (const msg of this.upstream) this.socket.send(msg);
@@ -52,61 +60,43 @@ export class SignalingChannel {
     this.socket.onerror = (event) => {
       console.error("socket@error", event);
       setTimeout(() => {
-        console.log("reconnecting...");
+        console.log("SignalingChannel reconnecting...");
         this.connect(url);
       }, 2_000);
     };
   }
   send(type, payload) {
-    const message = JSON.stringify({
-      type,
-      [type]: payload,
-      target: this.target,
-    });
+    const message = JSON.stringify({ type, [type]: payload });
     if (this.socket.readyState === WebSocket.OPEN) this.socket.send(message);
     else this.upstream.push(message);
   }
+
+  // EventEmitter mixin
+  addEventListener(name, listener) {
+    this.events.addEventListener(name, listener);
+  }
+  removeEventListener(name, listener) {
+    this.events.removeEventListener(name, listener);
+  }
 }
 
-export class Portal {
-  /** @type {MediaStream} */
-  stream = null;
-
+class PeerConnection {
   /** @param {SignalingChannel} signaler */
-  constructor(signaler, polite) {
-    console.log("Portal polite=%o", polite);
+  constructor(signaler, polite = false) {
     this.signaler = signaler;
     this.polite = polite;
-    this.peerConnection = new RTCPeerConnection(options.rtc);
+    this.peer = new RTCPeerConnection(options.rtc);
     this.makingOffer = false;
     this.ignoreOffer = false;
-  }
 
-  /** @return {Promise<MediaStream>} */
-  async getStream() {
-    if (this.stream !== null) return stream;
-    try {
-      this.stream = await navigator.mediaDevices.getUserMedia(
-        options.userMedia
-      );
-      return this.stream;
-    } catch (error) {
-      console.error(error.name, error.message);
-      throw error;
-    }
-  }
+    this.onDescription = this.onDescription.bind(this);
+    this.onCandidate = this.onCandidate.bind(this);
 
-  async start() {
-    // const stream = await this.getStream();
-    // for (const track of stream.getTracks()) {
-    //   this.peerConnection.addTrack(track, stream);
-    // }
-
-    this.peerConnection.onnegotiationneeded = async (event) => {
+    this.peer.onnegotiationneeded = async (event) => {
       try {
         this.makingOffer = true;
-        await this.peerConnection.setLocalDescription();
-        this.signaler.send("description", this.peerConnection.localDescription);
+        await this.peer.setLocalDescription();
+        this.signaler.send("description", this.peer.localDescription);
       } catch (error) {
         console.error(error);
       } finally {
@@ -114,77 +104,82 @@ export class Portal {
       }
     };
 
-    this.peerConnection.onicecandidate = (event) => {
+    this.peer.onicecandidate = (event) => {
       this.signaler.send("candidate", event.candidate);
     };
-
-    this.peerConnection.oniceconnectionstatechange = (event) => {
-      console.log(
-        "peerConnection@icestate",
-        this.peerConnection.iceConnectionState
-      );
-      if (this.peerConnection.iceConnectionState === "failed") {
-        this.peerConnection.restartIce();
-      }
-      if (this.peerConnection.iceConnectionState === "disconnected") {
-        this.peerConnection.restartIce();
+    this.peer.oniceconnectionstatechange = (event) => {
+      if (this.peer.iceConnectionState === "failed") {
+        this.peer.restartIce();
       }
     };
 
-    const retry = debounce(2_000, () => {
-      console.debug("retrying");
-      this.peerConnection.restartIce();
+    this.signaler.addEventListener("description", this.onDescription);
+    this.signaler.addEventListener("candidate", this.onCandidate);
+  }
+  close() {
+    this.signaler.removeEventListener("description", this.onDescription);
+    this.signaler.removeEventListener("candidate", this.onCandidate);
+    this.peer.close();
+  }
+
+  async onDescription(payload) {
+    const offerCollision =
+      payload.type === "offer" &&
+      (this.makingOffer || this.peer.signalingState !== "stable");
+
+    this.ignoreOffer = !this.polite && offerCollision;
+    if (this.ignoreOffer) return;
+
+    await this.peer.setRemoteDescription(payload);
+
+    if (payload.type === "offer") {
+      await this.peer.setLocalDescription();
+      this.signaler.send("description", this.peer.localDescription);
+    }
+  }
+  async onCandidate(payload) {
+    try {
+      await this.peer.addIceCandidate(payload);
+    } catch (err) {
+      if (!this.ignoreOffer) console.error(err);
+    }
+  }
+}
+
+// INFO :== { id, target, action, polite }
+
+export class Portal {
+  /** @type {MediaStream} */ stream = null;
+  events = new EventEmitter();
+  info = null;
+  /** @type {PeerConnection | null} */ connection = null;
+
+  /** @param {SignalingChannel} signaler */
+  constructor(signaler) {
+    this.signaler = signaler;
+
+    this.signaler.addEventListener("info", async (payload) => {
+      if (this.info?.action === payload.action) return;
+
+      if (payload.action === "wait" && this.connection) {
+        this.connection.close();
+        this.connection = null;
+        this.events.emit("close");
+      }
+      if (payload.action === "call" && !this.connection) {
+        this.connection = new PeerConnection(this.signaler, payload.polite);
+        this.events.emit("connection", this.connection.peer);
+      }
+
+      this.info = payload;
     });
+  }
 
-    setInterval(() => {
-      console.log({
-        iceGather: this.peerConnection.iceGatheringState,
-        iceConnection: this.peerConnection.iceConnectionState,
-        signal: this.peerConnection.signalingState,
-      });
-    }, 5_000);
-
-    this.signaler.onmessage = async (type, payload) => {
-      try {
-        console.log("signaler@message type=%o", type);
-
-        if (type === "description") {
-          const offerCollision =
-            payload.type === "offer" &&
-            (this.makingOffer ||
-              this.peerConnection.signalingState !== "stable");
-
-          this.ignoreOffer = !this.polite && offerCollision;
-          if (this.ignoreOffer) return;
-
-          await this.peerConnection.setRemoteDescription(payload);
-
-          if (payload.type === "offer") {
-            await this.peerConnection.setLocalDescription();
-            this.signaler.send(
-              "description",
-              this.peerConnection.localDescription
-            );
-          }
-        } else if (type === "candidate") {
-          try {
-            await this.peerConnection.addIceCandidate(payload);
-          } catch (err) {
-            if (!this.ignoreOffer) throw err;
-          }
-        } else if (type === "notOnline") {
-          retry();
-        } else if (type === "polite") {
-          console.log("polite=%o", payload);
-          this.polite = payload;
-        } else {
-          console.error("Unknown message type=%o", type, payload);
-        }
-      } catch (error) {
-        console.error("signaler@message", error);
-      }
-    };
-
-    return this.peerConnection;
+  // EventEmitter mixin
+  addEventListener(name, listener) {
+    this.events.addEventListener(name, listener);
+  }
+  removeEventListener(name, listener) {
+    this.events.removeEventListener(name, listener);
   }
 }
