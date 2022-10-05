@@ -4,35 +4,7 @@
 // https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Using_data_channels
 // https://www.npmjs.com/package/ws#multiple-servers-sharing-a-single-https-server
 
-export const options = {
-  /** @type {RTCConfiguration} */
-  rtc: {
-    iceServers: [
-      { urls: "stun:stun1.l.google.com:19302" },
-      { urls: "stun:stun2.l.google.com:19302" },
-    ],
-  },
-  /** @type {MediaStreamConstraints} */
-  userMedia: {
-    video: { width: 1920, height: 1080 },
-  },
-};
-
-class EventEmitter {
-  #listeners = new Map();
-  addEventListener(name, listener) {
-    this.#listeners.set(name, [...(this.#listeners.get(name) ?? []), listener]);
-  }
-  removeEventListener(name, listener) {
-    this.#listeners.set(
-      name,
-      this.#listeners.get(name)?.filter((l) => l !== listener) ?? []
-    );
-  }
-  emit(name, payload) {
-    this.#listeners.get(name)?.forEach((l) => l(payload));
-  }
-}
+import { EventEmitter, options } from "./lib.js";
 
 export class SignalingChannel {
   /** @type {string[]} */ upstream = [];
@@ -158,21 +130,39 @@ export class Portal {
   constructor(signaler) {
     this.signaler = signaler;
 
-    this.signaler.addEventListener("info", async (payload) => {
-      if (this.info?.action === payload.action) return;
+    this.onAlreadyConnected = this.onAlreadyConnected.bind(this);
+    this.onInfo = this.onInfo.bind(this);
 
-      if (payload.action === "wait" && this.connection) {
-        this.connection.close();
-        this.connection = null;
-        this.events.emit("close");
-      }
-      if (payload.action === "call" && !this.connection) {
-        this.connection = new PeerConnection(this.signaler, payload.polite);
-        this.events.emit("connection", this.connection.peer);
-      }
+    this.signaler.addEventListener("alreadyConnected", this.onAlreadyConnected);
+    this.signaler.addEventListener("info", this.onInfo);
+  }
+  close() {
+    this.connection?.close();
+    this.signaler.removeEventListener(
+      "alreadyConnected",
+      this.onAlreadyConnected
+    );
+    this.signaler.removeEventListener("info", this.onInfo);
+  }
 
-      this.info = payload;
-    });
+  onInfo(payload) {
+    if (this.info?.action === payload.action) return;
+
+    if (payload.action === "wait" && this.connection) {
+      this.connection.close();
+      this.connection = null;
+      this.events.emit("close");
+    }
+    if (payload.action === "call" && !this.connection) {
+      this.connection = new PeerConnection(this.signaler, payload.polite);
+      this.events.emit("connection", this.connection.peer);
+    }
+
+    this.info = payload;
+  }
+  onAlreadyConnected() {
+    this.close();
+    this.events.emit("error", new Error("Id already connected"));
   }
 
   // EventEmitter mixin

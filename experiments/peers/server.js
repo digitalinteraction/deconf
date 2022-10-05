@@ -2,7 +2,6 @@
 
 import { createServer } from "http";
 import { readFileSync } from "fs";
-import EventEmitter from "events";
 
 import express from "express";
 import { createTerminus } from "@godaddy/terminus";
@@ -56,6 +55,11 @@ async function main() {
     console.debug("socket@connect id=%o", id);
     const target = peer[0] === id ? peer[1] : peer[0];
     const connection = new Connection(id, socket);
+
+    if (online.has(id)) {
+      connection.send("alreadyConnected", {});
+      return;
+    }
     online.set(id, connection);
 
     // Tell the connecter and their target what to do (if target is online)
@@ -70,10 +74,7 @@ async function main() {
 
         const other = online.get(target);
         if (other) other.send(type, payload);
-        else {
-          // connection.send("info", getInfo(id));
-          console.error("Peer not online");
-        }
+        else console.error("Peer not online");
       } catch (error) {
         console.error("socket@message", error);
       }
