@@ -51,15 +51,18 @@ async function main() {
 
   wss.addListener("connection", (socket, request) => {
     const url = request.url ? new URL(request.url, "http://localhost") : null;
-
-    const id = randomUUID();
-    const room = rooms.get(url.searchParams.get("room"));
-    if (!room) return;
+    const id = url.searchParams.get("id") ?? randomUUID();
 
     console.debug("socket@connect id=%o", id);
     const connection = new Connection(id, socket);
-    room.members.push(connection);
 
+    const room = rooms.get(url.searchParams.get("room"));
+    if (!room) {
+      connection.send("error", "Room not found");
+      return;
+    }
+
+    room.members.set(id, connection);
     room.update();
 
     socket.addEventListener("message", async (event) => {
@@ -68,7 +71,9 @@ async function main() {
         const { type, [type]: payload, target } = message;
         console.debug("socket@message id=%o type=%o to=%o", id, type, target);
 
-        const targetConn = room.members.find((m) => m.id === message.target);
+        if (type === "ping") return connection.send("pong", {});
+
+        const targetConn = room.members.get(message.target);
         if (targetConn) targetConn.send(type, payload, id);
         else console.error("Peer not online");
       } catch (error) {
@@ -78,7 +83,7 @@ async function main() {
     socket.addEventListener("close", () => {
       console.debug("socket@close id=%o", id);
 
-      room.members = room.members.filter((m) => m.id !== id);
+      room.members.delete(id);
       room.update();
     });
   });
@@ -101,8 +106,8 @@ async function main() {
 }
 
 class Room {
-  /** @type {Connection[]} */
-  members = [];
+  /** @type {Map<string, Connection>} */
+  members = new Map();
 
   /** @param {string} id */
   constructor(id) {
@@ -110,10 +115,10 @@ class Room {
   }
 
   update() {
-    for (const conn of this.members) {
+    for (const conn of this.members.values()) {
       conn.send("info", {
         id: conn.id,
-        members: this.members
+        members: Array.from(this.members.values())
           .filter((m) => m.id !== conn.id)
           .map((peer) => ({
             id: peer.id,
@@ -131,7 +136,7 @@ class Connection {
     this.socket = socket;
   }
 
-  send(type, message, from = null) {
+  send(type, message = {}, from = null) {
     this.socket.send(JSON.stringify({ type, [type]: message, from }));
   }
 }

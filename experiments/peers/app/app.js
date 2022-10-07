@@ -1,5 +1,5 @@
 import { appVersion, debounce, getStream, pushMessage } from "./lib.js";
-import { Portal, SignalingChannel } from "./portal-v2.js";
+import { Portal, SignalingChannel } from "./portal.js";
 
 const grid = document.getElementById("grid");
 const title = document.getElementById("title");

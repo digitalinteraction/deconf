@@ -1,5 +1,3 @@
-// import { debounce } from "./lib.js";
-
 // https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Perfect_negotiation
 // https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Using_data_channels
 // https://www.npmjs.com/package/ws#multiple-servers-sharing-a-single-https-server
@@ -15,15 +13,24 @@ export class SignalingChannel {
   constructor(options) {
     this.target = options.target;
     const url = new URL(options.server);
-    url.searchParams.set("id", options.id);
+    url.searchParams.set("room", options.id);
     this.connect(url);
+
+    this.addEventListener("info", (payload) => {
+      this.id = payload.id;
+    });
+
+    setInterval(() => this.send("ping", {}), 10_000);
   }
   connect(url) {
-    this.socket = new WebSocket(url);
+    const socketUrl = new URL(url);
+    if (this.id) socketUrl.searchParams.set("id", this.id);
+    this.socket = new WebSocket(socketUrl);
     this.socket.onmessage = (event) => {
-      const { type, [type]: payload } = JSON.parse(event.data);
+      this.lastMessage = new Date();
+      const { type, [type]: payload, from } = JSON.parse(event.data);
       console.debug("signaler@%s %O", type, payload);
-      this.events.emit(type, payload);
+      this.events.emit(type, payload, from);
     };
     this.socket.onopen = () => {
       console.debug("socket@open");
@@ -41,8 +48,8 @@ export class SignalingChannel {
       console.error("socket@error", event);
     };
   }
-  send(type, payload) {
-    const message = JSON.stringify({ type, [type]: payload });
+  send(type, payload = {}, target = null) {
+    const message = JSON.stringify({ type, [type]: payload, target });
     if (this.socket.readyState === WebSocket.OPEN) this.socket.send(message);
     else this.upstream.push(message);
   }
@@ -58,8 +65,9 @@ export class SignalingChannel {
 
 class PeerConnection {
   /** @param {SignalingChannel} signaler */
-  constructor(signaler, polite = false) {
+  constructor(signaler, target, polite = false) {
     this.signaler = signaler;
+    this.target = target;
     this.polite = polite;
     this.peer = new RTCPeerConnection(appOptions.rtc);
     this.makingOffer = false;
@@ -72,7 +80,11 @@ class PeerConnection {
       try {
         this.makingOffer = true;
         await this.peer.setLocalDescription();
-        this.signaler.send("description", this.peer.localDescription);
+        this.signaler.send(
+          "description",
+          this.peer.localDescription,
+          this.target
+        );
       } catch (error) {
         console.error(error);
       } finally {
@@ -81,9 +93,9 @@ class PeerConnection {
     };
 
     this.peer.onicecandidate = (event) => {
-      this.signaler.send("candidate", event.candidate);
+      this.signaler.send("candidate", event.candidate, this.target);
     };
-    this.peer.oniceconnectionstatechange = (event) => {
+    this.peer.oniceconnectionstatechange = () => {
       if (this.peer.iceConnectionState === "failed") {
         this.peer.restartIce();
       }
@@ -98,7 +110,9 @@ class PeerConnection {
     this.peer.close();
   }
 
-  async onDescription(payload) {
+  async onDescription(payload, from) {
+    if (from !== this.target) return;
+
     const offerCollision =
       payload.type === "offer" &&
       (this.makingOffer || this.peer.signalingState !== "stable");
@@ -110,10 +124,16 @@ class PeerConnection {
 
     if (payload.type === "offer") {
       await this.peer.setLocalDescription();
-      this.signaler.send("description", this.peer.localDescription);
+      this.signaler.send(
+        "description",
+        this.peer.localDescription,
+        this.target
+      );
     }
   }
-  async onCandidate(payload) {
+  async onCandidate(payload, from) {
+    if (from !== this.target) return;
+
     try {
       await this.peer.addIceCandidate(payload);
     } catch (err) {
@@ -122,51 +142,57 @@ class PeerConnection {
   }
 }
 
-// INFO :== { id, target, action, polite }
+// INFO :== { id, members }
 
 export class Portal {
-  /** @type {MediaStream} */ stream = null;
   events = new EventEmitter();
-  info = null;
-  /** @type {PeerConnection | null} */ connection = null;
+  /** @type {Map<string, PeerConnection} */ connections = new Map();
 
   /** @param {SignalingChannel} signaler */
   constructor(signaler) {
     this.signaler = signaler;
 
-    this.onAlreadyConnected = this.onAlreadyConnected.bind(this);
+    this.onError = this.onError.bind(this);
     this.onInfo = this.onInfo.bind(this);
 
-    this.signaler.addEventListener("alreadyConnected", this.onAlreadyConnected);
+    this.signaler.addEventListener("error", this.onError);
     this.signaler.addEventListener("info", this.onInfo);
   }
   close() {
-    this.connection?.close();
-    this.signaler.removeEventListener(
-      "alreadyConnected",
-      this.onAlreadyConnected
-    );
+    for (const connection of this.connections.values()) connection.close();
+    this.signaler.removeEventListener("error", this.onError);
     this.signaler.removeEventListener("info", this.onInfo);
   }
 
   onInfo(payload) {
-    if (this.info?.action === payload.action) return;
+    const activeIds = new Set();
+    for (const member of payload.members) {
+      activeIds.add(member.id);
 
-    if (payload.action === "wait" && this.connection) {
-      this.connection.close();
-      this.connection = null;
-      this.events.emit("close");
-    }
-    if (payload.action === "call" && !this.connection) {
-      this.connection = new PeerConnection(this.signaler, payload.polite);
-      this.events.emit("connection", this.connection.peer);
+      if (this.connections.has(member.id)) continue;
+
+      const connection = new PeerConnection(
+        this.signaler,
+        member.id,
+        member.polite
+      );
+      this.connections.set(member.id, connection);
+      this.events.emit("connection", connection);
     }
 
-    this.info = payload;
+    const lostIds = Array.from(this.connections.keys()).filter(
+      (id) => !activeIds.has(id)
+    );
+    for (const id of lostIds) {
+      const connection = this.connections.get(id);
+      connection.close();
+      this.connections.delete(id);
+      this.events.emit("close", connection);
+    }
   }
-  onAlreadyConnected() {
+  onError(message) {
     this.close();
-    this.events.emit("error", new Error("Id already connected"));
+    this.events.emit("error", new Error(message));
   }
 
   // EventEmitter mixin
