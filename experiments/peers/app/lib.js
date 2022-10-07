@@ -1,3 +1,5 @@
+export const appVersion = "v0.0.12";
+
 export function debounce(ms, fn) {
   let timerid = null;
   return () => {
@@ -5,8 +7,6 @@ export function debounce(ms, fn) {
     timerid = setTimeout(fn, ms);
   };
 }
-
-export const appVersion = "v0.0.11";
 
 export const appOptions = {
   /** @type {RTCConfiguration} */

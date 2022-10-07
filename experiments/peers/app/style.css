@@ -79,13 +79,14 @@ main {
   height: 100vh;
   grid-template-columns: repeat(var(--columns, 1), 1fr);
   grid-template-rows: auto;
-  align-items: stretch;
-  justify-items: stretch;
+  align-items: center;
+  justify-items: center;
   gap: 0.5em;
 }
 main > * {
   aspect-ratio: 16 / 9;
   object-fit: cover;
+  width: 100%;
 }
 main > .debug {
   background-color: coral;

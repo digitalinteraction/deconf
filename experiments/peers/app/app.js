@@ -59,7 +59,10 @@ async function main() {
     title.textContent = payload.members.length > 0 ? "Calling…" : "Waiting…";
   });
 
-  const onResize = debounce(200, () => updateGrid(grid.children.length));
+  const onResize = debounce(200, () => {
+    console.log("onResize");
+    updateGrid(grid.children.length);
+  });
 
   window.addEventListener("resize", onResize);
 }
