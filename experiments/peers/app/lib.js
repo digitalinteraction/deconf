@@ -1,4 +1,4 @@
-export const appVersion = "v0.0.12";
+export const appVersion = "v0.0.13";
 
 export function debounce(ms, fn) {
   let timerid = null;
