@@ -55,14 +55,6 @@ export async function getStream() {
   }
 }
 
-/** @return {HTMLVideoElement} */
-export function getVideoElement(id) {
-  const elem = document.getElementById(id);
-  elem.muted = true;
-  elem.autoplay = true;
-  return elem;
-}
-
 function pause(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }

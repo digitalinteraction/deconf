@@ -77,20 +77,25 @@ h1 {
   display: none;
 }
 main {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
+  display: grid;
   width: 100vw;
   height: 100vh;
+  grid-template-columns: repeat(var(--columns, 1), 1fr);
+  grid-template-rows: auto;
+  align-items: center;
+  gap: 0.5em;
 }
 main > * {
-  width: 400px;
   aspect-ratio: 16 / 9;
-  flex-grow: 1;
 }
 main > [data-video="__self__"] {
+  position: fixed;
+  right: 1em;
+  bottom: 1em;
+  width: 20vw;
   outline: 5px solid royalblue;
   z-index: 1;
+  border-radius: 5px;
 }
 main > .debug {
   background-color: coral;

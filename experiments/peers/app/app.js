@@ -1,4 +1,4 @@
-import { appVersion, getStream, getVideoElement, pushMessage } from "./lib.js";
+import { appVersion, debounce, getStream, pushMessage } from "./lib.js";
 import { Portal, SignalingChannel } from "./portal-v2.js";
 
 const grid = document.getElementById("grid");
@@ -15,11 +15,13 @@ async function main() {
   server.protocol = server.protocol.replace(/^http/, "ws");
 
   if (url.searchParams.has("grid")) {
-    for (let i = 0; i < parseInt(url.searchParams.get("grid")); i++) {
+    const count = parseInt(url.searchParams.get("grid"));
+    for (let i = 0; i < count; i++) {
       const elem = document.createElement("div");
       elem.classList.add("debug");
       grid.append(elem);
     }
+    updateGrid(count);
   }
 
   const stream = await getStream();
@@ -54,6 +56,10 @@ async function main() {
   signaler.addEventListener("info", (payload) => {
     title.textContent = payload.members.length > 0 ? "Calling…" : "Waiting…";
   });
+
+  const onResize = debounce(200, () => updateGrid(grid.children.length));
+
+  window.addEventListener("resize", onResize);
 }
 
 function setVideoStream(id, stream) {
@@ -74,9 +80,28 @@ function setVideoStream(id, stream) {
     grid.removeChild(elem);
   }
 
-  grid.style = `--elements: ${grid.children.length};`;
+  updateGrid(grid.children.length);
+}
 
-  if (grid.hasChildNodes) {
+function updateGrid(count) {
+  const aspect = 16 / 9;
+  const { innerHeight, innerWidth } = window;
+
+  let [columns, rows] = [1, 1];
+  for (let requiredColumns = 1; requiredColumns <= count; requiredColumns++) {
+    const w = innerWidth / requiredColumns;
+    const h = w / aspect;
+    const requiredRows = Math.ceil(count / requiredColumns);
+    const requiredHeight = requiredRows * h;
+    if (requiredHeight <= innerHeight) {
+      [columns, rows] = [requiredColumns, requiredRows];
+      break;
+    }
+  }
+
+  grid.style = `--columns: ${columns};`;
+
+  if (count > 0) {
     title.setAttribute("aria-hidden", "true");
     version.setAttribute("aria-hidden", "true");
   } else {
