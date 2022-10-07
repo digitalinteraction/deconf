@@ -6,7 +6,7 @@ export function debounce(ms, fn) {
   };
 }
 
-export const appVersion = "v0.0.10";
+export const appVersion = "v0.0.11";
 
 export const appOptions = {
   /** @type {RTCConfiguration} */

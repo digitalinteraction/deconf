@@ -26,7 +26,9 @@ async function main() {
 
   const stream = await getStream();
   if (url.searchParams.has("self")) {
-    setVideoStream("__self__", stream);
+    const localVideo = document.getElementById("localVideo");
+    localVideo.removeAttribute("aria-hidden");
+    localVideo.srcObject = stream;
   }
 
   const signaler = new SignalingChannel({ id, server });
