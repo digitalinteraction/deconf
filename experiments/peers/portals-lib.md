@@ -19,23 +19,29 @@ const portal = new PortalServer({ server, path: "/portal", rooms });
 server.listen(/* ... */);
 ```
 
+notes:
+
+- pass-through `PortalServer` options to `WebSocketServer`?
+- option to bypass the `createServer` too?
+
 **raw_server.js**
 
 An option with no NPM or Node dependencies, can it work with Deno?
 
-```js
+```ts
+const rooms = ["coffee-chat", "home", "misc"];
 const server = http.createServer(/* ... */);
 const wss = new WebSocketServer(/* { ... } */);
-const portals = new PortalServer({ noServer: true });
+const portals = new PortalServer({ noServer: true, rooms });
 
 class Connection {
   constructor(socket, id, room) {
-    this.socket = socket;
+    this.#socket = socket;
     this.id = id;
     this.room = room;
   }
   send(type, payload = {}, from = null) {
-    this.socket.send(JSON.stringify({ type, [type]: payload, from }));
+    this.#socket.send(JSON.stringify({ type, [type]: payload, from }));
   }
 }
 
@@ -55,6 +61,13 @@ portals.on("debug", console.debug);
 server.listen(/* ... */);
 ```
 
+notes:
+
+- debug log through the event emitter?
+- emit errors through the event emitter?
+- should the library user be in control of the message format?
+- document sending an error to the client `connection.send('error', 'msg')`
+
 **client.js**
 
 Create a portal in-browser.
@@ -70,18 +83,24 @@ portal.addEventListener("connection", (connection) => {
   connection.on("track", (track) => renderTrack(connection, track));
 });
 
-portal.addEventListener("close", (connection) => {
-  renderTrack(connection, null);
-});
-
-portal.addEventListener("info", (info) => {
-  updateState(info);
-});
+portal.addEventListener("close", (connection) => renderTrack(connection, null));
+portal.addEventListener("info", (info) => updateState(info));
 ```
+
+notes:
+
+- duplicate the `addTrack` method for ease of use of the library-user
+  - maybe just a `connection.addStream(stream)` method?
+- bubble the event from `PeerConnection` to the `connection` object
+- debug log through the event emitter?
+- is `close` a good event name?
+- the client needs to send pings
 
 ## next thoughts
 
 - designing the server to be scalable
-- dynamic rooms
+  - can rooms be in redis somehow, or backed by socket.io?
+- dynamic rooms / API for existing rooms
 - TypeScript types
 - `export { PortalServer as PortalGun }` — easter-egg
+- Data connections
