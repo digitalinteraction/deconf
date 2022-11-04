@@ -1,0 +1,8 @@
+#
+# Files to ignore from prettier
+#
+
+.nova
+experiments/site-wizard/output
+experiments/site-wizard/template/
+.parcel-cache

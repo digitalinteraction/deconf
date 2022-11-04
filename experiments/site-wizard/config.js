@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-import fs from "fs/promises";
+import fs from 'fs/promises'
 
-import stripJsonComments from "strip-json-comments";
+import stripJsonComments from 'strip-json-comments'
 
 import {
   array,
@@ -19,20 +19,20 @@ import {
   tuple,
   type,
   union,
-} from "superstruct";
+} from 'superstruct'
 
-const faIcon = () => tuple([string(), string()]);
-const localised = () => record(string(), string());
-const access = () => enums(["public", "private", "other"]);
-const jsonDate = () => string();
+const faIcon = () => tuple([string(), string()])
+const localised = () => record(string(), string())
+const access = () => enums(['public', 'private', 'other'])
+const jsonDate = () => string()
 
 const widgetV0 = () =>
   union([
     type({
       id: string(),
-      type: literal("builtin"),
+      type: literal('builtin'),
       builtin: type({
-        action: enums(["login", "register", "profile", "siteVisitors"]),
+        action: enums(['login', 'register', 'profile', 'siteVisitors']),
         faIcon: faIcon(),
         title: optional(localised()),
         subtitle: optional(localised()),
@@ -40,7 +40,7 @@ const widgetV0 = () =>
     }),
     type({
       id: string(),
-      type: literal("page"),
+      type: literal('page'),
       page: type({
         id: string(),
         faIcon: faIcon(),
@@ -50,7 +50,7 @@ const widgetV0 = () =>
     }),
     type({
       id: string(),
-      type: literal("url"),
+      type: literal('url'),
       url: type({
         url: string(),
         faIcon: faIcon(),
@@ -58,13 +58,13 @@ const widgetV0 = () =>
         subtitle: optional(localised()),
       }),
     }),
-  ]);
+  ])
 
 const homeV0 = () =>
   type({
     id: string(),
-    type: literal("home"),
-    version: literal("v0"),
+    type: literal('home'),
+    version: literal('v0'),
     access: access(),
     home: type({
       hero: type({
@@ -76,7 +76,7 @@ const homeV0 = () =>
       widgets: array(widgetV0()),
       sponsors: array(
         type({
-          size: enums(["large", "regular", "small", "tiny"]),
+          size: enums(['large', 'regular', 'small', 'tiny']),
           text: localised(),
           sponsors: array(
             type({
@@ -89,38 +89,38 @@ const homeV0 = () =>
         })
       ),
     }),
-  });
+  })
 
 const filtersV0 = () =>
   union([
     type({
-      type: literal("builtin"),
-      builtin: enums(["search", "date", "language"]),
+      type: literal('builtin'),
+      builtin: enums(['search', 'date', 'language']),
     }),
     type({
-      type: literal("taxonomy"),
+      type: literal('taxonomy'),
       taxonomy: type({
         id: string(),
       }),
     }),
-  ]);
+  ])
 
 const tileSectionV0 = () =>
   union([
     type({
-      type: literal("taxonomy"),
+      type: literal('taxonomy'),
       taxonomy: type({ id: string(), limit: optional(number()) }),
     }),
     type({
-      type: literal("languages"),
+      type: literal('languages'),
       languages: type({}),
     }),
-  ]);
+  ])
 
 const sessionQueryV0 = () =>
   union([
     type({
-      type: literal("taxonomy"),
+      type: literal('taxonomy'),
       taxonomy: type({
         id: string(),
         allow: optional(array(string())),
@@ -128,13 +128,13 @@ const sessionQueryV0 = () =>
       }),
     }),
     type({
-      type: literal("date"),
+      type: literal('date'),
       date: type({
         before: optional(jsonDate()),
         after: optional(jsonDate()),
       }),
     }),
-  ]);
+  ])
 
 const tilesV0 = () =>
   type({
@@ -145,13 +145,13 @@ const tilesV0 = () =>
     footer: array(tileSectionV0()),
     openSession: type({ enabled: boolean() }),
     addToMySchedule: type({ enabled: boolean() }),
-  });
+  })
 
 const sessionTimelineV0 = () =>
   type({
     id: string(),
-    type: literal("sessionTimeline"),
-    version: literal("v0"),
+    type: literal('sessionTimeline'),
+    version: literal('v0'),
     access: access(),
     sessionTimeline: type({
       title: localised(),
@@ -162,7 +162,7 @@ const sessionTimelineV0 = () =>
       tiles: tilesV0(),
       sessionPredicate: array(sessionQueryV0()),
     }),
-  });
+  })
 //
 // Currently very similar to `sessionTimelineV0`, but let's assume they will
 // diverge in the future
@@ -170,8 +170,8 @@ const sessionTimelineV0 = () =>
 const sessionGridV0 = () =>
   type({
     id: string(),
-    type: literal("sessionGrid"),
-    version: literal("v0"),
+    type: literal('sessionGrid'),
+    version: literal('v0'),
     access: access(),
     sessionGrid: type({
       title: localised(),
@@ -182,30 +182,30 @@ const sessionGridV0 = () =>
       tiles: tilesV0(),
       sessionPredicate: array(sessionQueryV0()),
     }),
-  });
+  })
 
 const myScheduleV0 = () =>
   type({
     id: string(),
-    type: literal("mySchedule"),
-    version: literal("v0"),
+    type: literal('mySchedule'),
+    version: literal('v0'),
     access: access(),
     mySchedule: type({
       title: localised(),
       subtitle: localised(),
     }),
-  });
+  })
 
 const contentV0 = () =>
   type({
     id: string(),
-    type: literal("content"),
-    version: literal("v0"),
+    type: literal('content'),
+    version: literal('v0'),
     access: access(),
     content: type({
       body: localised(),
     }),
-  });
+  })
 
 const AppConfig = type({
   navigation: array(
@@ -284,14 +284,14 @@ const AppConfig = type({
     links: array(
       union([
         type({
-          type: literal("url"),
+          type: literal('url'),
           url: type({
             text: localised(),
             url: string(),
           }),
         }),
         type({
-          type: literal("page"),
+          type: literal('page'),
           page: type({
             id: string(),
             text: localised(),
@@ -300,13 +300,13 @@ const AppConfig = type({
       ])
     ),
   }),
-});
+})
 
 /** @typedef {ReturnType<typeof getConfig>} AppConfig */
 
 export async function getConfig() {
   return create(
-    JSON.parse(stripJsonComments(await fs.readFile("config.jsonc", "utf8"))),
+    JSON.parse(stripJsonComments(await fs.readFile('config.jsonc', 'utf8'))),
     AppConfig
-  );
+  )
 }

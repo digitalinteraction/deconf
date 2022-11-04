@@ -1,7 +1,7 @@
-const VERSION = "1.0.0";
+const VERSION = '1.0.0'
 
-window.addEventListener("DOMContentLoaded", () => {
-  console.debug("window@DOMContentLoaded");
-  const versionElem = document.getElementById("version");
-  versionElem.textContent = "v" + VERSION;
-});
+window.addEventListener('DOMContentLoaded', () => {
+  console.debug('window@DOMContentLoaded')
+  const versionElem = document.getElementById('version')
+  versionElem.textContent = 'v' + VERSION
+})

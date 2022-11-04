@@ -8,7 +8,7 @@ Deconf is an Open Source library for building virtual conference platforms devel
 
 ### Core team
 
-* [Rob Anderson](https://www.r0b.io/) - Lead Enginner
+- [Rob Anderson](https://www.r0b.io/) - Lead Enginner
 
 ### Collaborators
 
