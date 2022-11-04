@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: app
-          image: robbj/peering-in:0.0.13
+          image: robbj/peering-in:0.1.0
           ports:
             - containerPort: 8080
           readinessProbe:
@@ -50,7 +50,7 @@ metadata:
   namespace: default
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
-    ingress.kubernetes.io/ssl-redirect: "true"
+    ingress.kubernetes.io/ssl-redirect: 'true'
 spec:
   ingressClassName: nginx
   rules:
@@ -58,7 +58,7 @@ spec:
       http:
         paths:
           - pathType: Prefix
-            path: "/"
+            path: '/'
             backend:
               service:
                 name: peering-in
