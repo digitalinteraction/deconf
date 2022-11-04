@@ -7,7 +7,7 @@ import { PortalGun, debounce, InfoSignal } from '@openlab/portals/client.js'
 const grid = document.getElementById('grid') as HTMLElement
 const title = document.getElementById('title') as HTMLElement
 const version = document.getElementById('version') as HTMLElement
-version.innerText = '0.1.1'
+version.innerText = '0.1.2'
 
 const rtc = {
   iceServers: [
@@ -31,6 +31,15 @@ async function main() {
   const stream = await navigator.mediaDevices.getUserMedia({
     video: { width: 1280, height: 720 },
   })
+  const constraints: MediaTrackConstraints = {
+    width: { max: 1280 * 0.5 },
+    height: { max: 720 * 0.5 },
+  }
+
+  for (const track of stream.getTracks()) {
+    if (track.kind !== 'video') continue
+    await track.applyConstraints(constraints)
+  }
 
   if (url.searchParams.has('self')) {
     const localVideo = document.getElementById('localVideo') as HTMLVideoElement

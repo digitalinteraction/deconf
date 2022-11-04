@@ -5,7 +5,7 @@
     "build": "npm run -s build:client && npm run -s build:server",
     "build:client": "esbuild --sourcemap --platform=browser --bundle --outdir=dist src/client.ts src/style.css",
     "build:server": "esbuild --platform=node --outdir=dist src/server.ts",
-    "start": "npm run build && node dist/server.js"
+    "start": "npm run build && NODE_ENV=development node dist/server.js"
   },
   "dependencies": {
     "@godaddy/terminus": "^4.11.2",
