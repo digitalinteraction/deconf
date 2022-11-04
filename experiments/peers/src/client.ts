@@ -29,7 +29,7 @@ async function main() {
   server.protocol = server.protocol.replace(/^http/, 'ws')
 
   const stream = await navigator.mediaDevices.getUserMedia({
-    video: { width: 1280, height: 720 },
+    video: { width: { ideal: 1280 }, height: { ideal: 720 } },
   })
   const constraints: MediaTrackConstraints = {
     width: { max: 1280 * 0.5 },
@@ -38,7 +38,9 @@ async function main() {
 
   for (const track of stream.getTracks()) {
     if (track.kind !== 'video') continue
-    await track.applyConstraints(constraints)
+    await track.applyConstraints(constraints).catch((error) => {
+      console.error('Cannot constrain video', error)
+    })
   }
 
   if (url.searchParams.has('self')) {
@@ -85,7 +87,7 @@ async function main() {
 }
 
 function updatePeer(id: string, stream: MediaStream | null) {
-  console.log('setRemoteStream', id)
+  console.log('updatePeer', id, stream)
 
   let elem = document.querySelector<HTMLVideoElement>(
     `#grid > [data-video="${id}"]`
@@ -97,6 +99,7 @@ function updatePeer(id: string, stream: MediaStream | null) {
       elem.muted = true
       elem.autoplay = true
       elem.dataset.video = id
+      elem.playsInline = true
       grid.appendChild(elem)
     }
 

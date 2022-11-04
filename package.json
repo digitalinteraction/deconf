@@ -4,6 +4,7 @@
     "format": "prettier --write '**/*.{js,ts,tsx,json,css,md}'"
   },
   "devDependencies": {
+    "ngrok": "^4.3.3",
     "prettier": "^2.7.1"
   }
 }
