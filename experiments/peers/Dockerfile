@@ -13,5 +13,6 @@ FROM base as prod
 ENV NODE_ENV production
 RUN npm ci && npm cache clean --force
 COPY --chown=node --from=build ["/app/dist", "/app/dist"]
+COPY --chown=node ["public", "/app/public"]
 
 ENTRYPOINT [ "node", "dist/server.js" ]
