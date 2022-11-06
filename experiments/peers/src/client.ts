@@ -7,7 +7,7 @@ import { PortalGun, debounce, InfoSignal } from '@openlab/portals/client.js'
 const grid = document.getElementById('grid') as HTMLElement
 const title = document.getElementById('title') as HTMLElement
 const version = document.getElementById('version') as HTMLElement
-version.innerText = '0.1.2'
+version.innerText = '0.1.3'
 
 const rtc = {
   iceServers: [

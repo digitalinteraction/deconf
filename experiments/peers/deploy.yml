@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: app
-          image: robbj/peering-in:0.1.2
+          image: robbj/peering-in:0.1.3
           ports:
             - containerPort: 8080
           readinessProbe:
