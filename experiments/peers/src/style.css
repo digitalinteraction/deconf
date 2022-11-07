@@ -93,3 +93,26 @@ main > .debug {
   background-color: coral;
   border: 2px solid white;
 }
+
+.notifications {
+  position: fixed;
+  top: 1em;
+  right: 1em;
+  width: 100%;
+  max-width: 420px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 0.75em;
+}
+.notifications > * {
+  background-color: royalblue;
+  color: white;
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  margin: 0;
+  opacity: 0.8;
+}
+.notifications > [data-type='error'] {
+  background-color: #e24335;
+}

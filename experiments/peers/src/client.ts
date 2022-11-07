@@ -7,6 +7,7 @@ import { PortalGun, debounce, InfoSignal } from '@openlab/portals/client.js'
 const grid = document.getElementById('grid') as HTMLElement
 const title = document.getElementById('title') as HTMLElement
 const version = document.getElementById('version') as HTMLElement
+const notifications = document.getElementById('notifications') as HTMLElement
 version.innerText = '0.1.3'
 
 const rtc = {
@@ -60,6 +61,13 @@ async function main() {
     })
     portal.peer.addEventListener('connectionstatechange', (event) => {
       console.debug('peer@state', event)
+    })
+    portal.addEventListener('error', (error) => {
+      pushNotification(error.message, 'error')
+    })
+    // TODO: just use above when ice errors are merged
+    portal.peer.addEventListener('icecandidateerror', (event) => {
+      pushNotification(event.type, 'error')
     })
   })
 
@@ -141,6 +149,17 @@ function updateGrid(count: number) {
 
 function updateState(info: InfoSignal) {
   console.log('info', info)
+}
+
+function pushNotification(message: string, type: 'info' | 'error') {
+  const elem = document.createElement('div')
+  elem.innerText = message
+  elem.dataset.type = type
+  notifications.appendChild(elem)
+
+  setTimeout(() => {
+    notifications.removeChild(elem)
+  }, 10_000)
 }
 
 main()
