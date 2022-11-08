@@ -22,26 +22,30 @@ async function main() {
   const room = url.searchParams.get('room')
 
   if (!room) {
-    alert('No room set')
-    return
+    return pushNotification('No room set', 'error')
   }
 
   const server = new URL('portal', location.href)
   server.protocol = server.protocol.replace(/^http/, 'ws')
 
-  const stream = await navigator.mediaDevices.getUserMedia({
-    video: { width: { ideal: 1280 }, height: { ideal: 720 } },
-  })
-  const constraints: MediaTrackConstraints = {
-    width: { max: 1280 * 0.5 },
-    height: { max: 720 * 0.5 },
-  }
+  const stream = await navigator.mediaDevices.getUserMedia({ video: true })
 
-  for (const track of stream.getTracks()) {
-    if (track.kind !== 'video') continue
-    await track.applyConstraints(constraints).catch((error) => {
-      console.error('Cannot constrain video', error)
-    })
+  const constraints: MediaTrackConstraints = {}
+  const canConstrain = navigator.mediaDevices.getSupportedConstraints()
+
+  if (canConstrain.width) constraints.width = { max: 1280 * 0.5 }
+  if (canConstrain.height) constraints.height = { max: 720 * 0.5 }
+  if (canConstrain.frameRate) constraints.frameRate = { max: 24 }
+
+  console.debug('canConstrain', canConstrain, constraints)
+
+  if (Object.keys(constraints).length > 0) {
+    for (const track of stream.getTracks().filter((t) => t.kind === 'video')) {
+      await track.applyConstraints(constraints).catch((error) => {
+        pushNotification('Failed to constrain video', 'error')
+        console.error(error)
+      })
+    }
   }
 
   if (url.searchParams.has('self')) {
