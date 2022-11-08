@@ -8,7 +8,7 @@ const grid = document.getElementById('grid') as HTMLElement
 const title = document.getElementById('title') as HTMLElement
 const version = document.getElementById('version') as HTMLElement
 const notifications = document.getElementById('notifications') as HTMLElement
-version.innerText = '0.1.4'
+version.innerText = '0.1.5'
 
 const rtc = {
   iceServers: [
