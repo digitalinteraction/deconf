@@ -28,25 +28,18 @@ async function main() {
   const server = new URL('portal', location.href)
   server.protocol = server.protocol.replace(/^http/, 'ws')
 
-  const stream = await navigator.mediaDevices.getUserMedia({ video: true })
-
   const constraints: MediaTrackConstraints = {}
   const canConstrain = navigator.mediaDevices.getSupportedConstraints()
 
-  if (canConstrain.width) constraints.width = { max: 1280 * 0.5 }
-  if (canConstrain.height) constraints.height = { max: 720 * 0.5 }
-  if (canConstrain.frameRate) constraints.frameRate = { max: 24 }
+  if (canConstrain.width) constraints.width = { ideal: 1280 * 0.5 }
+  if (canConstrain.height) constraints.height = { ideal: 720 * 0.5 }
+  if (canConstrain.frameRate) constraints.frameRate = { ideal: 24 }
+
+  const stream = await navigator.mediaDevices.getUserMedia({
+    video: Object.keys(constraints).length > 0 ? { ...constraints } : true,
+  })
 
   console.debug('canConstrain', canConstrain, constraints)
-
-  if (Object.keys(constraints).length > 0) {
-    for (const track of stream.getTracks().filter((t) => t.kind === 'video')) {
-      await track.applyConstraints(constraints).catch((error) => {
-        pushNotification('Failed to constrain video', 'error')
-        console.error(error)
-      })
-    }
-  }
 
   if (url.searchParams.has('self')) {
     const localVideo = document.getElementById('localVideo') as HTMLVideoElement
