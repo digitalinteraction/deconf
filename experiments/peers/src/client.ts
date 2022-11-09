@@ -36,7 +36,11 @@ async function main() {
   if (canConstrain.frameRate) constraints.frameRate = { ideal: 24 }
 
   const stream = await navigator.mediaDevices.getUserMedia({
-    video: Object.keys(constraints).length > 0 ? { ...constraints } : true,
+    video:
+      !url.searchParams.has('noConstrain') &&
+      Object.keys(constraints).length > 0
+        ? { ...constraints }
+        : true,
   })
 
   console.debug('canConstrain', canConstrain, constraints)
