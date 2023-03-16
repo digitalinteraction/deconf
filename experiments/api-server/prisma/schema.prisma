@@ -1,0 +1,156 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Notes:
+// - do relationships need indexes?
+
+model User {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  email     String   @unique
+  name      String?
+
+  conferences ConfACL[]
+}
+
+model Conference {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  metadata  Json
+
+  slug String @unique
+  name String
+
+  sessions   Session[]
+  taxonomies Taxonomy[]
+  users      ConfACL[]
+  hooks      ConfHook[]
+}
+
+enum ConfRole {
+  ADMIN
+  REGISTRATION
+}
+
+model ConfACL {
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+
+  conferenceId Int
+  conference   Conference @relation(fields: [conferenceId], references: [id])
+
+  role ConfRole
+
+  @@id([conferenceId, userId])
+}
+
+model ConfHook {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  metadata  Json
+
+  slug String
+  url  String
+
+  conferenceId Int
+  conference   Conference @relation(fields: [conferenceId], references: [id])
+}
+
+enum SessionState {
+  DRAFT // In the system but not to be show
+  ACCEPTED // Not on the schedule but may be sneak-peaked
+  CONFIRMED // Live & public
+}
+
+model Session {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Store custom things for the frontend to render?
+  metadata Json
+
+  title      Json
+  summary    Json
+  body       Json
+  coverImage String?
+  languages  String[]
+  isFeatured Boolean      @default(false)
+  state      SessionState
+
+  conferenceId Int
+  conference   Conference @relation(fields: [conferenceId], references: [id])
+
+  people SessionPerson[]
+  terms  Term[]
+  links  SessionLink[]
+}
+
+// TODO: merge with users somehow?
+model SessionPerson {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name  String
+  bio   Json
+  links Json
+
+  headshot String?
+  sessions Session[]
+}
+
+// TODO: these could be one-per-lang like other i18n stuff?
+model SessionLink {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  language String
+  url      String
+  title    String
+
+  sessionId Int
+  session   Session @relation(fields: [sessionId], references: [id])
+}
+
+model Taxonomy {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  title Json
+  icon  String
+
+  conferenceId Int
+  conference   Conference @relation(fields: [conferenceId], references: [id])
+
+  terms Term[]
+}
+
+model Term {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  title Json
+  icon  String?
+
+  taxonomyId Int
+  taxonomy   Taxonomy @relation(fields: [taxonomyId], references: [id])
+
+  sessions Session[]
+}
+

@@ -1,0 +1,29 @@
+#
+# This compose file spins up a redis + Postgres container for development
+#
+
+version: '2.4'
+name: deconf-experimental-api
+
+volumes:
+  redis-data:
+  pg-data:
+
+services:
+  redis:
+    image: redis:6-alpine
+    ports:
+      - 6379:6379
+    volumes:
+      - redis-data:/data
+
+  postgres:
+    image: postgres:12-alpine
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: user
+    volumes:
+      - pg-data:/var/lib/postgresql/data
