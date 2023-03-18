@@ -1,21 +1,28 @@
 import KoaRouter from '@koa/router'
-import { HttpError, prisma } from './lib.js'
+import { assertAuthz, assertConference, HttpError, prisma } from './lib.js'
 
 export function scheduleV1() {
   const router = new KoaRouter()
 
   router.get('/:conf/everything', async (ctx) => {
-    const conference = await prisma.conference.findUnique({
-      where: { slug: ctx.params.conf },
-    })
-
-    if (!conference) throw HttpError.notFound()
-    const conferenceId = conference.id
+    const conferenceId = await assertConference(ctx.params.conf)
 
     const sessions = await prisma.session.findMany({
       where: { conferenceId },
-      include: {
-        people: true,
+      select: {
+        id: true,
+        title: true,
+        summary: true,
+        slotId: true,
+        languages: true,
+        metadata: true,
+        people: {
+          select: {
+            id: true,
+            name: true,
+            headshot: true,
+          },
+        },
         terms: true,
       },
     })
@@ -27,9 +34,32 @@ export function scheduleV1() {
       },
     })
 
-    // TODO: session slots!
+    const slots = await prisma.timeSlot.findMany({
+      where: { conferenceId },
+    })
 
-    ctx.body = { sessions, taxonomies }
+    ctx.body = { sessions, taxonomies, slots }
+  })
+
+  router.get('/:conf/sessions/:session/links', async (ctx) => {
+    const conferenceId = await assertConference(ctx.params.conf)
+
+    assertAuthz(ctx, ctx.params.conf, 'REGISTRATION')
+
+    const session = await prisma.session.findFirst({
+      where: {
+        id: parseInt(ctx.params.session),
+        conferenceId,
+      },
+      include: {
+        links: true,
+      },
+    })
+    if (!session) throw HttpError.notFound()
+
+    // TODO: check auth
+
+    ctx.body = session.links
   })
 
   return router

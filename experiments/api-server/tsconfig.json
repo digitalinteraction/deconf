@@ -14,15 +14,16 @@
     "pretty": true,
 
     "strict": true,
-    "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "noEmitOnError": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+
+    "noImplicitAny": false
   },
   "ts-node": {
     "transpileOnly": true
   },
-  "include": ["."]
+  "include": ["cli.js", "source", "prisma"]
 }

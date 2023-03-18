@@ -12,6 +12,10 @@ datasource db {
 
 // Notes:
 // - do relationships need indexes?
+// - remove coverImage in favour of metadata
+// - SessionPerson needs an order
+// - SessionLink optional
+// - SessionPerson needs a conferenceId
 
 model User {
   id        Int      @id @default(autoincrement())
@@ -20,14 +24,15 @@ model User {
   email     String   @unique
   name      String?
 
-  conferences ConfACL[]
+  conferences     ConfACL[]
+  SessionInterest SessionInterest[]
 }
 
 model Conference {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  metadata  Json
+  metadata  Json     @default("{}")
 
   slug String @unique
   name String
@@ -36,6 +41,7 @@ model Conference {
   taxonomies Taxonomy[]
   users      ConfACL[]
   hooks      ConfHook[]
+  slots      TimeSlot[]
 }
 
 enum ConfRole {
@@ -59,7 +65,7 @@ model ConfHook {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  metadata  Json
+  metadata  Json     @default("{}")
 
   slug String
   url  String
@@ -80,7 +86,7 @@ model Session {
   updatedAt DateTime @updatedAt
 
   // Store custom things for the frontend to render?
-  metadata Json
+  metadata Json @default("{}")
 
   title      Json
   summary    Json
@@ -93,12 +99,32 @@ model Session {
   conferenceId Int
   conference   Conference @relation(fields: [conferenceId], references: [id])
 
-  people SessionPerson[]
-  terms  Term[]
-  links  SessionLink[]
+  slotId Int
+  slot   TimeSlot @relation(fields: [slotId], references: [id])
+
+  people     SessionPerson[]
+  terms      Term[]
+  links      SessionLink[]
+  interested SessionInterest[]
 }
 
-// TODO: merge with users somehow?
+// TODO: is there a better way of storing this info?
+// ties in with redesigning the ScheduleView
+model TimeSlot {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  start DateTime
+  end   DateTime
+
+  conferenceId Int
+  conference   Conference @relation(fields: [conferenceId], references: [id])
+
+  session Session[]
+}
+
+// Future work, merge in with `Users` model
 model SessionPerson {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
@@ -124,6 +150,18 @@ model SessionLink {
 
   sessionId Int
   session   Session @relation(fields: [sessionId], references: [id])
+}
+
+model SessionInterest {
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+
+  sessionId Int
+  session   Session @relation(fields: [sessionId], references: [id])
+
+  role ConfRole
+
+  @@id([userId, sessionId])
 }
 
 model Taxonomy {
@@ -152,5 +190,15 @@ model Term {
   taxonomy   Taxonomy @relation(fields: [taxonomyId], references: [id])
 
   sessions Session[]
+}
+
+model Log {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  visitorId String
+  metric    String
+  payload   Json
 }
 

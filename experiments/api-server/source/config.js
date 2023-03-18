@@ -1,9 +1,24 @@
 import fs from 'node:fs'
 import { create, defaulted, object, string } from 'superstruct'
 
+const NOT_SECRET = 'not_secret'
+
 const AppConfig = object({
   selfUrl: defaulted(string(), 'http://localhost:3000'),
   env: defaulted(string(), 'production'),
+  jwt: defaulted(
+    object({
+      secret: defaulted(string(), NOT_SECRET),
+      issuer: defaulted(string(), 'deconf-api-server'),
+    }),
+    {}
+  ),
+  cookies: defaulted(
+    object({
+      secret: defaulted(string(), NOT_SECRET),
+    }),
+    {}
+  ),
 })
 
 function fileExists(file) {
@@ -30,8 +45,17 @@ export function loadConfig(env = process.env) {
 
   if (env.NODE_ENV) config.env = env.NODE_ENV
   if (env.SELF_URL) config.selfUrl = env.SELF_URL
+  if (env.JWT_SECRET) config.jwt.secret = env.JWT_SECRET
 
+  if (config.env === 'production' && config.jwt.secret === NOT_SECRET) {
+    throw new Error('config.jwt.secret not configured')
+  }
+  if (config.env === 'production' && config.cookies.secret === NOT_SECRET) {
+    throw new Error('config.jwt.secret not configured')
+  }
   return config
 }
 
 export const appConfig = loadConfig()
+
+export const asAny = (input) => input

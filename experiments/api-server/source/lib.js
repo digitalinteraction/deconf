@@ -1,5 +1,9 @@
 import debug from 'debug'
 import { PrismaClient } from '@prisma/client'
+import jwt from 'jsonwebtoken'
+
+import { appConfig } from './config.js'
+import { array, create as assertStruct, string, type } from 'superstruct'
 
 export const prisma = new PrismaClient()
 
@@ -15,7 +19,9 @@ export class Disposable {
 }
 
 export class CompositeDisposable {
+  /** @type {Disposable[]} */
   #children = []
+
   add(disposable) {
     this.#children.push(disposable)
   }
@@ -47,9 +53,60 @@ export class HttpError extends Error {
 
   /** @param {number} status */
   constructor(status, message) {
-    this.status = status
     super(message)
+    this.status = status
     this.name = 'HttpError'
-    Error.captureStackTrace(this, ApiError)
+    Error.captureStackTrace(this, HttpError)
   }
+}
+
+/** @param {string} slug */
+export async function assertConference(slug) {
+  const conference = await prisma.conference.findUnique({
+    where: { slug },
+  })
+  if (!conference) throw HttpError.notFound()
+  return conference.id
+}
+
+export { assertStruct }
+
+export const AppToken = type({
+  sub: string(),
+  roles: array(string()),
+  conf: string(),
+})
+
+/** @param {import('koa').Context} ctx @param {import('@prisma/client').ConfRole} role*/
+export function assertAuthz(ctx, conf, role) {
+  const authz =
+    ctx.cookies.get('authToken') ??
+    getAuthzHeader(ctx.request.header.authorization)
+
+  if (!authz) throw HttpError.unauthorized('No authz present')
+
+  try {
+    const payload = assertStruct(
+      jwt.verify(authz, appConfig.jwt.secret, {
+        issuer: appConfig.jwt.issuer,
+      }),
+      AppToken
+    )
+
+    if (conf !== payload.conf) throw HttpError.unauthorized('Wrong conf')
+    if (
+      !payload.roles.includes(role) &&
+      !payload.roles.some((r) => r === 'ADMIN')
+    ) {
+      throw HttpError.unauthorized('Missing roles')
+    }
+
+    return parseInt(payload.sub)
+  } catch (error) {
+    console.error(error)
+    throw HttpError.unauthorized()
+  }
+}
+function getAuthzHeader(authorization) {
+  return (/bearer (.+)/i.exec(authorization) ?? [])[1]
 }

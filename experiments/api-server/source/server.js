@@ -5,9 +5,17 @@ import KoaRouter from '@koa/router'
 import koaJson from 'koa-json'
 import koaBodyParser from 'koa-bodyparser'
 
-import { CompositeDisposable, createDebug, HttpError } from './lib.js'
+import {
+  CompositeDisposable,
+  createDebug,
+  HttpError,
+  prisma,
+  Disposable,
+} from './lib.js'
 
 import { scheduleV1 } from './schedule.js'
+import { StructError } from 'superstruct'
+import { authV1 } from './auth.js'
 
 const debug = createDebug('server')
 
@@ -24,6 +32,9 @@ async function middleware(ctx, next) {
     if (error instanceof HttpError) {
       ctx.status = error.status
       ctx.body = error.message
+    } else if (error instanceof StructError) {
+      ctx.status = 400
+      ctx.body = { ...error }
     } else {
       console.error('Fatal error', error)
       process.exit(1)
@@ -32,16 +43,20 @@ async function middleware(ctx, next) {
 }
 
 export function createServer() {
-  const disposable = new CompositeDisposable()
+  const disposables = new CompositeDisposable()
+  disposables.add(new Disposable(() => prisma.$disconnect()))
 
   const router = new KoaRouter()
 
-  // router.get('/', (ctx) => {
-  //   ctx.body = 'Hello there!'
-  // })
+  router.get('/', (ctx) => {
+    ctx.body = { name: 'api-server', version: '0.0.0' }
+  })
 
   const schedule = scheduleV1()
   router.use('/schedule/v1', schedule.routes(), schedule.allowedMethods())
+
+  const auth = authV1('/auth/v1')
+  router.use('/auth/v1', auth.routes(), auth.allowedMethods())
 
   const app = new Koa()
     .use(koaJson())
@@ -51,7 +66,6 @@ export function createServer() {
     .use(router.allowedMethods())
 
   const server = http.createServer(app.callback())
-  const dispose = () => disposable.dispose()
 
-  return { server, dispose }
+  return { server, disposables }
 }
