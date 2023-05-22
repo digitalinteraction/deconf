@@ -7,6 +7,8 @@ export function scheduleV1() {
   router.get('/:conf/everything', async (ctx) => {
     const conferenceId = await assertConference(ctx.params.conf)
 
+    // TODO: relationship ids will be missing
+
     const sessions = await prisma.session.findMany({
       where: { conferenceId },
       select: {
