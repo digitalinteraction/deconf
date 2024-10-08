@@ -1,0 +1,29 @@
+{
+  "name": "deconf-api-server",
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "cookie": "^0.7.2",
+    "debug": "^4.3.7",
+    "gruber": "^0.5.0",
+    "ics": "^3.8.1",
+    "jose": "^5.9.3",
+    "minio": "^8.0.1",
+    "postgres": "^3.4.4",
+    "redis": "^4.7.0",
+    "yargs": "^17.7.2"
+  },
+  "devDependencies": {
+    "@openlab/deconf-shared": "^3.6.0",
+    "@types/cookie": "^0.6.0",
+    "@types/debug": "^4.1.12",
+    "@types/node": "^22.7.4",
+    "@types/yargs": "^17.0.33",
+    "prettier": "^3.3.3",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.2"
+  }
+}
