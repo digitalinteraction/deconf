@@ -3,16 +3,16 @@ import { definePostgresMigration } from 'gruber'
 export default definePostgresMigration({
   async up(sql) {
     await sql`
-      CREATE TABLE "logs" (
+      CREATE TABLE "content" (
         "id" SERIAL PRIMARY KEY,
         "created" TIMESTAMP NOT NULL DEFAULT NOW(),
-        "visitor" VARCHAR(64) NOT NULL,
-        "name" VARCHAR(64) NOT NULL,
-        "payload" JSONB NOT NULL DEFAULT '{}'::JSONB
+        "slug" VARCHAR(64) NOT NULL,
+        "body" JSONB NOT NULL DEFAULT '{}'::JSONB,
+        "conference_id" INTEGER NOT NULL REFERENCES "conferences" (id) ON DELETE CASCADE
       )
     `
   },
   async down(sql) {
-    await sql`DROP TABLE "logs"`
+    await sql`DROP TABLE "content"`
   },
 })

@@ -105,3 +105,11 @@ export interface SessionLabelRecord {
   session_id: number
   label_id: number
 }
+
+export interface ContentRecord {
+  id: number
+  created: Date
+  slug: string
+  body: Record<string, string | undefined>
+  conference_id: number
+}

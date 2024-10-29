@@ -13,6 +13,7 @@ import {
   sessionIcsRoute,
 } from './calendar.js'
 import { getSessionLinksRoute, getScheduleRoute } from './conference.js'
+import { getContentRoute } from './content.js'
 
 export default [
   // Conference
@@ -30,4 +31,7 @@ export default [
   sessionGoogleCalRoute,
   createUserCal,
   getUserCal,
+
+  // Content
+  getContentRoute,
 ]

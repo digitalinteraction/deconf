@@ -7,7 +7,7 @@ export default definePostgresMigration({
         "id" SERIAL PRIMARY KEY,
         "created" TIMESTAMP NOT NULL DEFAULT NOW(),
         "consented" TIMESTAMP NOT NULL DEFAULT NOW(),
-        "email" VARCHAR(255) NOT NULL UNIQUE,
+        "email" VARCHAR(255) DEFAULT NULL,
         "metadata" JSONB NOT NULL DEFAULT '{}'::JSONB
       )
     `

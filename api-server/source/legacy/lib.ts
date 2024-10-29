@@ -10,6 +10,7 @@ import {
   TaxonomyRecord,
 } from '../lib/types.js'
 import { HTTPError } from 'gruber'
+import { Cachable, KeyValueStore } from '../lib/mod.js'
 
 function assertInteger(input: number | string) {
   const value = typeof input === 'string' ? parseInt(input) : input
@@ -191,4 +192,19 @@ export async function assertRegistration(
   const record = await getRegistration(sql, user, conference)
   if (!record) throw HTTPError.unauthorized('not registered for conference')
   return record
+}
+
+// Wrap some code in a cached key in the store to limit execution
+export async function cache<T extends Cachable>(
+  store: KeyValueStore,
+  key: T[0],
+  duration: number,
+  block: () => Promise<T[1] | null>,
+): Promise<T[1] | null> {
+  let value = await store.get(key)
+  if (!value) {
+    value = await block()
+    await store.set(key, value, { duration })
+  }
+  return value
 }

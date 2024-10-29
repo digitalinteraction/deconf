@@ -1,17 +1,16 @@
 import { defineRoute, HTTPError } from 'gruber'
 import {
-  SessionLinkRecord,
-  PersonRecord,
-  SessionRecord,
-  useDatabase,
   LabelRecord,
+  PersonRecord,
+  SessionLinkRecord,
+  SessionRecord,
   useAuthentication,
+  useDatabase,
   useStore,
-  KeyValueStore,
-  Cachable,
 } from '../lib/mod.js'
 import {
   assertConference,
+  cache,
   getSession,
   getSessionLabels,
   getSessionLinks,
@@ -22,7 +21,6 @@ import {
 } from './lib.js'
 
 import * as deconf from '@openlab/deconf-shared'
-import { log } from 'console'
 import { Sql } from 'postgres'
 
 function convertSessionState(state: string): deconf.SessionState {
@@ -167,21 +165,6 @@ export const getScheduleRoute = defineRoute({
     return Response.json(schedule)
   },
 })
-
-// Wrap some code in a cached key in the store to limit execution
-async function cache<T extends Cachable>(
-  store: KeyValueStore,
-  key: T[0],
-  duration: number,
-  block: () => Promise<T[1]>,
-) {
-  let value = await store.get(key)
-  if (!value) {
-    value = await block()
-    await store.set(key, value, { duration })
-  }
-  return value
-}
 
 function getLegacyTax(
   taxonomies: TaxonomyDetails[],
