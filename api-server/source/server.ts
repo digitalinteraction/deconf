@@ -1,42 +1,67 @@
-import http from 'node:http'
-import { defineRoute, getFetchRequest, NodeRouter } from 'gruber'
-import { useCors, useDatabase, useStore } from './lib/mod.js'
+import {
+  defineRoute,
+  FetchRouter,
+  getFetchRequest,
+  NodeRouter,
+  serveHTTP,
+} from "gruber";
+import {
+  useAppConfig,
+  useCors,
+  useDatabase,
+  useStore,
+  useTerminator,
+} from "./lib/mod.js";
 
-import legacyRoutes from './legacy/routes.js'
+import legacyRoutes from "./legacy/routes.js";
 
 export interface RunServerOptions {
-  port: number
-  hostname: string
+  port: number;
+  hostname: string;
 }
 
-const corsRoute = defineRoute({
-  method: 'OPTIONS',
-  pathname: '*',
-  handler({ request }) {
-    const response = new Response(undefined)
-    return useCors()?.apply(request, response) ?? response
+const hello = defineRoute({
+  method: "GET",
+  pathname: "/",
+  dependencies: {
+    appConfig: useAppConfig,
   },
-})
+  async handler({ appConfig }) {
+    return Response.json({
+      message: "ok",
+      meta: appConfig.meta,
+    });
+  },
+});
 
-export function runServer(options: RunServerOptions) {
-  const cors = useCors()
-  const sql = useDatabase()
-  const store = useStore()
+const healthz = defineRoute({
+  method: "GET",
+  pathname: "/healthz",
+  dependencies: {
+    arnie: useTerminator,
+  },
+  async handler({ arnie }) {
+    return arnie.getResponse();
+  },
+});
 
-  const router = new NodeRouter({
-    routes: [corsRoute, ...legacyRoutes],
-  })
+export async function runServer(options: RunServerOptions) {
+  const cors = useCors();
+  const sql = useDatabase();
+  const store = useStore();
+  const arnie = useTerminator();
 
-  const server = http.createServer(async (req, res) => {
-    const request = getFetchRequest(req)
-    const response = await router.getResponse(request)
-    console.log(response.status, request.method, request.url)
-    return router.respond(res, cors ? cors.apply(request, response) : response)
-  })
+  const router = new FetchRouter({
+    log: true,
+    cors: cors,
+    routes: [hello, healthz, ...legacyRoutes],
+  });
 
-  // TODO: use gruber's Terminator when released
+  const server = await serveHTTP(options, (r) => router.getResponse(r));
 
-  server.listen(options.port, options.hostname, () => {
-    console.log('Listening on http://%s:%d', options.hostname, options.port)
-  })
+  arnie.start(async () => {
+    await server.stop();
+    await sql.end();
+    await store.close();
+  });
 }

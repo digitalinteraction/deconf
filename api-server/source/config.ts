@@ -1,72 +1,110 @@
-import { getNodeConfiguration } from 'gruber'
-import pkg from '../package.json' with { type: 'json' }
+import { getConfiguration, Infer } from "gruber";
+import pkg from "../package.json" with { type: "json" };
+import { useAppConfig } from "./lib/globals.js";
 
-const config = getNodeConfiguration()
+const config = getConfiguration();
 
-const spec = config.object({
-  env: config.string({ variable: 'NODE_ENV', fallback: 'development' }),
+const struct = config.object({
+  env: config.string({ variable: "NODE_ENV", fallback: "development" }),
 
   meta: config.object({
-    name: config.string({ variable: 'APP_NAME', fallback: pkg.name }),
-    version: config.string({ variable: 'APP_VERSION', fallback: pkg.version }),
+    name: config.string({ variable: "APP_NAME", fallback: pkg.name }),
+    version: config.string({ variable: "APP_VERSION", fallback: pkg.version }),
   }),
 
   server: config.object({
-    port: config.number({ variable: 'PORT', fallback: 3000 }),
-    hostname: config.string({ variable: 'HOST', fallback: '0.0.0.0' }),
+    port: config.number({ variable: "PORT", fallback: 3000 }),
+    hostname: config.string({ variable: "HOST", fallback: "0.0.0.0" }),
+    url: config.url({
+      variable: "SELF_URL",
+      fallback: "http://localhost:3000",
+    }),
   }),
 
-  locations: config.object({
-    self: config.url({
-      variable: 'SELF_URL',
-      fallback: 'http://localhost:3000',
+  client: config.object({
+    url: config.url({
+      variable: "CLIENT_URL",
+      fallback: "http://localhost:8080",
     }),
-    // portal ???
-    // homepage ???
   }),
 
   postgres: config.object({
     url: config.url({
-      variable: 'POSTGRES_URL',
-      fallback: 'postgres://user:secret@localhost:5432/user',
+      variable: "POSTGRES_URL",
+      fallback: "postgres://user:secret@localhost:5432/user",
     }),
   }),
 
   redis: config.object({
-    prefix: config.string({ variable: 'REDIS_FALLBACK', fallback: '' }),
+    prefix: config.string({ variable: "REDIS_PREFIX", fallback: "" }),
     url: config.url({
-      variable: 'REDIS_URL',
-      fallback: 'redis://localhost:6379',
+      variable: "REDIS_URL",
+      fallback: "redis://localhost:6379",
     }),
   }),
 
   auth: config.object({
+    loginMaxAge: config.number({
+      variable: "AUTH_SESSION_MAX_AGE",
+      fallback: 30 * 60 * 1_000, // 30 minutes
+    }),
+    sessionMaxAge: config.number({
+      variable: "AUTH_SESSION_MAX_AGE",
+      fallback: 30 * 24 * 60 * 60 * 1_000, // 30 days
+    }),
     cookieName: config.string({
-      variable: 'AUTH_COOKIE_NAME',
-      fallback: 'deconf-api-server',
+      variable: "AUTH_COOKIE_NAME",
+      fallback: "deconf-api-server",
     }),
   }),
 
   jwt: config.object({
     issuer: config.string({
-      variable: 'JWT_ISSUER',
-      fallback: 'deconf.app',
+      variable: "JWT_ISSUER",
+      fallback: "deconf.app",
     }),
     audience: config.string({
-      variable: 'JWT_AUDIENCE',
-      fallback: 'deconf.app',
+      variable: "JWT_AUDIENCE",
+      fallback: "deconf.app",
     }),
-    secret: config.string({ variable: 'JWT_SECRET', fallback: 'not_secret' }),
+    secret: config.string({ variable: "JWT_SECRET", fallback: "not_secret" }),
   }),
-})
 
-export function loadConfig(path: string | URL) {
-  // TODO: additional runtime checks
-  return config.load(path, spec)
+  sendgrid: config.object({
+    apiKey: config.string({ variable: "SENDGRID_API_TOKEN", fallback: "" }),
+    fromAddress: config.string({
+      variable: "EMAIL_FROM_ADDRESS",
+      fallback: "noreply@openlab.dev",
+    }),
+    fromName: config.string({
+      variable: "EMAIL_FROM_NAME",
+      fallback: "Deconf",
+    }),
+  }),
+});
+
+export async function loadConfig(path: string | URL) {
+  const value = await config.load(path, struct);
+
+  if (value.env === "production") {
+    if (value.sendgrid.apiKey === "") {
+      throw new Error("sendgrid.apiKey not set");
+    }
+    if (value.jwt.secret === "") {
+      throw new Error("jwt.secret not set");
+    }
+  }
+
+  return value;
 }
 
-export const appConfig = await loadConfig(import.meta.resolve('../config.json'))
+export type AppConfig = Infer<typeof struct>;
 
 export function dumpConfig() {
-  console.log(config.getUsage(spec, appConfig))
+  console.log(config.getUsage(struct, useAppConfig()));
 }
+
+// Secret value to auto-pare + make available through a dependency
+export const _appConfig = await loadConfig(
+  import.meta.resolve("../config.json"),
+);

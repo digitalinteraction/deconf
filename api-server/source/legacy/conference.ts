@@ -1,42 +1,31 @@
-import { defineRoute, HTTPError } from 'gruber'
+import { defineRoute, HTTPError, includesScope } from "gruber";
 import {
   LabelRecord,
   PersonRecord,
   SessionLinkRecord,
   SessionRecord,
-  useAuthentication,
+  useAuthz,
   useDatabase,
   useStore,
-} from '../lib/mod.js'
-import {
-  assertConference,
-  cache,
-  getSession,
-  getSessionLabels,
-  getSessionLinks,
-  getSessionPeople,
-  getSessions,
-  getTaxonomies,
-  TaxonomyDetails,
-} from './lib.js'
+} from "../lib/mod.js";
+import { cache, LegacyRepo, TaxonomyDetails } from "./lib.js";
 
-import * as deconf from '@openlab/deconf-shared'
-import { Sql } from 'postgres'
+import * as deconf from "@openlab/deconf-shared";
 
 function convertSessionState(state: string): deconf.SessionState {
-  if (state === 'accepted') return deconf.SessionState.accepted
-  if (state === 'confirmed') return deconf.SessionState.confirmed
-  return deconf.SessionState.draft
+  if (state === "accepted") return deconf.SessionState.accepted;
+  if (state === "confirmed") return deconf.SessionState.confirmed;
+  return deconf.SessionState.draft;
 }
 
 function convertSlot(record: SessionRecord): deconf.SessionSlot | null {
-  if (!record.start || !record.end) return null
+  if (!record.start_date || !record.end_date) return null;
 
   return {
-    id: record.start.getTime() + '_' + record.end.getTime(),
-    start: record.start,
-    end: record.end,
-  }
+    id: record.start_date.getTime() + "_" + record.end_date.getTime(),
+    start: record.start_date,
+    end: record.end_date,
+  };
 }
 
 function convertPerson(record: PersonRecord): deconf.Speaker {
@@ -46,26 +35,20 @@ function convertPerson(record: PersonRecord): deconf.Speaker {
     role: { en: record.subtitle },
     bio: record.bio,
     // TODO: headshots x avatars
-  }
+  };
 }
 
 function convertSession(
   record: SessionRecord,
-  taxonomies: TaxonomyDetails[],
+  taxonomies: LegacyTaxes,
   people: PersonRecord[] = [],
   labels: LabelRecord[] = [],
 ): deconf.Session {
-  const labelIds = new Set(labels.map((l) => l.id))
+  const labelIds = new Set(labels.map((l) => l.id));
 
-  const themes = getLegacyTax(taxonomies, 'theme').filter((t) =>
-    labelIds.has(t.id),
-  )
-  const tracks = getLegacyTax(taxonomies, 'track').filter((t) =>
-    labelIds.has(t.id),
-  )
-  const types = getLegacyTax(taxonomies, 'type').filter((t) =>
-    labelIds.has(t.id),
-  )
+  const themes = taxonomies.theme.filter((t) => labelIds.has(t.id));
+  const tracks = taxonomies.track.filter((t) => labelIds.has(t.id));
+  const types = taxonomies.type.filter((t) => labelIds.has(t.id));
 
   return {
     id: record.id.toString(),
@@ -77,7 +60,7 @@ function convertSession(
     title: record.title,
     content: record.details,
     links: [],
-    hostLanguages: record.languages.split(','),
+    hostLanguages: record.languages.split(","),
     enableInterpretation: false,
     speakers: people.map((person) => convertPerson(person).id),
     hostOrganisation: {},
@@ -89,38 +72,40 @@ function convertSession(
     participantCap: null,
 
     hideFromSchedule: false,
-  }
+  };
 }
 
 function convertLabel(record: LabelRecord): deconf.SessionType {
   return {
     id: record.id.toString(),
     title: record.title,
-    iconGroup: 'fas',
-    iconName: 'lightbulb',
-    layout: 'plenary',
-  }
+    iconGroup: "fas",
+    iconName: "lightbulb",
+    layout: "plenary",
+  };
 }
 
 export async function getSchedule(
-  sql: Sql,
-  conference: number,
+  legacy: LegacyRepo,
+  conferenceId: number,
 ): Promise<deconf.ScheduleRecord> {
-  const sessions = await getSessions(sql, conference)
-  const people = await getSessionPeople(sql, conference)
-  const taxonomies = await getTaxonomies(sql, conference)
-  const labels = await getSessionLabels(sql, conference)
+  const sessions = await legacy.listSessions(conferenceId);
+  const people = await legacy.getGroupedPeople(conferenceId);
+  const taxonomies = await legacy.listTaxonomies(conferenceId);
+  const labels = await legacy.getGroupedLabels(conferenceId);
 
   const slots = new Map(
     sessions
       .map((s) => convertSlot(s))
       .filter((slot) => slot)
       .map((slot) => [slot!.id, slot!]),
-  )
+  );
 
-  const theme = getLegacyTax(taxonomies, 'theme')
-  const track = getLegacyTax(taxonomies, 'track')
-  const type = getLegacyTax(taxonomies, 'type')
+  const legacyTaxonomies = getLegacyTaxes(taxonomies);
+
+  // const theme = getLegacyTax(taxonomies, "theme");
+  // const track = getLegacyTax(taxonomies, "track");
+  // const type = getLegacyTax(taxonomies, "type");
 
   // TODO: things need injecting onto the "SessionType" records
   // TODO: what to do with settings ...
@@ -129,90 +114,105 @@ export async function getSchedule(
     sessions: sessions.map((s) =>
       convertSession(
         s,
-        taxonomies,
-        people.mapped.get(s.id),
-        labels.mapped.get(s.id),
+        legacyTaxonomies,
+        people.grouped.get(s.id),
+        labels.grouped.get(s.id),
       ),
     ),
     settings: {} as any,
     slots: Array.from(slots.values()),
     speakers: Array.from(people.all).map((p) => convertPerson(p)),
-    themes: theme.map((l) => convertLabel(l)),
-    tracks: track.map((l) => convertLabel(l)),
-    types: type.map((l) => convertLabel(l)),
-  }
+    themes: legacyTaxonomies.theme.map((l) => convertLabel(l)),
+    tracks: legacyTaxonomies.track.map((l) => convertLabel(l)),
+    types: legacyTaxonomies.type.map((l) => convertLabel(l)),
+  };
 }
-
-type ScheduleCache = [`/legacy/${number}/schedule`, deconf.ScheduleRecord]
 
 // Conference - getSchedule
 export const getScheduleRoute = defineRoute({
-  method: 'GET',
-  pathname: '/legacy/:conference/schedule',
-  async handler({ params }) {
-    const sql = useDatabase()
-    const store = await useStore()
-    const conf = await assertConference(sql, params.conference)
+  method: "GET",
+  pathname: "/legacy/:conference/schedule",
+  dependencies: {
+    legacy: LegacyRepo.use,
+    store: useStore,
+  },
+  async handler({ params, legacy, store }) {
+    const conf = await legacy.assertConference(params.conference);
 
     // Cache the schedule in redis for 5 minutes
-    const schedule = await cache<ScheduleCache>(
+    const schedule = await cache<deconf.ScheduleRecord>(
       store,
       `/legacy/${conf.id}/schedule`,
-      5 * 60,
-      () => getSchedule(sql, conf.id),
-    )
+      5 * 60 * 1_000,
+      () => getSchedule(legacy, conf.id),
+    );
 
-    return Response.json(schedule)
+    return Response.json(schedule);
   },
-})
+});
+
+export type LegacyTaxes = ReturnType<typeof getLegacyTaxes>;
+
+function getLegacyTaxes(taxonomies: TaxonomyDetails[]) {
+  return {
+    theme: getLegacyTax(taxonomies, "theme"),
+    track: getLegacyTax(taxonomies, "track"),
+    type: getLegacyTax(taxonomies, "type"),
+  };
+}
 
 function getLegacyTax(
   taxonomies: TaxonomyDetails[],
-  kind: 'theme' | 'track' | 'type',
+  kind: "theme" | "track" | "type",
 ) {
   return (
     taxonomies.find((t) => t.title?.en?.toLowerCase() === kind)?.labels ?? []
-  )
+  );
 }
 
 function convertLink(link: SessionLinkRecord): deconf.LocalisedLink {
   return {
-    type: '',
-    url: link.url,
+    type: "",
+    url: link.url.en!,
     title: link.title?.en,
-    language: link.language,
-  }
+    language: "en",
+  };
 }
 
 // 30 minutes
-const LINKS_GRACE_MS = 30 * 60 * 1000
+const LINKS_GRACE_MS = 30 * 60 * 1000;
 
 // Conference - getLinks
 export const getSessionLinksRoute = defineRoute({
-  method: 'GET',
-  pathname: '/legacy/:conference/schedule/:session/links',
-  async handler({ request, params }) {
-    const authn = useAuthentication()
-    const { scope } = await authn.assertUser(request, {
-      scope: 'legacy:conference',
-    })
+  method: "GET",
+  pathname: "/legacy/:conference/schedule/:session/links",
+  dependencies: {
+    authz: useAuthz,
+    legacy: LegacyRepo.use,
+  },
+  async handler({ request, params, authz, legacy }) {
+    const { scope } = await authz.assertUser(request, {
+      scope: "legacy:conference",
+    });
 
-    const sql = useDatabase()
-    const links = await getSessionLinks(sql, params.session)
+    const session = await legacy.assertSession(
+      params.session,
+      params.conference,
+    );
+    if (!session?.start_date) throw HTTPError.notFound();
 
-    const session = await getSession(sql, params.session)
-    if (!session?.start) throw HTTPError.notFound()
+    const links = await legacy.listSessionLinks(session.id);
 
     // TODO: participantCap has been removed
 
-    const isAdmin = authn.checkScope(scope, 'admin')
-    const timeUntil = session.start.getTime() - Date.now()
+    const isAdmin = includesScope(scope, "admin");
+    const timeUntil = session.start_date.getTime() - Date.now();
     if (!isAdmin && timeUntil > LINKS_GRACE_MS) {
-      throw HTTPError.unauthorized()
+      throw HTTPError.unauthorized();
     }
 
     return Response.json({
       links: links.map((l) => convertLink(l)),
-    })
+    });
   },
-})
+});

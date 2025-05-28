@@ -1,159 +1,176 @@
-import * as deconf from '@openlab/deconf-shared'
-import { defineRoute } from 'gruber'
-import { useDatabase } from '../lib/database.js'
-import { useAuthentication } from '../lib/authorization.js'
-import {
-  assertConference,
-  assertRegistration,
-  assertSession,
-  getRegistration,
-} from './lib.js'
-import { Sql } from 'postgres'
-import { SessionSaveRecord } from '../lib/types.js'
+import * as deconf from "@openlab/deconf-shared";
+import { defineRoute, loader, SqlDependency } from "gruber";
+import { SessionSaveTable, useAuthz, useDatabase } from "../lib/mod.js";
+import { SessionSaveRecord } from "../lib/types.js";
+import { LegacyRepo } from "./lib.js";
 
-async function addAttendance(sql: Sql, registration: number, session: number) {
-  await sql`
-    INSERT INTO session_saves ${sql({
-      registration_id: registration,
-      session_id: session,
-    })}
-  `
-}
+class AttendanceRepo {
+  static use = loader(() => new this(useDatabase()));
 
-async function clearAttendance(
-  sql: Sql,
-  registration: number,
-  session: number,
-) {
-  await sql`
-    DELETE FROM session_saves
-    WHERE registration_id = ${registration}
-      AND session_id = ${session}
-  `
+  sql: SqlDependency;
+  constructor(sql: SqlDependency) {
+    this.sql = sql;
+  }
+
+  with(sql: SqlDependency) {
+    return new AttendanceRepo(sql);
+  }
+
+  async clearAttendance(registrationId: number, sessionId: number) {
+    await SessionSaveTable.delete(
+      this.sql,
+      this
+        .sql`registration_id = ${registrationId} AND session_id = ${sessionId}`,
+    );
+  }
+
+  async addAttendance(registrationId: number, sessionId: number) {
+    await SessionSaveTable.insertOne(this.sql, {
+      session_id: sessionId,
+      registration_id: registrationId,
+    });
+  }
+
+  getUserAttendance(registrationId: number) {
+    return SessionSaveTable.select(
+      this.sql,
+      this.sql`registration_id = ${registrationId}`,
+    );
+  }
+
+  getSessionAttendance(sessionId: number) {
+    return SessionSaveTable.select(
+      this.sql,
+      this.sql`session_id = ${sessionId}`,
+    );
+  }
 }
 
 // Attendance - attend
 export const attendRoute = defineRoute({
-  method: 'POST',
-  pathname: '/legacy/:conference/attendance/:session/attend',
-  async handler({ request, params }) {
-    const authn = useAuthentication()
-    const { userId } = await authn.assertUser(request, {
-      scope: 'legacy:attendance',
-    })
+  method: "POST",
+  pathname: "/legacy/:conference/attendance/:session/attend",
+  dependencies: {
+    authz: useAuthz,
+    legacy: LegacyRepo.use,
+    attendance: AttendanceRepo.use,
+  },
+  async handler({ request, params, authz, legacy, attendance }) {
+    const { userId } = await authz.assertUser(request, {
+      scope: "legacy:attendance",
+    });
 
-    const sql = useDatabase()
-    const session = await assertSession(sql, params.session, params.conference)
+    const session = await legacy.assertSession(
+      params.session,
+      params.conference,
+    );
 
-    const registration = await assertRegistration(
-      sql,
+    const registration = await legacy.assertRegistration(
       userId,
       params.conference,
-    )
+    );
 
-    await clearAttendance(sql, registration.id, session.id)
-    await addAttendance(sql, registration.id, session.id)
+    await attendance.clearAttendance(registration.id, session.id);
+    await attendance.addAttendance(registration.id, session.id);
 
-    return new Response()
+    return new Response();
   },
-})
+});
 
 // Attendance - unattend
 export const unattendRoute = defineRoute({
-  method: 'POST',
-  pathname: '/legacy/:conference/attendance/:session/unattend',
-  async handler({ request, params }) {
-    const authn = useAuthentication()
-    const { userId } = await authn.assertUser(request, {
-      scope: 'legacy:attendance',
-    })
+  method: "POST",
+  pathname: "/legacy/:conference/attendance/:session/unattend",
+  dependencies: {
+    authz: useAuthz,
+    legacy: LegacyRepo.use,
+    attendance: AttendanceRepo.use,
+  },
+  async handler({ request, params, authz, legacy, attendance }) {
+    const { userId } = await authz.assertUser(request, {
+      scope: "legacy:attendance",
+    });
 
-    const sql = useDatabase()
-    const session = await assertSession(sql, params.session, params.conference)
+    const session = await legacy.assertSession(
+      params.session,
+      params.conference,
+    );
 
-    const registration = await assertRegistration(
-      sql,
+    const registration = await legacy.assertRegistration(
       userId,
       params.conference,
-    )
+    );
 
-    await clearAttendance(sql, registration.id, session.id)
+    await attendance.clearAttendance(registration.id, session.id);
 
-    return new Response()
+    return new Response();
   },
-})
-
-async function getUserAttendance(sql: Sql, registration: number) {
-  return sql<SessionSaveRecord[]>`
-    SELECT id, created, session_id, registration_id
-    FROM session_saves
-    WHERE registration_id = ${registration}
-  `
-}
-
-async function getSessionAttendance(sql: Sql, session: number) {
-  return sql<SessionSaveRecord[]>`
-    SELECT id, created, session_id, registration_id
-    FROM session_saves
-    WHERE session_id = ${session}
-  `
-}
+});
 
 // Attendance - getSession
 export const sessionAttendanceRoute = defineRoute({
-  method: 'GET',
-  pathname: '/legacy/:conference/attendance/:session',
-  async handler({ request, params }) {
-    const authn = useAuthentication()
-    const token = await authn.getAuthorization(request)
+  method: "GET",
+  pathname: "/legacy/:conference/attendance/:session",
+  dependencies: {
+    authz: useAuthz,
+    legacy: LegacyRepo.use,
+    attendance: AttendanceRepo.use,
+  },
+  async handler({ request, params, authz, legacy, attendance }) {
+    const token = await authz.assert(request);
 
-    const sql = useDatabase()
-    const session = await assertSession(sql, params.session, params.conference)
-    const registration = token?.userId
-      ? await getRegistration(sql, token.userId, params.conference)
-      : null
+    const session = await legacy.assertSession(
+      params.session,
+      params.conference,
+    );
+    const registration =
+      token.kind === "user"
+        ? await legacy.assertRegistration(token.userId, params.conference)
+        : null;
 
-    const attendance = await getSessionAttendance(sql, session.id)
+    const records = await attendance.getSessionAttendance(session.id);
 
     return Response.json({
       isAttending: registration
-        ? attendance.some((r) => r.registration_id === registration.id)
+        ? records.some((r) => r.registration_id === registration.id)
         : false,
-      sessionCount: attendance.length,
-    })
+      sessionCount: records.length,
+    });
   },
-})
+});
 
 function convertAttendance(record: SessionSaveRecord): deconf.Attendance {
   return {
     id: record.id,
-    created: record.created,
+    created: record.created_at,
     attendee: record.registration_id,
     session: record.session_id.toString(),
-  }
+  };
 }
 
 // Attendance - getSelf
 export const selfAttendanceRoute = defineRoute({
-  method: 'GET',
-  pathname: '/legacy/:conference/attendance/me',
-  async handler({ request, params }) {
-    const authn = useAuthentication()
-    const { userId } = await authn.assertUser(request, {
-      scope: 'legacy:attendance',
-    })
+  method: "GET",
+  pathname: "/legacy/:conference/attendance/me",
+  dependencies: {
+    authz: useAuthz,
+    legacy: LegacyRepo.use,
+    attendance: AttendanceRepo.use,
+  },
+  async handler({ request, params, authz, legacy, attendance }) {
+    const { userId } = await authz.assertUser(request, {
+      scope: "legacy:attendance",
+    });
 
-    const sql = useDatabase()
-    const registration = await assertRegistration(
-      sql,
+    const registration = await legacy.assertRegistration(
       userId,
       params.conference,
-    )
+    );
 
-    const records = await getUserAttendance(sql, registration.id)
+    const records = await attendance.getUserAttendance(registration.id);
 
     return Response.json({
       attendance: records.map((r) => convertAttendance(r)),
-    })
+    });
   },
-})
+});

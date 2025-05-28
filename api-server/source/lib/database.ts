@@ -1,19 +1,13 @@
-import { getNodePostgresMigrator, loader } from 'gruber'
-import postgres from 'postgres'
-import { appConfig } from '../config.js'
+import { getPostgresMigrator, loader } from 'gruber'
 
-export { default as createDebug } from 'debug'
-
-export const useDatabase = loader(() =>
-  postgres(appConfig.postgres.url.toString()),
-)
+import { useDatabase } from './globals.js'
 
 export async function runMigrations(direction: string) {
   const directory = new URL('../migrations/', import.meta.url)
   const sql = useDatabase()
 
   try {
-    const migrator = getNodePostgresMigrator({ sql, directory })
+    const migrator = getPostgresMigrator({ sql, directory })
     if (direction === 'down') await migrator.down()
     else if (direction === 'up') await migrator.up()
     else throw new Error('Unknown migration direction')

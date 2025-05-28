@@ -1,65 +1,69 @@
-// Content - get
+import * as deconf from "@openlab/deconf-shared";
+import { defineRoute, HTTPError, loader, SqlDependency } from "gruber";
+import { marked } from "marked";
+import { ContentTable, useDatabase, useStore } from "../lib/mod.js";
+import { cache, LegacyRepo } from "./lib.js";
 
-import { defineRoute, HTTPError } from 'gruber'
-import { Sql } from 'postgres'
-import { marked } from 'marked'
-import * as deconf from '@openlab/deconf-shared'
-import { assertConference, cache } from './lib.js'
-import { ContentRecord, useDatabase, useStore } from '../lib/mod.js'
+class ContentRepo {
+  static use = loader(() => new this(useDatabase()));
 
-export async function getContent(
-  sql: Sql,
-  conferenceId: number,
-  slug: string,
-): Promise<ContentRecord | null> {
-  const [record = null] = await sql<ContentRecord[]>`
-    SELECT id, created, slug, body, conference_id
-    FROM content
-    WHERE slug = ${slug} AND conference_id = ${conferenceId}
-  `
-  return record
+  sql: SqlDependency;
+  constructor(sql: SqlDependency) {
+    this.sql = sql;
+  }
+
+  with(sql: SqlDependency) {
+    return new ContentRepo(sql);
+  }
+
+  getContent(slug: string, conferenceId: number) {
+    return ContentTable.selectOne(
+      this.sql,
+      this.sql`slug = ${slug} AND conference_id = ${conferenceId}`,
+    );
+  }
 }
 
 // NOTE: I think the widgets in markdown should just be custom HTML elements that the client can register and pick up
+// ~ pre-rendering would be good though
 
 function processMarkdown(
   input: Record<string, string | undefined>,
 ): deconf.LocalisedContent {
   const output: deconf.LocalisedContent = {
     content: {},
-  }
+  };
 
   for (const [key, value] of Object.entries(input)) {
-    output.content[key] = marked(value as string, { async: false })
+    output.content[key] = marked(value as string, { async: false });
   }
 
-  return output
+  return output;
 }
 
-type ContentKey = [
-  `/legacy/${number}/content/${string}`,
-  deconf.LocalisedContent,
-]
-
+// Content - get
 export const getContentRoute = defineRoute({
-  method: 'GET',
-  pathname: '/legacy/:conference/content/:key',
-  async handler({ params }) {
-    const sql = useDatabase()
-    const store = await useStore()
-    const conf = await assertConference(sql, params.conference)
-
-    const content = await cache<ContentKey>(
-      store,
-      `/legacy/${conf.id}/content/${params.key}`,
-      15 * 60,
-      async () => {
-        const record = await getContent(sql, conf.id, params.key)
-        return record ? processMarkdown(record.body) : null
-      },
-    )
-    if (!content) throw HTTPError.notFound()
-
-    return Response.json(content)
+  method: "GET",
+  pathname: "/legacy/:conference/content/:key",
+  dependencies: {
+    store: useStore,
+    legacy: LegacyRepo.use,
+    content: ContentRepo.use,
   },
-})
+  async handler({ params, legacy, content, store }) {
+    const conference = await legacy.assertConference(params.conference);
+
+    const record = await cache<deconf.LocalisedContent>(
+      store,
+      `/legacy/${conference.id}/content/${params.key}`,
+      15 * 60 * 1_000,
+      async () => {
+        const record = await content.getContent(params.key, conference.id);
+        return record ? processMarkdown(record.body) : undefined;
+      },
+    );
+    if (!content) throw HTTPError.notFound();
+
+    return Response.json(record);
+  },
+});

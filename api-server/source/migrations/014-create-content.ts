@@ -1,18 +1,18 @@
-import { definePostgresMigration } from 'gruber'
+import { definePostgresMigration } from "gruber";
 
 export default definePostgresMigration({
   async up(sql) {
     await sql`
       CREATE TABLE "content" (
         "id" SERIAL PRIMARY KEY,
-        "created" TIMESTAMP NOT NULL DEFAULT NOW(),
+        "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         "slug" VARCHAR(64) NOT NULL,
         "body" JSONB NOT NULL DEFAULT '{}'::JSONB,
         "conference_id" INTEGER NOT NULL REFERENCES "conferences" (id) ON DELETE CASCADE
       )
-    `
+    `;
   },
   async down(sql) {
-    await sql`DROP TABLE "content"`
+    await sql`DROP TABLE "content"`;
   },
-})
+});
