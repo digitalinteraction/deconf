@@ -3,7 +3,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "tsx --watch --watch-preserve-output source/main.ts",
+    "debug": "tsx --inspect-wait source/main.ts"
   },
   "dependencies": {
     "cookie": "^1.0.2",
@@ -14,7 +16,7 @@
     "marked": "^15.0.12",
     "minio": "^8.0.5",
     "postgres": "^3.4.7",
-    "redis": "^5.1.0",
+    "redis": "^5.1.1",
     "urlpattern-polyfill": "^10.1.0",
     "yargs": "^18.0.0"
   },

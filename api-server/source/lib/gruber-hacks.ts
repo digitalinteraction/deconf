@@ -1,4 +1,10 @@
-import { loader, SqlDependency, StructuralError, Structure } from "gruber";
+import {
+  Configuration,
+  HTTPError,
+  SqlDependency,
+  StructuralError,
+  Structure,
+} from "gruber";
 
 function _pick<T, K extends keyof T>(input: T, keys: K[]): { [L in K]: T[L] } {
   let output: Pick<T, K> = {} as any;
@@ -71,7 +77,7 @@ export function defineTable<T>({
     ): Promise<Pick<T, K>[]> {
       return sql<Pick<T, K>[]>`
         SELECT ${sql(columns ?? allColumns)}
-        FROM ${table}
+        FROM ${sql(table)}
         WHERE ${where}
       `;
     },
@@ -174,4 +180,99 @@ export function getOrInsert<K, V>(map: Map<K, V>, key: K, defaultValue: V) {
     map.set(key, defaultValue);
   }
   return map.get(key)!;
+}
+
+export interface ConfigFileOptions {
+  variable?: string;
+  fallback?: string;
+}
+
+export interface ConfiguredFile {
+  bytes: Uint8Array;
+}
+
+export function configFile(
+  config: Configuration,
+  path: string | URL,
+  options: ConfigFileOptions,
+) {
+  if (!options.fallback) {
+    throw new TypeError("options.fallback must be a string");
+  }
+
+  const url = new URL(path);
+
+  if (url.protocol !== "file:") {
+    throw new TypeError("path does not use file: protocol");
+  }
+
+  const struct = new Structure<ConfiguredFile>(
+    { type: "text" },
+    (value, context) => {
+      if (context.type !== "async") {
+        throw new Error("config.file must be used async");
+      }
+
+      const result = {} as ConfiguredFile;
+
+      context.promises.push(async () => {
+        const file = await config.options.readFile(url);
+        if (file) {
+          result.bytes = file;
+        } else if (value !== undefined) {
+          if (typeof value !== "string") {
+            throw new Error("not a string");
+          }
+          result.bytes = new TextEncoder().encode(value);
+        } else {
+          result.bytes = new TextEncoder().encode(options.fallback);
+        }
+      });
+
+      return result;
+    },
+  );
+
+  const relative = url
+    .toString()
+    .replace(config.options.getWorkingDirectory().toString(), ".");
+
+  Object.defineProperty(struct, Configuration.spec, {
+    value: (property: string) => ({
+      fallback: options.fallback,
+      fields: [
+        {
+          name: property,
+          type: "file",
+          variable: options.variable,
+          fallback: options.fallback,
+          description: `file:${relative}`,
+        },
+      ],
+    }),
+  });
+
+  return struct;
+}
+
+// // TODO: I'm not sure about this
+// export function defineSqlRepo<
+//   T extends Record<string, (this: { sql: SqlDependency }) => void>,
+// >(fields: T) {
+//   const block = (sql = useDatabase()) => {
+//     return {
+//       ...fields,
+//       with: (sql: SqlDependency) => block(sql),
+//     };
+//   };
+//   return block;
+// }
+
+export function assertRequestParam(input: any) {
+  if (typeof input === "string") input = parseInt(input);
+  if (typeof input !== "number" || Number.isNaN(input)) {
+    throw HTTPError.badRequest("bad url param");
+  }
+
+  return input;
 }

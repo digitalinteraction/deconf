@@ -14,6 +14,8 @@ import {
 } from "./lib/mod.js";
 
 import legacyRoutes from "./legacy/routes.js";
+import { authRoutes } from "./auth/auth-routes.ts";
+import { notificationRoutes } from "./notifications/notification-routes.ts";
 
 export interface RunServerOptions {
   port: number;
@@ -45,6 +47,14 @@ const healthz = defineRoute({
   },
 });
 
+const routes = [
+  hello,
+  healthz,
+  ...legacyRoutes,
+  ...authRoutes,
+  ...notificationRoutes,
+];
+
 export async function runServer(options: RunServerOptions) {
   const cors = useCors();
   const sql = useDatabase();
@@ -53,8 +63,11 @@ export async function runServer(options: RunServerOptions) {
 
   const router = new FetchRouter({
     log: true,
-    cors: cors,
-    routes: [hello, healthz, ...legacyRoutes],
+    cors,
+    routes,
+    errorHandler: (error, request) => {
+      console.error("[http error]", request.url, error);
+    },
   });
 
   const server = await serveHTTP(options, (r) => router.getResponse(r));

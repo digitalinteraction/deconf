@@ -23,6 +23,7 @@ import { CSRF } from "./csrf.js";
 import { EmailService, SendgridService } from "./email.ts";
 import { AuthenticationService } from "./authentication.ts";
 import { DeconfAuthen } from "./types.ts";
+import { NodeRedisStore } from "./store.ts";
 
 export const useAppConfig = defineDependency(() => {
   return _appConfig;
@@ -51,10 +52,7 @@ export const useCors = defineDependency(() => {
 
 export const useStore = defineDependency((): Store => {
   const appConfig = useAppConfig();
-  const client = redis.createClient({
-    url: appConfig.redis.url.toString(),
-  });
-  return new RedisStore(client, appConfig.redis);
+  return new NodeRedisStore(appConfig.redis.url, appConfig.redis);
 });
 
 export const useCSRF = defineDependency(() => {
@@ -72,7 +70,7 @@ export const useAuthz = defineDependency<AbstractAuthorizationService>(() => {
 });
 
 export const useEmail = defineDependency<EmailService>(() => {
-  return new SendgridService(useAppConfig().sendgrid);
+  return new SendgridService();
 });
 
 export const useAuthen = defineDependency(() => {
@@ -83,3 +81,16 @@ export const useAuthen = defineDependency(() => {
     useAppConfig().auth,
   );
 });
+
+export const commponDependencies = {
+  appConfig: useAppConfig,
+  sql: useDatabase,
+  terminator: useTerminator,
+  cors: useCors,
+  store: useStore,
+  csrf: useCSRF,
+  tokens: useTokens,
+  authz: useAuthz,
+  email: useEmail,
+  random: useRandom,
+};

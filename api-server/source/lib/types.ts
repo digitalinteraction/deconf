@@ -1,4 +1,3 @@
-// NOTE: generic could be on the class instead
 export interface DeconfAuthen {
   emailAddress: string;
 }

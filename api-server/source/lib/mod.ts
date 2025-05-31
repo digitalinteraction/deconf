@@ -6,3 +6,4 @@ export * from "./globals.ts";
 export * from "./gruber-hacks.ts";
 export * from "./tables.ts";
 export * from "./types.ts";
+export * from "./utilities.ts";

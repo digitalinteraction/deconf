@@ -5,10 +5,9 @@ import { useAppConfig } from "./globals.ts";
 import cookie from "cookie";
 
 export interface AuthnRequest<T> {
-  redirectUri: string;
+  token: string;
   payload: T;
   code: number;
-  token: string;
 }
 
 export interface AuthenticationOptions {
@@ -57,16 +56,12 @@ export class AuthenticationService<T> {
     );
   }
 
-  async start<T>(
-    redirectUri: string | URL,
-    payload: T,
-  ): Promise<{ token: string; code: number }> {
+  async start(payload: T): Promise<{ token: string; code: number }> {
     const request: AuthnRequest<T> = {
       token: this.random.uuid(),
-      redirectUri: redirectUri.toString(),
       code: this.random.number(0, 999_999),
       payload,
-    }; // satisfies AuthnRequest<T>;
+    };
 
     this.store.set(`/authn/request/${request.token}`, request, {
       maxAge: this.options.loginMaxAge * 1_000,
