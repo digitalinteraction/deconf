@@ -34,7 +34,7 @@ Registration { name, avatar_id, user_id, conference_id, role }
 Taxonomy { title, icon, conference_id, metadata }
 Label { title, icon, taxonomy_id, metadata }
 
-Session { slug, title, summary, details, languages, state, start_date, end_date, conference_id, metadata }
+Session { slug, title, summary, details, languages, state, visibility, start_date, end_date, conference_id, metadata }
 # answers field?
 
 SessionLink { title, url, session_id }
@@ -70,7 +70,7 @@ Thoughts:
 
 ## Endpoints
 
-**legacy**
+### legacy
 
 ```bash
 # attendance
@@ -93,7 +93,7 @@ GET  /legacy/:conference/schedule/:session/links
 GET  /legacy/content/:slug
 ```
 
-**conference v1**
+### conference v1
 
 ```bash
 GET  /conf/v1/conference/:conference/taxonomies
@@ -106,12 +106,17 @@ GET  /conf/v1/conference/:conference/saves
 GET  /conf/v1/conference/:conference/session/:session/links
 ```
 
-**admin**
+### admin
 
 ```bash
+GET   /admin/v1/conference/:conference/schedule
 PUT   /admin/v1/conference/:conference/schedule
+GET   /admin/v1/conference/:conference/registrations
 PUT   /admin/v1/conference/:conference/registrations
 PATCH /admin/v1/conference/:conference/user
+
+GET   /admin/v1/conference/:conference/action/:action
+POST  /admin/v1/conference/:conference/action/:action
 ```
 
 - store pretalx API ids in session/label/people "metadata" for sync
@@ -119,7 +124,83 @@ PATCH /admin/v1/conference/:conference/user
 - pretalx can replace the content in one
 - tito can replace the content periodically and incrementally add
 
-**potential sidecars**
+### auth
+
+```bash
+GET  /auth/v1/me
+POST /auth/v1/login { type: 'email', emailAddress, redirectUri }
+  -> Set-Cookie:deconf_login
+POST /auth/v1/verify { type: 'email', token, code }
+  -> Set-Cookie:deconf_session { redirect_uri }
+
+GET /auth/v1/authorize { provider, scopes?, redirectUri }
+GET /auth/v1/callback { provider, ... }
+```
+
+email flow:
+
+- user visits the web app's login page, `schedule.app/login?redirect`
+- the client checks for authentication via `GET deconf.app/auth/v1/me`
+- if authenticated, they are returned to the app or **redirect**
+- they enter their email and submit
+- `POST deconf.app/auth/v1/login` — `redirect_uri=schedule.app/verify`
+- send email with the **code** and **magic link**
+- redirect to `schedule.app/verify?type=email&token=...`
+  - they enter the code from their email and submit
+  - `POST deconf.app/auth/v1/verify { type, token, code }`
+- open the link in their email
+  - `schedule.app/verify?type=email&token=...&code=...`
+  - `POST deconf.app/auth/v1/verify { type, token, code }`
+- they return to **redirect**
+
+oauth flow:
+
+- user visits the web app's login page, `schedule.app/login?redirect`
+- the client checks for authentication via `GET deconf.app/auth/v1/me`
+- if authenticated, they are returned to the app or **redirect**
+- they are redirected to `deconf.app/auth/v1/authorize?provider=...&redirect_uri=schedule.app/verify`
+- which redirects to the provider (e.g. google) URL
+- which redirects to `deconf.app/auth/v1/callback?provider=...` with url params
+- which redirects to `schedule.app/verify?type=oauth2&token=...&redirect=...`
+- the client then completes the request to get their cookie
+- `POST deconf.app/auth/v1/verify { type, token }`
+- they return to **redirect**
+
+notes:
+
+- maybe `schedule.app/_verify` to be a more-private page
+- should they be authenticated against a conference
+- how does the server validate redirect urls?
+
+### notifications
+
+```bash
+GET   /notifications/v1/web-push/credentials
+GET   /notifications/v1/web-push/devices
+POST  /notifications/v1/web-push/devices
+PATCH /notifications/v1/web-push/devices/:device
+DEL   /notifications/v1/web-push/devices/:device
+POST  /notifications/v1/web-push/test
+```
+
+### calendar
+
+```bash
+GET  /calendar/v1/google/status
+POST /calendar/v1/google/unlink
+```
+
+### actions
+
+~ could be within the [admin](#admin) section
+
+```bash
+# scope=admin
+# proxy any body or URLParams to the configured action URL
+POST /actions/v1/conference/:conference/:action
+```
+
+## potential sidecars
 
 - Google calendar sync — pull down saved sessions and create calendar events
   - list users with `googleCalId` in their metadata
@@ -138,21 +219,20 @@ PATCH /admin/v1/conference/:conference/user
   - recieve a webhook
   - upsert the user/registration
 
-**auth**
+## conference configuration
 
-```bash
-# TODO: ...
-
-PATCH /.../registration/me
+```json
+{
+  "email_endpoint": "https://sidecar.deconf.app/mail/",
+  "action_endpoint": "https://sidecar.deconf.app/action/{action}/",
+  "websites": ["https://schedule.app"]
+  // "actions": {
+  //   "fetch-schedule": "https://sidecar.deconf.app/fetch-schedule"
+  // }
+  // "actions": [
+  //   { "id": "schedule", "label": "Fetch schedule", "url": "..." }
+  // ]
+}
 ```
 
-**notifications**
-
-```bash
-GET   /notifications/v1/web-push/credentials
-GET   /notifications/v1/web-push/devices
-POST  /notifications/v1/web-push/devices
-PATCH /notifications/v1/web-push/devices/:device
-DEL   /notifications/v1/web-push/devices/:device
-POST  /notifications/v1/web-push/test
-```
+> What else needs configuration?
