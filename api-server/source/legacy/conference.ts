@@ -205,9 +205,10 @@ export const getSessionLinksRoute = defineRoute({
 
     // TODO: participantCap has been removed
 
+    const isPublic = session.visibility === "public";
     const isAdmin = includesScope(scope, "admin");
     const timeUntil = session.start_date.getTime() - Date.now();
-    if (!isAdmin && timeUntil > LINKS_GRACE_MS) {
+    if (!isPublic && !isAdmin && timeUntil > LINKS_GRACE_MS) {
       throw HTTPError.unauthorized();
     }
 

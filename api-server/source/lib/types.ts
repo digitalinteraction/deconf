@@ -74,6 +74,7 @@ export interface SessionRecord {
   summary: Localised;
   details: Localised;
   languages: string;
+  visibility: "public" | "private";
   state: "draft" | "accepted" | "confirmed";
   start_date: Date | null;
   end_date: Date | null;

@@ -120,6 +120,10 @@ export const SessionTable = defineTable<SessionRecord>({
     summary: localised(),
     details: localised(),
     languages: Structure.string(),
+    visibility: Structure.union([
+      Structure.literal("public"),
+      Structure.literal("private"),
+    ]),
     state: Structure.union([
       Structure.literal("draft"),
       Structure.literal("accepted"),
