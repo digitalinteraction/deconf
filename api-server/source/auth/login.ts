@@ -1,24 +1,12 @@
-import {
-  defineRoute,
-  HTTPError,
-  Structure,
-  trimIndentation,
-  useRandom,
-} from "gruber";
-import cookie from "cookie";
+import { defineRoute, HTTPError, Structure } from "gruber";
 
-import {
-  commponDependencies,
-  useAuthen,
-  useAuthz,
-  useStore,
-} from "../lib/globals.ts";
 import { assertRequestBody } from "gruber/http/request-body.js";
-import { trimEmail } from "../lib/mod.ts";
+import { commponDependencies } from "../lib/globals.ts";
+import { emailStructure, trimEmail } from "../lib/mod.ts";
 
 const LoginBody = Structure.union([
   Structure.object({
-    emailAddress: Structure.string(),
+    emailAddress: emailStructure(),
     redirectUri: Structure.string(),
   }),
 ]);

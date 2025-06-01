@@ -1,7 +1,6 @@
 import { getConfiguration, Infer, Structure } from "gruber";
 import pkg from "../package.json" with { type: "json" };
 import { useAppConfig } from "./lib/globals.js";
-import { configFile } from "./lib/mod.ts";
 
 const config = getConfiguration();
 

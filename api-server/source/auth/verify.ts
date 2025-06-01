@@ -21,7 +21,7 @@ export const verifyRoute = defineRoute({
     repo: AuthRepo.use,
   },
   async handler({ request, store, repo, tokens, appConfig }) {
-    const body = await assertRequestBody(request, VerifyBody);
+    const body = await assertRequestBody(VerifyBody, request);
 
     const login = await store.get<LoginRequest>(`/auth/request/${body.token}`);
     if (!login) throw HTTPError.badRequest();

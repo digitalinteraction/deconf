@@ -1,10 +1,4 @@
-import {
-  Configuration,
-  HTTPError,
-  SqlDependency,
-  StructuralError,
-  Structure,
-} from "gruber";
+import { Configuration, HTTPError, SqlDependency, Structure } from "gruber";
 
 function _pick<T, K extends keyof T>(input: T, keys: K[]): { [L in K]: T[L] } {
   let output: Pick<T, K> = {} as any;
@@ -164,7 +158,7 @@ export function recordStructure<T extends string | number | symbol, U>(
         }
       }
       if (errors.length > 0) {
-        throw new StructuralError("invalid record", context.path, errors);
+        throw new Structure.Error("invalid record", context.path, errors);
       }
       for (const key in output) {
         if (output[key] === undefined) delete output[key];
@@ -191,69 +185,69 @@ export interface ConfiguredFile {
   bytes: Uint8Array;
 }
 
-export function configFile(
-  config: Configuration,
-  path: string | URL,
-  options: ConfigFileOptions,
-) {
-  if (!options.fallback) {
-    throw new TypeError("options.fallback must be a string");
-  }
+// export function configFile(
+//   config: Configuration,
+//   path: string | URL,
+//   options: ConfigFileOptions,
+// ) {
+//   if (!options.fallback) {
+//     throw new TypeError("options.fallback must be a string");
+//   }
 
-  const url = new URL(path);
+//   const url = new URL(path);
 
-  if (url.protocol !== "file:") {
-    throw new TypeError("path does not use file: protocol");
-  }
+//   if (url.protocol !== "file:") {
+//     throw new TypeError("path does not use file: protocol");
+//   }
 
-  const struct = new Structure<ConfiguredFile>(
-    { type: "text" },
-    (value, context) => {
-      if (context.type !== "async") {
-        throw new Error("config.file must be used async");
-      }
+//   const struct = new Structure<ConfiguredFile>(
+//     { type: "text" },
+//     (value, context) => {
+//       if (context.type !== "async") {
+//         throw new Error("config.file must be used async");
+//       }
 
-      const result = {} as ConfiguredFile;
+//       const result = {} as ConfiguredFile;
 
-      context.promises.push(async () => {
-        const file = await config.options.readFile(url);
-        if (file) {
-          result.bytes = file;
-        } else if (value !== undefined) {
-          if (typeof value !== "string") {
-            throw new Error("not a string");
-          }
-          result.bytes = new TextEncoder().encode(value);
-        } else {
-          result.bytes = new TextEncoder().encode(options.fallback);
-        }
-      });
+//       context.promises.push(async () => {
+//         const file = await config.options.readFile(url);
+//         if (file) {
+//           result.bytes = file;
+//         } else if (value !== undefined) {
+//           if (typeof value !== "string") {
+//             throw new Error("not a string");
+//           }
+//           result.bytes = new TextEncoder().encode(value);
+//         } else {
+//           result.bytes = new TextEncoder().encode(options.fallback);
+//         }
+//       });
 
-      return result;
-    },
-  );
+//       return result;
+//     },
+//   );
 
-  const relative = url
-    .toString()
-    .replace(config.options.getWorkingDirectory().toString(), ".");
+//   const relative = url
+//     .toString()
+//     .replace(config.options.getWorkingDirectory().toString(), ".");
 
-  Object.defineProperty(struct, Configuration.spec, {
-    value: (property: string) => ({
-      fallback: options.fallback,
-      fields: [
-        {
-          name: property,
-          type: "file",
-          variable: options.variable,
-          fallback: options.fallback,
-          description: `file:${relative}`,
-        },
-      ],
-    }),
-  });
+//   Object.defineProperty(struct, Configuration.spec, {
+//     value: (property: string) => ({
+//       fallback: options.fallback,
+//       fields: [
+//         {
+//           name: property,
+//           type: "file",
+//           variable: options.variable,
+//           fallback: options.fallback,
+//           description: `file:${relative}`,
+//         },
+//       ],
+//     }),
+//   });
 
-  return struct;
-}
+//   return struct;
+// }
 
 // // TODO: I'm not sure about this
 // export function defineSqlRepo<
@@ -275,4 +269,13 @@ export function assertRequestParam(input: any) {
   }
 
   return input;
+}
+
+export function emailStructure() {
+  const primative = Structure.string();
+  return new Structure({ type: "string" }, (value) => {
+    const string = primative.process(value);
+    if (!/.+@.+/.test(string)) throw new Error("Bad email address");
+    return string;
+  });
 }
