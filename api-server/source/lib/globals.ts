@@ -2,27 +2,22 @@ import {
   AbstractAuthorizationService,
   AuthorizationService,
   Cors,
+  loader as defineDependency,
   getTerminator,
   JoseTokens,
-  loader as defineDependency,
-  RedisStore,
+  SqlDependency,
   Store,
   TokenService,
   useRandom,
-  SqlDependency,
 } from "gruber";
-import postgres from "postgres";
-import * as redis from "redis";
 import * as jose from "jose";
-import * as Minio from "minio";
+import postgres from "postgres";
 
 export { default as createDebug } from "debug";
 
-import { _appConfig, loadConfig } from "../config.js";
+import { _appConfig } from "../config.js";
 import { CSRF } from "./csrf.js";
 import { EmailService, SendgridService } from "./email.ts";
-import { AuthenticationService } from "./authentication.ts";
-import { DeconfAuthen } from "./types.ts";
 import { NodeRedisStore } from "./store.ts";
 
 export const useAppConfig = defineDependency(() => {
@@ -71,15 +66,6 @@ export const useAuthz = defineDependency<AbstractAuthorizationService>(() => {
 
 export const useEmail = defineDependency<EmailService>(() => {
   return new SendgridService();
-});
-
-export const useAuthen = defineDependency(() => {
-  return new AuthenticationService<DeconfAuthen>(
-    useStore(),
-    useRandom(),
-    useTokens(),
-    useAppConfig().auth,
-  );
 });
 
 export const commponDependencies = {

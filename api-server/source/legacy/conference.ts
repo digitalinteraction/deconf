@@ -35,7 +35,8 @@ function convertPerson(record: PersonRecord): deconf.Speaker {
     role: { en: record.subtitle },
     bio: record.bio,
     // TODO: headshots x avatars
-  };
+    metadata: record.metadata,
+  } as deconf.Speaker;
 }
 
 function convertSession(
@@ -72,7 +73,9 @@ function convertSession(
     participantCap: null,
 
     hideFromSchedule: false,
-  };
+
+    metadata: record.metadata,
+  } as deconf.Session;
 }
 
 function convertLabel(record: LabelRecord): deconf.SessionType {
@@ -82,7 +85,9 @@ function convertLabel(record: LabelRecord): deconf.SessionType {
     iconGroup: "fas",
     iconName: "lightbulb",
     layout: "plenary",
-  };
+
+    metadata: record.metadata,
+  } as deconf.SessionType;
 }
 
 export async function getSchedule(

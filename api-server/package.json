@@ -3,14 +3,14 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "tsx --watch --watch-preserve-output source/main.ts",
-    "debug": "tsx --inspect-wait source/main.ts"
+    "dev": "tsx source/main.ts",
+    "debug": "tsx --inspect-wait source/main.ts",
+    "start": "tsx --watch --watch-preserve-output source/main.ts serve"
   },
   "dependencies": {
     "cookie": "^1.0.2",
     "debug": "^4.4.1",
-    "gruber": "file:../../../labs/gruber/bundle/node",
+    "gruber": "^0.9.0-beta.1",
     "ics": "^3.8.1",
     "jose": "^6.0.11",
     "marked": "^15.0.12",

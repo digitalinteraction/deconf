@@ -1,5 +1,5 @@
 import { Structure } from "gruber";
-import { defineTable, InferTable, recordStructure } from "./gruber-hacks.ts";
+import { defineTable, localisedStructure } from "./gruber-hacks.ts";
 import {
   AssetRecord,
   ConferenceRecord,
@@ -19,10 +19,6 @@ import {
   WebPushDeviceRecord,
   WebPushMessageRecord,
 } from "./types.ts";
-
-function localised() {
-  return recordStructure(Structure.string(), Structure.string());
-}
 
 function nullable<T>(value: Structure<T>) {
   return Structure.union([value, Structure.null()]);
@@ -52,7 +48,7 @@ export const ConferenceTable = defineTable<ConferenceRecord>({
     id: Structure.number(),
     created_at: Structure.date(),
     slug: Structure.string(),
-    title: localised(),
+    title: localisedStructure(),
     metadata: Structure.any(),
   },
 });
@@ -62,7 +58,7 @@ export const AssetTable = defineTable<AssetRecord>({
   fields: {
     id: Structure.number(),
     created_at: Structure.date(),
-    title: localised(),
+    title: localisedStructure(),
     url: Structure.string(),
     conference_id: Structure.number(),
     metadata: Structure.any(),
@@ -91,8 +87,8 @@ export const TaxonomyTable = defineTable<TaxonomyRecord>({
   fields: {
     id: Structure.number(),
     created_at: Structure.date(),
-    title: localised(),
-    icon: Structure.string(),
+    title: localisedStructure(),
+    icon: Structure.string(""),
     conference_id: Structure.number(),
     metadata: Structure.any(),
   },
@@ -103,8 +99,8 @@ export const LabelTable = defineTable<LabelRecord>({
   fields: {
     id: Structure.number(),
     created_at: Structure.date(),
-    title: localised(),
-    icon: Structure.string(),
+    title: localisedStructure(),
+    icon: Structure.string(""),
     taxonomy_id: Structure.number(),
     metadata: Structure.any(),
   },
@@ -115,10 +111,10 @@ export const SessionTable = defineTable<SessionRecord>({
   fields: {
     id: Structure.number(),
     created_at: Structure.date(),
-    title: localised(),
+    title: localisedStructure(),
     slug: Structure.string(),
-    summary: localised(),
-    details: localised(),
+    summary: localisedStructure(),
+    details: localisedStructure(),
     languages: Structure.string(),
     visibility: Structure.union([
       Structure.literal("public"),
@@ -141,8 +137,8 @@ export const SessionLinkTable = defineTable<SessionLinkRecord>({
   fields: {
     id: Structure.number(),
     created_at: Structure.date(),
-    title: localised(),
-    url: localised(),
+    title: localisedStructure(),
+    url: localisedStructure(),
     session_id: Structure.number(),
     metadata: Structure.any(),
   },
@@ -155,7 +151,7 @@ export const PersonTable = defineTable<PersonRecord>({
     created_at: Structure.date(),
     name: Structure.string(),
     subtitle: Structure.string(),
-    bio: localised(),
+    bio: localisedStructure(),
     conference_id: Structure.number(),
     avatar_id: nullable(Structure.number()),
     metadata: Structure.any(),
@@ -209,7 +205,7 @@ export const ContentTable = defineTable<ContentRecord>({
     id: Structure.number(),
     created_at: Structure.date(),
     slug: Structure.string(),
-    body: localised(),
+    body: localisedStructure(),
     conference_id: Structure.number(),
   },
 });

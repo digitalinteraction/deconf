@@ -1,6 +1,5 @@
 import { getConfiguration, Infer, Structure } from "gruber";
 import pkg from "../package.json" with { type: "json" };
-import { useAppConfig } from "./lib/globals.js";
 
 const config = getConfiguration();
 
@@ -155,8 +154,8 @@ export async function loadConfig(path: string | URL) {
 
 export type AppConfig = Infer<typeof struct>;
 
-export function dumpConfig() {
-  console.log(config.getUsage(struct, useAppConfig()));
+export function dumpConfiguration() {
+  console.log(config.getUsage(struct, _appConfig));
 }
 
 // Secret value to auto-pare + make available through a dependency

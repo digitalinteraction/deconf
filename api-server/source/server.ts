@@ -16,6 +16,7 @@ import {
 import legacyRoutes from "./legacy/routes.js";
 import { authRoutes } from "./auth/auth-routes.ts";
 import { notificationRoutes } from "./notifications/notification-routes.ts";
+import { adminRoutes } from "./admin/admin-routes.ts";
 
 export interface RunServerOptions {
   port: number;
@@ -53,6 +54,7 @@ const routes = [
   ...legacyRoutes,
   ...authRoutes,
   ...notificationRoutes,
+  ...adminRoutes,
 ];
 
 export async function runServer(options: RunServerOptions) {
@@ -65,7 +67,7 @@ export async function runServer(options: RunServerOptions) {
     log: true,
     cors,
     routes,
-    errorHandler: (error, request) => {
+    errorHandler(error, request) {
       console.error("[http error]", request.url, error);
     },
   });

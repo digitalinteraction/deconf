@@ -4,7 +4,7 @@ import { SessionSaveTable, useAuthz, useDatabase } from "../lib/mod.js";
 import { SessionSaveRecord } from "../lib/types.js";
 import { LegacyRepo } from "./lib.js";
 
-class AttendanceRepo {
+export class AttendanceRepo {
   static use = loader(() => new this(useDatabase()));
 
   sql: SqlDependency;

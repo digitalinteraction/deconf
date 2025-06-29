@@ -5,9 +5,9 @@ import "urlpattern-polyfill";
 
 import process from "node:process";
 import yargs from "yargs";
-import { dumpConfig } from "./config.js";
-import { runMigrations, useAppConfig } from "./lib/mod.js";
-import { runServer } from "./server.js";
+import { dumpConfiguration } from "./config.ts";
+import { runMigrations, useAppConfig } from "./lib/mod.ts";
+import { runServer } from "./server.ts";
 
 const cli = yargs(process.argv.slice(2))
   .help()
@@ -18,7 +18,7 @@ cli.command(
   "config",
   "dump the current configuration and usage information",
   (yargs) => yargs,
-  (args) => dumpConfig(),
+  () => dumpConfiguration(),
 );
 
 cli.command(
