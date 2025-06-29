@@ -31,7 +31,7 @@ const _Request = Structure.object({
   taxonomies: Structure.array(
     Structure.object({
       id: Structure.string(),
-      ...TaxonomyTable.fields(["conference_id", "icon", "title", "metadata"]),
+      ...TaxonomyTable.fields(["icon", "title", "metadata"]),
     }),
   ),
   labels: Structure.array(
@@ -47,7 +47,6 @@ const _Request = Structure.object({
       ...PersonTable.fields([
         "avatar_id",
         "bio",
-        "conference_id",
         "name",
         "subtitle",
         "metadata",
@@ -57,7 +56,6 @@ const _Request = Structure.object({
   sessions: Structure.array(
     Structure.object({
       id: Structure.string(),
-      conference_id: Structure.number(),
       ...SessionTable.fields([
         "title",
         "slug",
@@ -297,7 +295,9 @@ async function unwrap<T extends { id: string }, U extends { id: number }>(
       sql`id = ${mod.target}`,
       map(mod.value),
     );
-    if (!record) throw new Error(`update failed, not found id=${mod.target}`);
+    if (!record) {
+      throw new Error(`missing target=${mod.target} from=${mod.value.id}`);
+    }
     records.push(record);
     lookup.set(mod.value.id, record.id);
   }
