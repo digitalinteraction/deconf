@@ -6,7 +6,7 @@ import "urlpattern-polyfill";
 import process from "node:process";
 import yargs from "yargs";
 import { dumpConfiguration } from "./config.ts";
-import { runMigrations, useAppConfig } from "./lib/mod.ts";
+import { runMigrations, useAppConfig, useTokens } from "./lib/mod.ts";
 import { runServer } from "./server.ts";
 
 const cli = yargs(process.argv.slice(2))
@@ -37,10 +37,18 @@ cli.command(
   "serve",
   "run the http server",
   (yargs) => yargs,
-  (args) => runServer(useAppConfig().server),
+  () => runServer(useAppConfig().server),
 );
 
-// more commands ...
+cli.command(
+  "dev-auth [user_id]",
+  "generate an admin auth token for development",
+  (yargs) => yargs.positional("user_id", { type: "number" }),
+  async (args) => {
+    if (useAppConfig().env !== "development") console.log("not_allowed");
+    else console.log(await useTokens().sign("admin", { userId: args.user_id }));
+  },
+);
 
 try {
   await cli.parseAsync();
