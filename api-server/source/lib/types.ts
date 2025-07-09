@@ -137,6 +137,7 @@ export interface ContentRecord {
   slug: string;
   body: Record<string, string | undefined>;
   conference_id: number;
+  metadata: RecordMetadata;
 }
 
 export interface Oauth2TokenRecord {

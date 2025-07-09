@@ -95,7 +95,7 @@ const _Request = Structure.object({
 
 export const replaceScheduleRoute = defineRoute({
   method: "PUT",
-  pathname: "/admin/v1/conference/:conference/schedule",
+  pathname: "/admin/v1/conferences/:conference/schedule",
   dependencies: {
     authz: useAuthz,
     sql: useDatabase,
@@ -110,19 +110,19 @@ export const replaceScheduleRoute = defineRoute({
 
     // Work out the difference for each resource type
     const diff = {
-      taxonomies: diffResource(body.taxonomies, "id", data.taxonomies),
-      people: diffResource(body.people, "id", data.people),
-      sessions: diffResource(body.sessions, "id", data.sessions),
+      taxonomies: _diffResource(body.taxonomies, "id", data.taxonomies),
+      people: _diffResource(body.people, "id", data.people),
+      sessions: _diffResource(body.sessions, "id", data.sessions),
 
-      labels: diffResource(body.labels, "id", data.labels),
-      sessionPeople: diffResource(
+      labels: _diffResource(body.labels, "id", data.labels),
+      sessionPeople: _diffResource(
         body.sessionPeople,
         "id",
         data.sessionPeople,
         { deleteUntracked: true },
       ),
-      sessionLinks: diffResource(body.sessionLinks, "id", data.sessionLinks),
-      sessionLabels: diffResource(
+      sessionLinks: _diffResource(body.sessionLinks, "id", data.sessionLinks),
+      sessionLabels: _diffResource(
         body.sessionLabels,
         "id",
         data.sessionLabels,
@@ -148,7 +148,7 @@ export const replaceScheduleRoute = defineRoute({
     // each unwrap performs additions/modifications/deletions against the table
     // with the custom map method to customise how fields are inserted
     await sql.begin(async (trx) => {
-      const taxonomies = await unwrap(
+      const taxonomies = await _unwrap(
         trx,
         diff.taxonomies,
         TaxonomyTable,
@@ -157,7 +157,7 @@ export const replaceScheduleRoute = defineRoute({
           conference_id: data.conference.id,
         }),
       );
-      const labels = await unwrap(
+      const labels = await _unwrap(
         trx,
         diff.labels,
         LabelTable,
@@ -167,7 +167,7 @@ export const replaceScheduleRoute = defineRoute({
         }),
       );
 
-      const sessions = await unwrap(
+      const sessions = await _unwrap(
         trx,
         diff.sessions,
         SessionTable,
@@ -188,7 +188,7 @@ export const replaceScheduleRoute = defineRoute({
         }),
       );
 
-      const people = await unwrap(
+      const people = await _unwrap(
         trx,
         diff.people,
         PersonTable,
@@ -204,7 +204,7 @@ export const replaceScheduleRoute = defineRoute({
         }),
       );
 
-      const sessionPeople = await unwrap(
+      const sessionPeople = await _unwrap(
         trx,
         diff.sessionPeople,
         SessionPersonTable,
@@ -214,7 +214,7 @@ export const replaceScheduleRoute = defineRoute({
         }),
       );
 
-      const sessionLabels = await unwrap(
+      const sessionLabels = await _unwrap(
         trx,
         diff.sessionLabels,
         SessionLabelTable,
@@ -262,7 +262,10 @@ interface Unwraped<T> {
  * NOTE: I'd rather not depend on TableDefinition
  * NOTE: I also can't get it to type map's param properly
  */
-async function unwrap<T extends { id: string }, U extends { id: number }>(
+export async function _unwrap<
+  T extends { id: string },
+  U extends { id: number },
+>(
   sql: SqlDependency,
   diff: Differential<T>,
   table: TableDefinition<U>,
@@ -340,7 +343,7 @@ interface DiffOptions {
  * @param key the key of the staged records to identify each
  * @param current the existing records to diff against
  */
-function diffResource<T, K extends keyof T, U extends Diffable>(
+export function _diffResource<T, K extends keyof T, U extends Diffable>(
   input: T[],
   key: K,
   current: U[],
@@ -382,7 +385,7 @@ function diffResource<T, K extends keyof T, U extends Diffable>(
 }
 
 /** Aggregate several diffs into a human-readable format */
-function sumDiffs(values: Differential<any>[]) {
+export function _sumDiffs(values: Differential<any>[]) {
   const initial = { additions: 0, modifications: 0, deletions: 0 };
   return values.reduce(
     (sum, value) => ({
@@ -393,3 +396,8 @@ function sumDiffs(values: Differential<any>[]) {
     initial,
   );
 }
+
+//
+// NOTES:
+// - I think the diff should require the id/metadata#ref relation and set it itself
+//

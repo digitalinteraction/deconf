@@ -87,7 +87,7 @@ export async function _getConferenceData(
 
 export const getConferenceRoute = defineRoute({
   method: "GET",
-  pathname: "/admin/v1/conference/:conference/schedule",
+  pathname: "/admin/v1/conferences/:conference/schedule",
   dependencies: {
     authz: useAuthz,
     sql: useDatabase,

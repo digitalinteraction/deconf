@@ -1,10 +1,4 @@
-import {
-  defineRoute,
-  FetchRouter,
-  getFetchRequest,
-  NodeRouter,
-  serveHTTP,
-} from "gruber";
+import { defineRoute, FetchRouter, serveHTTP } from "gruber";
 import {
   useAppConfig,
   useCors,
@@ -13,17 +7,17 @@ import {
   useTerminator,
 } from "./lib/mod.js";
 
-import legacyRoutes from "./legacy/routes.js";
-import { authRoutes } from "./auth/auth-routes.ts";
-import { notificationRoutes } from "./notifications/notification-routes.ts";
 import { adminRoutes } from "./admin/admin-routes.ts";
+import { authRoutes } from "./auth/auth-routes.ts";
+import legacyRoutes from "./legacy/routes.js";
+import { notificationRoutes } from "./notifications/notification-routes.ts";
 
 export interface RunServerOptions {
   port: number;
   hostname: string;
 }
 
-const hello = defineRoute({
+const helloRoute = defineRoute({
   method: "GET",
   pathname: "/",
   dependencies: {
@@ -37,7 +31,7 @@ const hello = defineRoute({
   },
 });
 
-const healthz = defineRoute({
+const healthzRoute = defineRoute({
   method: "GET",
   pathname: "/healthz",
   dependencies: {
@@ -48,9 +42,21 @@ const healthz = defineRoute({
   },
 });
 
+const corsRoute = defineRoute({
+  method: "OPTIONS",
+  pathname: "*",
+  dependencies: {
+    cors: useCors,
+  },
+  async handler({ request, cors }) {
+    return cors?.apply(request, new Response());
+  },
+});
+
 const routes = [
-  hello,
-  healthz,
+  helloRoute,
+  healthzRoute,
+  corsRoute,
   ...legacyRoutes,
   ...authRoutes,
   ...notificationRoutes,

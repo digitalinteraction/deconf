@@ -5,7 +5,6 @@ import {
   SessionLinkRecord,
   SessionRecord,
   useAuthz,
-  useDatabase,
   useStore,
 } from "../lib/mod.js";
 import { cache, LegacyRepo, TaxonomyDetails } from "./lib.js";
@@ -90,6 +89,15 @@ function convertLabel(record: LabelRecord): deconf.SessionType {
   } as deconf.SessionType;
 }
 
+const fakeSettings: deconf.ConferenceConfig = {
+  atrium: { enabled: true, visible: true },
+  schedule: { enabled: true, visible: true },
+  helpDesk: { enabled: true, visible: true },
+  about: { enabled: true, visible: true },
+  navigation: {},
+  widgets: {},
+} as any;
+
 export async function getSchedule(
   legacy: LegacyRepo,
   conferenceId: number,
@@ -124,7 +132,7 @@ export async function getSchedule(
         labels.grouped.get(s.id),
       ),
     ),
-    settings: {} as any,
+    settings: fakeSettings,
     slots: Array.from(slots.values()),
     speakers: Array.from(people.all).map((p) => convertPerson(p)),
     themes: legacyTaxonomies.theme.map((l) => convertLabel(l)),
@@ -160,18 +168,17 @@ export type LegacyTaxes = ReturnType<typeof getLegacyTaxes>;
 
 function getLegacyTaxes(taxonomies: TaxonomyDetails[]) {
   return {
-    theme: getLegacyTax(taxonomies, "theme"),
-    track: getLegacyTax(taxonomies, "track"),
-    type: getLegacyTax(taxonomies, "type"),
+    theme: getLegacyTax(taxonomies, "themes"),
+    track: getLegacyTax(taxonomies, "tracks"),
+    type: getLegacyTax(taxonomies, "types"),
   };
 }
 
-function getLegacyTax(
-  taxonomies: TaxonomyDetails[],
-  kind: "theme" | "track" | "type",
-) {
+type LegacyTax = "tracks" | "themes" | "types";
+
+function getLegacyTax(taxonomies: TaxonomyDetails[], type: LegacyTax) {
   return (
-    taxonomies.find((t) => t.title?.en?.toLowerCase() === kind)?.labels ?? []
+    taxonomies.find((t) => `legacy/${t.metadata.ref}` === type)?.labels ?? []
   );
 }
 

@@ -359,7 +359,9 @@ export async function cache<T>(
   let value = await store.get<T>(key);
   if (value === undefined) {
     value = await block();
-    await store.set(key, value, { maxAge });
+    if (value !== undefined) {
+      await store.set(key, value, { maxAge });
+    }
   }
   return value;
 }

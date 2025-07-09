@@ -62,7 +62,7 @@ export const getContentRoute = defineRoute({
         return record ? processMarkdown(record.body) : undefined;
       },
     );
-    if (!content) throw HTTPError.notFound();
+    if (!record) throw HTTPError.notFound();
 
     return Response.json(record);
   },

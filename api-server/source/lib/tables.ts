@@ -207,6 +207,7 @@ export const ContentTable = defineTable<ContentRecord>({
     slug: Structure.string(),
     body: localisedStructure(),
     conference_id: Structure.number(),
+    metadata: Structure.any(),
   },
 });
 
