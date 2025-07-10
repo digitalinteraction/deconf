@@ -61,7 +61,10 @@ export const useTokens = defineDependency<TokenService>(() => {
 
 export const useAuthz = defineDependency<AbstractAuthorizationService>(() => {
   const appConfig = useAppConfig();
-  return new AuthorizationService(appConfig.auth, useTokens());
+  return new AuthorizationService(
+    { cookieName: appConfig.auth.sessionCookie },
+    useTokens(),
+  );
 });
 
 export const useEmail = defineDependency<EmailService>(() => {
