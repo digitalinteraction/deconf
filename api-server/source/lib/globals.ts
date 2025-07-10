@@ -39,7 +39,7 @@ export const useCors = defineDependency(() => {
   const appConfig = useAppConfig();
   return appConfig.env === "development"
     ? new Cors({
-        origins: [appConfig.client.url.origin],
+        origins: ["*"],
         credentials: true,
       })
     : undefined;

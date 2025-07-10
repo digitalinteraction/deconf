@@ -1,6 +1,6 @@
 {
   "name": "deconf-api-server",
-  "version": "0.0.1",
+  "version": "0.0.5",
   "type": "module",
   "scripts": {
     "dev": "tsx source/main.ts",
@@ -9,6 +9,7 @@
     "build": "tsc"
   },
   "dependencies": {
+    "@openlab/deconf-shared": "^3.6.0",
     "cookie": "^1.0.2",
     "debug": "^4.4.1",
     "gruber": "^0.9.0-beta.1",
@@ -22,7 +23,6 @@
     "yargs": "^18.0.0"
   },
   "devDependencies": {
-    "@openlab/deconf-shared": "^3.6.0",
     "@types/debug": "^4.1.12",
     "@types/node": "^22.7.4",
     "@types/yargs": "^17.0.33",

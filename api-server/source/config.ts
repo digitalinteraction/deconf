@@ -29,12 +29,12 @@ const struct = config.object({
     }),
   }),
 
-  client: config.object({
-    url: config.url({
-      variable: "CLIENT_URL",
-      fallback: "http://localhost:8080",
-    }),
-  }),
+  // client: config.object({
+  //   url: config.url({
+  //     variable: "CLIENT_URL",
+  //     fallback: "http://localhost:8080",
+  //   }),
+  // }),
 
   postgres: config.object({
     url: config.url({
@@ -122,7 +122,7 @@ const struct = config.object({
 
   webPush: config.object({
     credentials: config.external(
-      import.meta.resolve("../web-push-credentials.json"),
+      new URL("../web-push-credentials.json", import.meta.url),
       Structure.object({
         publicKey: Structure.string(""),
         privateKey: Structure.string(""),
@@ -166,5 +166,5 @@ export function dumpConfiguration() {
 
 // Secret value to auto-pare + make available through a dependency
 export const _appConfig = await loadConfig(
-  import.meta.resolve("../config.json"),
+  new URL("../config.json", import.meta.url),
 );
