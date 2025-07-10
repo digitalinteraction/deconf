@@ -7,3 +7,4 @@ node_modules
 .DS_Store
 pretalx.ts
 web-push-credentials.json
+bundle

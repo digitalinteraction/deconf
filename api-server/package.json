@@ -1,11 +1,12 @@
 {
   "name": "deconf-api-server",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "type": "module",
   "scripts": {
     "dev": "tsx source/main.ts",
     "debug": "tsx --inspect-wait source/main.ts",
-    "start": "tsx --watch --watch-preserve-output source/main.ts serve"
+    "start": "tsx --watch --watch-preserve-output source/main.ts serve",
+    "build": "tsc"
   },
   "dependencies": {
     "cookie": "^1.0.2",

@@ -4,6 +4,7 @@
   "compilerOptions": {
     "target": "ES2023",
     "module": "NodeNext",
+    "outDir": "bundle",
     "newLine": "lf",
     "strict": true,
     "noEmitOnError": true,
