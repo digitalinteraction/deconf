@@ -89,15 +89,6 @@ function convertLabel(record: LabelRecord): deconf.SessionType {
   } as deconf.SessionType;
 }
 
-const fakeSettings: deconf.ConferenceConfig = {
-  atrium: { enabled: true, visible: true },
-  schedule: { enabled: true, visible: true },
-  helpDesk: { enabled: true, visible: true },
-  about: { enabled: true, visible: true },
-  navigation: {},
-  widgets: {},
-} as any;
-
 export async function getSchedule(
   legacy: LegacyRepo,
   conferenceId: number,
@@ -116,9 +107,7 @@ export async function getSchedule(
 
   const legacyTaxonomies = getLegacyTaxes(taxonomies);
 
-  // const theme = getLegacyTax(taxonomies, "theme");
-  // const track = getLegacyTax(taxonomies, "track");
-  // const type = getLegacyTax(taxonomies, "type");
+  const settings = await legacy.getSettings(conferenceId);
 
   // TODO: things need injecting onto the "SessionType" records
   // TODO: what to do with settings ...
@@ -132,7 +121,7 @@ export async function getSchedule(
         labels.grouped.get(s.id),
       ),
     ),
-    settings: fakeSettings,
+    settings: settings,
     slots: Array.from(slots.values()),
     speakers: Array.from(people.all).map((p) => convertPerson(p)),
     themes: legacyTaxonomies.theme.map((l) => convertLabel(l)),
@@ -178,7 +167,7 @@ type LegacyTax = "tracks" | "themes" | "types";
 
 function getLegacyTax(taxonomies: TaxonomyDetails[], type: LegacyTax) {
   return (
-    taxonomies.find((t) => `legacy/${t.metadata.ref}` === type)?.labels ?? []
+    taxonomies.find((t) => `legacy/${type}` === t.metadata.ref)?.labels ?? []
   );
 }
 
@@ -204,7 +193,7 @@ export const getSessionLinksRoute = defineRoute({
   },
   async handler({ request, params, authz, legacy }) {
     const { scope } = await authz.assertUser(request, {
-      scope: "legacy:conference",
+      scope: "user:legacy:conference",
     });
 
     const session = await legacy.assertSession(

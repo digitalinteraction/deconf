@@ -13,6 +13,7 @@ const _Request = Structure.array(
   Structure.object({
     id: Structure.string(),
     slug: Structure.string(),
+    content_type: Structure.string(),
     body: localisedStructure(),
     metadata: Structure.any(),
   }),
@@ -62,6 +63,7 @@ export const replaceContentRoute = defineRoute({
         (value): Partial<ContentRecord> => ({
           body: value.body,
           conference_id: conference.id,
+          content_type: value.content_type,
           slug: value.slug,
           metadata: value.metadata,
         }),

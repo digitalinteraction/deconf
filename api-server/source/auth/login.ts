@@ -1,4 +1,5 @@
 import { defineRoute, HTTPError, Structure } from "gruber";
+import cookie from "cookie";
 
 import { assertRequestBody } from "gruber/http/request-body.js";
 import { commponDependencies } from "../lib/globals.ts";
@@ -81,7 +82,16 @@ export const loginRoute = defineRoute({
         throw HTTPError.internalServerError("login email failed");
       }
 
-      return Response.redirect(callback);
+      const headers = new Headers();
+      headers.set(
+        "Set-Cookie",
+        cookie.serialize(appConfig.auth.loginCookie, login.token, {
+          httpOnly: true,
+          maxAge: appConfig.auth.loginMaxAge / 1_000,
+        }),
+      );
+
+      return new Response(undefined, { headers });
     }
 
     throw HTTPError.notImplemented();

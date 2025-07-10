@@ -333,3 +333,10 @@ export function emailStructure() {
     return string;
   });
 }
+
+export function undefinedStructure() {
+  return new Structure<undefined>({}, (value) => {
+    if (value !== undefined) throw new Error("not undefined");
+    return undefined;
+  });
+}

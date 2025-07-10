@@ -52,18 +52,24 @@ const struct = config.object({
   }),
 
   auth: config.object({
+    loginCookie: config.string({
+      variable: "AUTH_LOGIN_COOKIE",
+      fallback: "deconf_login",
+    }),
     loginMaxAge: config.number({
       variable: "AUTH_SESSION_MAX_AGE",
-      fallback: 30 * 60 * 1_000, // 30 minutes
+      fallback: 15 * 60 * 1_000, // 15 minutes
+    }),
+
+    sessionCookie: config.string({
+      variable: "AUTH_SESSION_COOKIE",
+      fallback: "deconf_session",
     }),
     sessionMaxAge: config.number({
       variable: "AUTH_SESSION_MAX_AGE",
       fallback: 30 * 24 * 60 * 60 * 1_000, // 30 days
     }),
-    cookieName: config.string({
-      variable: "AUTH_COOKIE_NAME",
-      fallback: "deconf-api-server",
-    }),
+
     // appName: config.string({
     //   variable: "AUTH_APP_NAME",
     //   fallback: "Deconf",

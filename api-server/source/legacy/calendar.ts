@@ -147,7 +147,7 @@ export const createUserCal = defineRoute({
   },
   async handler({ params, request, legacy, authz, appConfig, tokens }) {
     const { userId } = await authz.assertUser(request, {
-      scope: "legacy:calendar",
+      scope: "user:legacy:calendar",
     });
 
     await legacy.assertRegistration(userId, params.conference);

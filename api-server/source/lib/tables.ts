@@ -205,6 +205,7 @@ export const ContentTable = defineTable<ContentRecord>({
     id: Structure.number(),
     created_at: Structure.date(),
     slug: Structure.string(),
+    content_type: Structure.string(),
     body: localisedStructure(),
     conference_id: Structure.number(),
     metadata: Structure.any(),

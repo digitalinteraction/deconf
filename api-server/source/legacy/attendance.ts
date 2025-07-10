@@ -57,7 +57,7 @@ export const attendRoute = defineRoute({
   },
   async handler({ request, params, authz, legacy, attendance }) {
     const { userId } = await authz.assertUser(request, {
-      scope: "legacy:attendance",
+      scope: "user:legacy:attendance",
     });
 
     const session = await legacy.assertSession(
@@ -88,7 +88,7 @@ export const unattendRoute = defineRoute({
   },
   async handler({ request, params, authz, legacy, attendance }) {
     const { userId } = await authz.assertUser(request, {
-      scope: "legacy:attendance",
+      scope: "user:legacy:attendance",
     });
 
     const session = await legacy.assertSession(
@@ -159,7 +159,7 @@ export const selfAttendanceRoute = defineRoute({
   },
   async handler({ request, params, authz, legacy, attendance }) {
     const { userId } = await authz.assertUser(request, {
-      scope: "legacy:attendance",
+      scope: "user:legacy:attendance",
     });
 
     const registration = await legacy.assertRegistration(

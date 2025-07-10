@@ -1,6 +1,9 @@
 import { HTTPError, loader, SqlDependency, Store } from "gruber";
+import * as deconf from "@openlab/deconf-shared";
+
 import {
   ConferenceTable,
+  ContentTable,
   getOrInsert,
   LabelTable,
   PersonTable,
@@ -26,6 +29,15 @@ function assertInteger(input: number | string) {
   if (Number.isNaN(value)) throw HTTPError.badRequest("bad url identifier");
   return value;
 }
+
+const fakeSettings: deconf.ConferenceConfig = {
+  atrium: { enabled: true, visible: true },
+  schedule: { enabled: true, visible: true },
+  helpDesk: { enabled: true, visible: true },
+  about: { enabled: true, visible: true },
+  navigation: {},
+  widgets: {},
+} as any;
 
 export class LegacyRepo {
   static use = loader(() => new this(useDatabase()));
@@ -170,6 +182,17 @@ export class LegacyRepo {
       this.sql,
       this.sql`id IN ${this.sql(relation.map((r) => r.id))}`,
     );
+  }
+
+  async getSettings(conferenceId: number): Promise<deconf.ConferenceConfig> {
+    const record = await ContentTable.selectOne(
+      this.sql,
+      this.sql`
+        slug = 'settings' AND content_type = 'application/json' AND conference_id = ${conferenceId}
+      `,
+    );
+    if (!record) return fakeSettings;
+    return JSON.parse(record.body.en!);
   }
 }
 

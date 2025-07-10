@@ -1,17 +1,26 @@
 import { assertRequestBody, defineRoute, HTTPError, Structure } from "gruber";
 import cookie from "cookie";
 
-import { commponDependencies } from "../lib/globals.ts";
+import { commponDependencies, undefinedStructure } from "../lib/mod.ts";
 import { AuthRepo } from "./auth-repo.ts";
 import { LoginRequest } from "./login.ts";
 
 const VerifyBody = Structure.union([
   Structure.object({
     method: Structure.literal("email"),
-    token: Structure.string(),
-    code: Structure.string(),
+    token: Structure.union([undefinedStructure(), Structure.string()]),
+    code: Structure.number(),
   }),
 ]);
+
+function getLoginToken(request: Request, cookieName: string) {
+  const value = request.headers.get("Cookie");
+  if (!value) return undefined;
+
+  return cookie.parse(value)[cookieName];
+}
+
+// TODO: clear deconf_login cookie
 
 export const verifyRoute = defineRoute({
   method: "POST",
@@ -23,24 +32,32 @@ export const verifyRoute = defineRoute({
   async handler({ request, store, repo, tokens, appConfig }) {
     const body = await assertRequestBody(VerifyBody, request);
 
-    const login = await store.get<LoginRequest>(`/auth/request/${body.token}`);
+    const loginToken =
+      body.token ?? getLoginToken(request, appConfig.auth.loginCookie);
+
+    if (!loginToken) throw HTTPError.badRequest("no token");
+
+    const login = await store.get<LoginRequest>(`/auth/request/${loginToken}`);
     if (!login) throw HTTPError.badRequest();
 
     if (login.method === "email") {
-      if (login.code !== parseInt(body.code)) {
+      if (login.code !== body.code) {
         throw HTTPError.unauthorized();
       }
 
       const user = await repo.getUserByEmail(login.payload.emailAddress);
       if (!user) {
         // login.uses -= 1;
-        // if (login.uses <= 0) await store.delete(`/auth/request/${body.token}`);
-        // else store.set(`/auth/request/${body.token}`, login);
+        // if (login.uses <= 0) await store.delete(`/auth/request/${loginToken}`);
+        // else store.set(`/auth/request/${loginToken}`, login);
 
         throw HTTPError.notImplemented("TODO: user auto-create system?");
       }
 
-      const token = await tokens.sign("user", {
+      // TODO: this is a hack for now, should be based on Conference roles
+      const scope = user.metadata.admin ? "admin" : "user";
+
+      const sessionToken = await tokens.sign(scope, {
         maxAge: appConfig.auth.sessionMaxAge,
         userId: user.id,
       });
@@ -48,15 +65,16 @@ export const verifyRoute = defineRoute({
       const headers = new Headers();
       headers.set(
         "Set-Cookie",
-        cookie.serialize(appConfig.auth.cookieName, token, {
+        cookie.serialize(appConfig.auth.sessionCookie, sessionToken, {
           httpOnly: true,
           maxAge: appConfig.auth.sessionMaxAge / 1_000,
         }),
       );
 
-      await store.delete(`/auth/request/${body.token}`);
+      await store.delete(`/auth/request/${loginToken}`);
 
-      return new Response("ok", { headers });
+      // return new Response("ok", { headers });
+      return Response.json({ token: sessionToken }, { headers });
     }
 
     throw HTTPError.notImplemented();
