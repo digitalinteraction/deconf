@@ -20,6 +20,7 @@ import {
   LabelRecord,
   PersonRecord,
   SessionLabelRecord,
+  SessionLinkRecord,
   SessionPersonRecord,
   SessionRecord,
   TaxonomyRecord,
@@ -137,9 +138,9 @@ export const replaceScheduleRoute = defineRoute({
     if (dryRun) {
       return Response.json({
         ...Object.fromEntries(
-          Object.entries(diff).map(([k, v]) => [k, sumDiffs([v])]),
+          Object.entries(diff).map(([k, v]) => [k, _sumDiffs([v])]),
         ),
-        total: sumDiffs(Object.values(diff)),
+        total: _sumDiffs(Object.values(diff)),
       });
     }
 
@@ -235,10 +236,22 @@ export const replaceScheduleRoute = defineRoute({
       //     session_id: getRelated(sessions.lookup, value.session_id)
       //   })
       // )
+
+      const sessionLinks = await _unwrap(
+        trx,
+        diff.sessionLinks,
+        SessionLinkTable,
+        (value): Partial<SessionLinkRecord> => ({
+          session_id: getRelated(sessions.lookup, value.session_id),
+          title: value.title,
+          url: value.url,
+          metadata: value.metadata,
+        }),
+      );
     });
 
     // Output a summary of the changes
-    return Response.json(sumDiffs(Object.values(diff)));
+    return Response.json(_sumDiffs(Object.values(diff)));
   },
 });
 
