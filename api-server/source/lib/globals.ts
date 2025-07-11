@@ -4,21 +4,25 @@ import {
   Cors,
   loader as defineDependency,
   getTerminator,
-  JoseTokens,
   SqlDependency,
   Store,
   TokenService,
   useRandom,
 } from "gruber";
-import * as jose from "jose";
 import postgres from "postgres";
 
 export { default as createDebug } from "debug";
 
 import { _appConfig } from "../config.js";
 import { CSRF } from "./csrf.js";
-import { EmailService, SendgridService } from "./email.ts";
+import {
+  DebugEmailService,
+  EmailService,
+  ExternalEmailService,
+} from "./email.ts";
+import { JoseJWKTokens } from "./gruber-hacks.ts";
 import { NodeRedisStore } from "./store.ts";
+import { DECONF_OOB } from "./utilities.ts";
 
 export const useAppConfig = defineDependency(() => {
   return _appConfig;
@@ -56,7 +60,7 @@ export const useCSRF = defineDependency(() => {
 
 export const useTokens = defineDependency<TokenService>(() => {
   const appConfig = useAppConfig();
-  return new JoseTokens(appConfig.jwt, jose as any);
+  return new JoseJWKTokens(appConfig.jwt);
 });
 
 export const useAuthz = defineDependency<AbstractAuthorizationService>(() => {
@@ -68,7 +72,10 @@ export const useAuthz = defineDependency<AbstractAuthorizationService>(() => {
 });
 
 export const useEmail = defineDependency<EmailService>(() => {
-  return new SendgridService();
+  const appConfig = useAppConfig();
+  return appConfig.email.endpoint.href !== DECONF_OOB
+    ? new ExternalEmailService(appConfig.email, appConfig)
+    : new DebugEmailService();
 });
 
 export const commponDependencies = {

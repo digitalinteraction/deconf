@@ -1,4 +1,13 @@
-import { _nestContext, HTTPError, SqlDependency, Structure } from "gruber";
+import {
+  _nestContext,
+  AuthzToken,
+  HTTPError,
+  SignTokenOptions,
+  SqlDependency,
+  Structure,
+  TokenService,
+} from "gruber";
+import * as jose from "jose";
 
 function pick<T, K extends keyof T>(input: T, keys: K[]): { [L in K]: T[L] } {
   let output: Pick<T, K> = {} as any;
@@ -339,4 +348,88 @@ export function undefinedStructure() {
     if (value !== undefined) throw new Error("not undefined");
     return undefined;
   });
+}
+
+export function jwkStructure() {
+  return Structure.object({
+    kty: Structure.string(),
+    n: Structure.string(),
+    e: Structure.string(),
+    d: Structure.string(),
+    p: Structure.string(),
+    q: Structure.string(),
+    dp: Structure.string(),
+    dq: Structure.string(),
+    qi: Structure.string(),
+    alg: Structure.string(),
+    use: Structure.string(),
+    kid: Structure.string(),
+  });
+}
+
+// TODO: this doesn't work due to a bug with nested config.external values
+// export function jwkStructure(): ReturnType<typeof jwk> {
+//   return new Structure({}, (value, ctx) => {
+//     const internal = value ? jwk().process(value, ctx) : {};
+
+//     if (!value) {
+//       if (ctx.type !== "async") throw new Error("not async");
+//       ctx.promises.push(async () => {
+//         const generated = await generateJwk("localhost");
+//         console.log("generating jwk...", generated);
+
+//         Object.assign(internal, { ...generated });
+
+//         console.log("done", internal);
+//       });
+//     }
+
+//     return internal as any;
+//   });
+// }
+
+export interface JoseJWTOptions {
+  key: jose.JWK;
+  issuer: string;
+  audience: string;
+}
+
+// TokenService implementation using jose with a JWK, rather than a static secret
+export class JoseJWKTokens implements TokenService {
+  options;
+  constructor(options: JoseJWTOptions) {
+    this.options = options;
+  }
+
+  sign(scope: string, options: SignTokenOptions = {}): Promise<string> {
+    const jwt = new jose.SignJWT({ scope })
+      .setProtectedHeader({ alg: this.options.key.alg! })
+      .setIssuedAt()
+      .setIssuer(this.options.issuer)
+      .setAudience(this.options.audience);
+
+    if (options.userId !== undefined) {
+      jwt.setSubject(options.userId.toString());
+    }
+    if (options.maxAge !== undefined) {
+      jwt.setExpirationTime((Date.now() + options.maxAge) / 1_000);
+    }
+
+    return jwt.sign(this.options.key);
+  }
+
+  async verify(input: string): Promise<AuthzToken | null> {
+    try {
+      const token = await jose.jwtVerify(input, this.options.key, {
+        issuer: this.options.issuer,
+        audience: this.options.audience,
+      });
+      return {
+        userId: token.payload.sub ? parseInt(token.payload.sub) : undefined,
+        scope: token.payload.scope as string,
+      };
+    } catch (error) {
+      return null;
+    }
+  }
 }

@@ -1,7 +1,7 @@
 #!/usr/bin/env npx tsx
 
 import process from "node:process";
-import * as jose from "jose";
+import { generateJwk } from "../source/lib/mod.ts";
 
 const [kid] = process.argv.slice(2);
 
@@ -11,6 +11,9 @@ usage:
 
 info:
   Generate a JSON Web Key for signing JWTs
+
+arguments:
+  <kid>   an identifier for the key 
 `;
 
 if (process.argv.includes("--help") || !kid) {
@@ -18,13 +21,4 @@ if (process.argv.includes("--help") || !kid) {
   process.exit();
 }
 
-const { privateKey } = await jose.generateKeyPair("RS256", {
-  extractable: true,
-});
-
-const privateJwk = await jose.exportJWK(privateKey);
-privateJwk.alg = "RS256";
-privateJwk.use = "sig";
-privateJwk.kid = kid;
-
-console.log(JSON.stringify(privateJwk, null, 2));
+console.log(JSON.stringify(await generateJwk(kid), null, 2));

@@ -70,11 +70,11 @@ export const loginRoute = defineRoute({
       magicLink.searchParams.set("code", login.code.toString());
 
       const sent = await email.sendTemplated({
-        to: emailAddress,
+        to: { emailAddress },
         type: "login",
         arguments: {
-          code: login.code,
-          url: magicLink.toString(),
+          oneTimeCode: login.code,
+          magicLink: magicLink.toString(),
         },
       });
 

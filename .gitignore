@@ -8,3 +8,5 @@ node_modules
 pretalx.ts
 web-push-credentials.json
 bundle
+jwk*.json
+api-server/config.json

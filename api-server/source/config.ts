@@ -1,5 +1,7 @@
 import { getConfiguration, Infer, Structure } from "gruber";
 import pkg from "../package.json" with { type: "json" };
+import { DECONF_OOB } from "./lib/utilities.ts";
+import { jwkStructure } from "./lib/mod.ts";
 
 const config = getConfiguration();
 
@@ -90,6 +92,10 @@ const struct = config.object({
     //   variable: "JWT_SECRET",
     //   fallback: "not_secret",
     // }),
+    key: config.external(
+      new URL("../jwk.json", import.meta.url),
+      jwkStructure(),
+    ),
   }),
 
   // sendgrid: config.object({
@@ -115,7 +121,7 @@ const struct = config.object({
   email: config.object({
     endpoint: config.url({
       variable: "EMAIL_ENDPOINT",
-      fallback: "deconf://oob",
+      fallback: DECONF_OOB,
     }),
     apiKey: config.string({ variable: "EMAIL_API_KEY", fallback: "" }),
   }),
@@ -142,17 +148,25 @@ export async function loadConfig(path: string | URL) {
     //   throw new Error("sendgrid.templateId not set");
     // }
     if (value.webPush.credentials.privateKey === "") {
-      throw new Error("webPush.credentials.privateKey not set");
+      throw new Error("[config] webPush.credentials.privateKey not set");
     }
     if (value.webPush.credentials.publicKey === "") {
-      throw new Error("webPush.credentials.publicKey not set");
+      throw new Error("[config] webPush.credentials.publicKey not set");
     }
     if (value.jwt.secret === "") {
-      throw new Error("jwt.secret not set");
+      throw new Error("[config] jwt.secret not set");
     }
-    if (value.email.endpoint.toString() === "deconf://oob") {
-      throw new Error("email.endpoint not set");
+    if (value.email.endpoint.toString() === DECONF_OOB) {
+      throw new Error("[config] email.endpoint not set");
     }
+    if (value.email.apiKey === "") {
+      throw new Error("[config] email.apiKey not set");
+    }
+  } else {
+    // if (Object.keys(value.jwt.key).length === 0) {
+    //   console.log("Generating development JWKS");
+    //   value.jwt.key = await generateJwk();
+    // }
   }
 
   return value;

@@ -1,5 +1,6 @@
 import { defineRoute, FetchRouter, serveHTTP } from "gruber";
 import {
+  generateJWKS,
   useAppConfig,
   useCors,
   useDatabase,
@@ -42,6 +43,17 @@ const healthzRoute = defineRoute({
   },
 });
 
+const jwksRoute = defineRoute({
+  method: "GET",
+  pathname: "/.well-known/jwks.json",
+  dependencies: {
+    appConfig: useAppConfig,
+  },
+  async handler({ appConfig }) {
+    return Response.json(generateJWKS(appConfig.jwt.key));
+  },
+});
+
 const corsRoute = defineRoute({
   method: "OPTIONS",
   pathname: "*",
@@ -56,6 +68,7 @@ const corsRoute = defineRoute({
 const routes = [
   helloRoute,
   healthzRoute,
+  jwksRoute,
   corsRoute,
   ...legacyRoutes,
   ...authRoutes,

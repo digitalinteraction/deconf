@@ -1,15 +1,18 @@
+// import * as jose from "jose";
+import { AppConfig } from "../config.ts";
+
 export interface SendPlainOptions {
-  to: string;
+  to: { emailAddress: string; name?: string };
   subject: string;
-  html: string;
+  body: string;
 }
 
 export interface SendTemplatedOptions {
-  to: string;
+  to: { emailAddress: string; name?: string };
   type: "login";
   arguments: {
-    code: number;
-    url: string;
+    oneTimeCode: number;
+    magicLink: string;
   };
 }
 
@@ -18,69 +21,95 @@ export interface EmailService {
   sendTemplated(options: SendTemplatedOptions): Promise<boolean>;
 }
 
-export interface SendgridOptions {
+export interface EmailOptions {
+  endpoint: URL;
   apiKey: string;
-  fromAddress: string;
-  fromName: string;
 }
 
 // TODO: rewrite to "EmailService" + check for deconf://oob
 // TODO: customise per conference?
 
-export class SendgridService implements EmailService {
-  // options: SendgridOptions;
-  constructor() {
-    // this.options = options;
-  }
-
+export class DebugEmailService implements EmailService {
   async sendPlain(options: SendPlainOptions): Promise<boolean> {
     console.log(
       "[sendgrind] to=%o subject=%o",
-      options.to,
+      options.to.emailAddress,
       options.subject,
-      options.html,
+      options.body,
     );
     return true;
-
-    // const tracking_settings = {
-    //   click_tracking: { enable: false },
-    //   open_tracking: { enable: false },
-    //   subscription_tracking: { enable: false },
-    //   ganalytics: { enable: false },
-    // };
-
-    // const res = await fetch("https://api.sendgrid.com/v3/mail/send", {
-    //   method: "POST",
-    //   headers: {
-    //     authorization: `Bearer ${this.options.apiKey}`,
-    //     "content-type": "application/json",
-    //   },
-    //   body: JSON.stringify({
-    //     tracking_settings,
-    //     from: {
-    //       name: this.options.fromName,
-    //       email: this.options.fromAddress,
-    //     },
-    //     personalizations: [{ to: [{ name: "", email: to }] }],
-    //     subject: subject,
-    //     content: [{ type: "text/html", value: html }],
-    //   }),
-    // });
-
-    // return res.ok;
   }
 
   async sendTemplated(options: SendTemplatedOptions): Promise<boolean> {
     console.log(
       "[sendgrind] to=%o type=%o",
-      options.to,
+      options.to.emailAddress,
       options.type,
       options.arguments,
     );
     return true;
+  }
+}
 
-    // const res = await fetch("https://api.sendgrid.com/v3/mail/send", {
-    //   method: "POST",
-    // });
+export class ExternalEmailService implements EmailService {
+  options;
+  appConfig;
+  constructor(options: EmailOptions, appConfig: AppConfig) {
+    this.options = options;
+    this.appConfig = appConfig;
+  }
+
+  async sendPlain(options: SendPlainOptions): Promise<boolean> {
+    // const token = await new jose.SignJWT({
+    //   sub: this.options.endpoint.toString(),
+    // })
+    //   .setIssuer(this.appConfig.jwt.issuer)
+    //   .setProtectedHeader({ alg: this.appConfig.jwt.key.alg, scope: "email" })
+    //   .setExpirationTime("5m")
+    //   .sign(this.appConfig.jwt.key);
+
+    const res = await fetch(this.options.endpoint, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${this.options.apiKey}`,
+        // Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        type: "plain",
+        to: options.to,
+        subject: options.subject,
+        body: options.body,
+      }),
+    });
+
+    return res.ok;
+  }
+
+  async sendTemplated(options: SendTemplatedOptions): Promise<boolean> {
+    // const token = await new jose.SignJWT({
+    //   sub: this.options.endpoint.toString(),
+    // })
+    //   .setIssuer(this.appConfig.jwt.issuer)
+    //   .setProtectedHeader({ alg: this.appConfig.jwt.key.alg, scope: "email" })
+    //   .setExpirationTime("5m")
+    //   .sign(this.appConfig.jwt.key);
+
+    const res = await fetch(this.options.endpoint, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${this.options.apiKey}`,
+        // Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        type: "template",
+        to: options.to,
+        template: options.type,
+        arguments: options.arguments,
+      }),
+    });
+
+    return res.ok;
   }
 }
