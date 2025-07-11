@@ -63,11 +63,17 @@ export const verifyRoute = defineRoute({
       });
 
       const headers = new Headers();
-      headers.set(
+      headers.append(
         "Set-Cookie",
         cookie.serialize(appConfig.auth.sessionCookie, sessionToken, {
           httpOnly: true,
           maxAge: appConfig.auth.sessionMaxAge / 1_000,
+        }),
+      );
+      headers.append(
+        "Set-Cookie",
+        cookie.serialize(appConfig.auth.loginCookie, "", {
+          expires: new Date(0),
         }),
       );
 
