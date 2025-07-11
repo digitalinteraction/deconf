@@ -62,7 +62,12 @@ export class LegacyRepo {
   }
 
   listSessions(confId: number): Promise<SessionRecord[]> {
-    return SessionTable.select(this.sql, this.sql`conference_id = ${confId}`);
+    return SessionTable.select(
+      this.sql,
+      this.sql`
+      conference_id = ${confId} AND state != 'draft'
+    `,
+    );
   }
 
   // TODO: could be more efficient
