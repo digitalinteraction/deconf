@@ -1,7 +1,6 @@
 import {
   assertRequestBody,
   defineRoute,
-  Infer,
   SqlDependency,
   Structure,
 } from "gruber";

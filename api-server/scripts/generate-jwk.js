@@ -1,13 +1,15 @@
 #!/usr/bin/env npx tsx
 
 import process from "node:process";
-import { generateJwk } from "../source/lib/mod.ts";
+
+// NOTE: this imports utilites so it doesn't load in "config"
+import { generateJwk } from "../source/lib/utilities.ts";
 
 const [kid] = process.argv.slice(2);
 
 const usage = `
 usage:
-  ./scripts/generate-jwk.ts <kid>
+  ./scripts/generate-jwk.js <kid>
 
 info:
   Generate a JSON Web Key for signing JWTs

@@ -50,7 +50,9 @@ const jwksRoute = defineRoute({
     appConfig: useAppConfig,
   },
   async handler({ appConfig }) {
-    return Response.json(generateJWKS(appConfig.jwt.key));
+    return Response.json({
+      keys: [appConfig.jwt.key.publicKey],
+    });
   },
 });
 

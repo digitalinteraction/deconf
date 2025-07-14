@@ -1,13 +1,14 @@
 #!/usr/bin/env npx tsx
 
 import process from "node:process";
+import ms from "ms";
 import { useTokens } from "../source/lib/mod.js";
 
-const [subject] = process.argv.slice(2);
+const [subject, duration = "1h"] = process.argv.slice(2);
 
 const usage = `
 usage:
-  ./scripts/dev_token.ts <subject>
+  ./scripts/dev_token.js [subject] [duration]
 
 info:
   Signs a JWT to use for local API development.
@@ -22,7 +23,12 @@ if (process.argv.includes("--help") || !subject) {
 
 const tokens = useTokens();
 
-const expiration = new Date();
-expiration.setHours(expiration.getHours() + 1);
+const userId = parseInt(subject);
+if (subject && Number.isNaN(userId)) throw new Error("invalid id");
 
-console.log(await tokens.sign(parseInt(subject), "admin", { expiration }));
+console.log(
+  await tokens.sign("admin", {
+    maxAge: ms(duration),
+    userId,
+  }),
+);

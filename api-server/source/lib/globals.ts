@@ -60,7 +60,12 @@ export const useCSRF = defineDependency(() => {
 
 export const useTokens = defineDependency<TokenService>(() => {
   const appConfig = useAppConfig();
-  return new JoseJWKTokens(appConfig.jwt);
+  return new JoseJWKTokens({
+    audience: appConfig.jwt.audience,
+    issuer: appConfig.jwt.issuer,
+    publicKey: appConfig.jwt.key.publicKey,
+    privateKey: appConfig.jwt.key.privateKey,
+  });
 });
 
 export const useAuthz = defineDependency<AbstractAuthorizationService>(() => {

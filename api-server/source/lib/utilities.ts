@@ -8,21 +8,34 @@ export function trimEmail(input: string) {
 export const DECONF_OOB = "deconf://oob";
 
 export async function generateJwk(kid = "dev.deconf.app") {
-  const { privateKey } = await jose.generateKeyPair("RS256", {
+  const { publicKey, privateKey } = await jose.generateKeyPair("RS256", {
     extractable: true,
   });
 
-  // Export the private key which includes the public key
-  const privateJwk = await jose.exportJWK(privateKey);
-  privateJwk.alg = "RS256";
-  privateJwk.use = "sig";
-  privateJwk.kid = kid;
+  const key = {
+    publicKey: await jose.exportJWK(publicKey),
+    privateKey: await jose.exportJWK(privateKey),
+  };
 
-  return privateJwk as Required<jose.JWK>;
+  // Augment the public keys
+  key.publicKey.alg = "RS256";
+  key.publicKey.use = "sig";
+  key.publicKey.kid = kid;
+
+  // Augment the private keys
+  key.privateKey.alg = "RS256";
+  key.privateKey.use = "sig";
+  key.privateKey.kid = kid;
+
+  return key;
+}
+
+export function getPublicJwk(key: jose.JWK) {
+  return pickProperties(key, ["kty", "e", "use", "kid", "alg", "n"]);
 }
 
 export function generateJWKS(key: jose.JWK) {
   return {
-    keys: [pickProperties(key, ["kty", "e", "use", "kid", "alg", "n"])],
+    keys: [getPublicJwk(key)],
   };
 }

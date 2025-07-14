@@ -20,11 +20,13 @@
     "postgres": "^3.4.7",
     "redis": "^5.1.1",
     "urlpattern-polyfill": "^10.1.0",
+    "web-push": "^3.6.7",
     "yargs": "^18.0.0"
   },
   "devDependencies": {
     "@types/debug": "^4.1.12",
     "@types/node": "^22.7.4",
+    "@types/web-push": "^3.6.4",
     "@types/yargs": "^17.0.33",
     "prettier": "^3.5.3",
     "tsx": "^4.19.4",

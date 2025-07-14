@@ -352,18 +352,28 @@ export function undefinedStructure() {
 
 export function jwkStructure() {
   return Structure.object({
-    kty: Structure.string(),
-    n: Structure.string(),
-    e: Structure.string(),
-    d: Structure.string(),
-    p: Structure.string(),
-    q: Structure.string(),
-    dp: Structure.string(),
-    dq: Structure.string(),
-    qi: Structure.string(),
-    alg: Structure.string(),
-    use: Structure.string(),
-    kid: Structure.string(),
+    publicKey: Structure.object({
+      kty: Structure.string(),
+      n: Structure.string(),
+      e: Structure.string(),
+      alg: Structure.string(),
+      use: Structure.string(),
+      kid: Structure.string(),
+    }),
+    privateKey: Structure.object({
+      kty: Structure.string(),
+      n: Structure.string(),
+      e: Structure.string(),
+      d: Structure.string(),
+      p: Structure.string(),
+      q: Structure.string(),
+      dp: Structure.string(),
+      dq: Structure.string(),
+      qi: Structure.string(),
+      alg: Structure.string(),
+      use: Structure.string(),
+      kid: Structure.string(),
+    }),
   });
 }
 
@@ -389,7 +399,8 @@ export function jwkStructure() {
 // }
 
 export interface JoseJWTOptions {
-  key: jose.JWK;
+  publicKey: jose.JWK;
+  privateKey: jose.JWK;
   issuer: string;
   audience: string;
 }
@@ -401,9 +412,12 @@ export class JoseJWKTokens implements TokenService {
     this.options = options;
   }
 
-  sign(scope: string, options: SignTokenOptions = {}): Promise<string> {
+  async sign(scope: string, options: SignTokenOptions = {}): Promise<string> {
     const jwt = new jose.SignJWT({ scope })
-      .setProtectedHeader({ alg: this.options.key.alg! })
+      .setProtectedHeader({
+        alg: this.options.privateKey.alg!,
+        // kid: this.options.privateKey.kid,
+      })
       .setIssuedAt()
       .setIssuer(this.options.issuer)
       .setAudience(this.options.audience);
@@ -415,12 +429,12 @@ export class JoseJWKTokens implements TokenService {
       jwt.setExpirationTime((Date.now() + options.maxAge) / 1_000);
     }
 
-    return jwt.sign(this.options.key);
+    return jwt.sign(this.options.privateKey);
   }
 
   async verify(input: string): Promise<AuthzToken | null> {
     try {
-      const token = await jose.jwtVerify(input, this.options.key, {
+      const token = await jose.jwtVerify(input, this.options.publicKey, {
         issuer: this.options.issuer,
         audience: this.options.audience,
       });
