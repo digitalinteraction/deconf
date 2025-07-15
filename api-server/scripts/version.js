@@ -3,6 +3,7 @@
 import process from "node:process";
 import cp from "node:child_process";
 import { promisify } from "node:util";
+import pkg from "../package.json" with { type: "json" };
 
 const exec = promisify(cp.exec);
 
@@ -10,10 +11,12 @@ const [version] = process.argv.slice(2);
 
 const usage = `
 usage:
-  ./scripts/version.ts <version>
+  ./scripts/version.js <version>
 
 info:
   Cut a release of the server, build the docker and push it.
+
+current: ${pkg.version}
 `;
 
 if (process.argv.includes("--help") || !version) {
