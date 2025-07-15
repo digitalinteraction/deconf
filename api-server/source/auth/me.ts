@@ -4,7 +4,7 @@ import { AuthRepo } from "./auth-repo.ts";
 
 export const getAuthRoute = defineRoute({
   method: "GET",
-  pathname: "/auth/v1/me/:conference",
+  pathname: "/auth/v1/me",
   dependencies: {
     authz: useAuthz,
     repo: AuthRepo.use,
