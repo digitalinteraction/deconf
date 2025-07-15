@@ -6,7 +6,7 @@ import {
 } from "../lib/gruber-hacks.ts";
 import { useAuthz, useDatabase } from "../lib/globals.ts";
 import { ConferenceTable, ContentTable } from "../lib/tables.ts";
-import { _diffResource, _sumDiffs, _unwrap } from "./replace-schedule.ts";
+import { _diffResource, _sumDiffs, _unwrap } from "./upsert-schedule.ts";
 import { ContentRecord } from "../lib/types.ts";
 
 const _Request = Structure.array(
@@ -19,7 +19,7 @@ const _Request = Structure.array(
   }),
 );
 
-export const replaceContentRoute = defineRoute({
+export const upsertContentRoute = defineRoute({
   method: "PUT",
   pathname: "/admin/v1/conferences/:conference/content",
   dependencies: {

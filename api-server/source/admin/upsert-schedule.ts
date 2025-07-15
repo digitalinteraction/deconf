@@ -93,7 +93,7 @@ const _Request = Structure.object({
   ),
 });
 
-export const replaceScheduleRoute = defineRoute({
+export const upsertScheduleRoute = defineRoute({
   method: "PUT",
   pathname: "/admin/v1/conferences/:conference/schedule",
   dependencies: {
@@ -135,12 +135,7 @@ export const replaceScheduleRoute = defineRoute({
       return Response.json(diff);
     }
     if (dryRun) {
-      return Response.json({
-        ...Object.fromEntries(
-          Object.entries(diff).map(([k, v]) => [k, _sumDiffs([v])]),
-        ),
-        total: _sumDiffs(Object.values(diff)),
-      });
+      return Response.json(_totalDiffs(diff));
     }
 
     // Run the replacement in a migration, so if any of it fails the state is reset
@@ -163,7 +158,7 @@ export const replaceScheduleRoute = defineRoute({
         LabelTable,
         (value): Partial<LabelRecord> => ({
           ...pickProperties(value, ["title", "icon", "metadata"]),
-          taxonomy_id: getRelated(taxonomies.lookup, value.taxonomy_id),
+          taxonomy_id: _getRelated(taxonomies.lookup, value.taxonomy_id),
         }),
       );
 
@@ -209,8 +204,8 @@ export const replaceScheduleRoute = defineRoute({
         diff.sessionPeople,
         SessionPersonTable,
         (value): Partial<SessionPersonRecord> => ({
-          person_id: getRelated(people.lookup, value.person_id),
-          session_id: getRelated(sessions.lookup, value.session_id),
+          person_id: _getRelated(people.lookup, value.person_id),
+          session_id: _getRelated(sessions.lookup, value.session_id),
         }),
       );
 
@@ -219,8 +214,8 @@ export const replaceScheduleRoute = defineRoute({
         diff.sessionLabels,
         SessionLabelTable,
         (value): Partial<SessionLabelRecord> => ({
-          label_id: getRelated(labels.lookup, value.label_id),
-          session_id: getRelated(sessions.lookup, value.session_id),
+          label_id: _getRelated(labels.lookup, value.label_id),
+          session_id: _getRelated(sessions.lookup, value.session_id),
         }),
       );
 
@@ -241,7 +236,7 @@ export const replaceScheduleRoute = defineRoute({
         diff.sessionLinks,
         SessionLinkTable,
         (value): Partial<SessionLinkRecord> => ({
-          session_id: getRelated(sessions.lookup, value.session_id),
+          session_id: _getRelated(sessions.lookup, value.session_id),
           title: value.title,
           url: value.url,
           metadata: value.metadata,
@@ -250,12 +245,12 @@ export const replaceScheduleRoute = defineRoute({
     });
 
     // Output a summary of the changes
-    return Response.json(_sumDiffs(Object.values(diff)));
+    return Response.json(_totalDiffs(diff));
   },
 });
 
 /** Get a related value from a map with a hard throw if it is missing */
-function getRelated<K, V>(map: Map<K, V>, key: K) {
+export function _getRelated<K, V>(map: Map<K, V>, key: K) {
   const value = map.get(key);
   if (!value) throw new Error("missing related value: " + key);
   return value;
@@ -407,6 +402,15 @@ export function _sumDiffs(values: Differential<any>[]) {
     }),
     initial,
   );
+}
+
+export function _totalDiffs(diff: Record<string, Differential<any>>) {
+  return {
+    ...Object.fromEntries(
+      Object.entries(diff).map(([k, v]) => [k, _sumDiffs([v])]),
+    ),
+    total: _sumDiffs(Object.values(diff)),
+  };
 }
 
 //
