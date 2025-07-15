@@ -1,6 +1,7 @@
 import {
   AbstractAuthorizationService,
   AuthorizationService,
+  CompositeTokens,
   Cors,
   loader as defineDependency,
   getTerminator,
@@ -22,7 +23,7 @@ import {
 } from "./email.ts";
 import { JoseJWKTokens } from "./gruber-hacks.ts";
 import { NodeRedisStore } from "./store.ts";
-import { DECONF_OOB } from "./utilities.ts";
+import { DECONF_OOB, ServiceTokenService } from "./utilities.ts";
 
 export const useAppConfig = defineDependency(() => {
   return _appConfig;
@@ -60,12 +61,15 @@ export const useCSRF = defineDependency(() => {
 
 export const useTokens = defineDependency<TokenService>(() => {
   const appConfig = useAppConfig();
-  return new JoseJWKTokens({
+  const sql = useDatabase();
+  const jose = new JoseJWKTokens({
     audience: appConfig.jwt.audience,
     issuer: appConfig.jwt.issuer,
     publicKey: appConfig.jwt.key.publicKey,
     privateKey: appConfig.jwt.key.privateKey,
   });
+  const services = new ServiceTokenService(sql);
+  return new CompositeTokens(jose, [jose, services]);
 });
 
 export const useAuthz = defineDependency<AbstractAuthorizationService>(() => {

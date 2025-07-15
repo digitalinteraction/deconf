@@ -90,36 +90,11 @@ const struct = config.object({
       variable: "JWT_AUDIENCE",
       fallback: "deconf.app",
     }),
-    secret: config.string({ variable: "JWT_SECRET", fallback: "not_secret" }),
-    // secret: configFile(config, import.meta.resolve("../resources/token.pem"), {
-    //   variable: "JWT_SECRET",
-    //   fallback: "not_secret",
-    // }),
     key: config.external(
       new URL("../jwk.json", import.meta.url),
       jwkStructure(),
     ),
   }),
-
-  // sendgrid: config.object({
-  //   apiKey: config.string({ variable: "SENDGRID_API_TOKEN", fallback: "" }),
-  //   fromAddress: config.string({
-  //     variable: "EMAIL_FROM_ADDRESS",
-  //     fallback: "noreply@openlab.dev",
-  //   }),
-  //   fromName: config.string({
-  //     variable: "EMAIL_FROM_NAME",
-  //     fallback: "Deconf",
-  //   }),
-  //   templateId: config.string({
-  //     variable: "SENDGRID_TEMPLATE_ID",
-  //     fallback: "",
-  //   }),
-  //   endpoint: config.string({
-  //     variable: "SENDGRID_ENDPOINT",
-  //     fallback: "https://api.sendgrid.com",
-  //   }),
-  // }),
 
   email: config.object({
     endpoint: config.url({
@@ -157,9 +132,6 @@ export async function loadConfig(path: string | URL) {
     }
     if (value.webPush.credentials.publicKey === "") {
       throw new Error("[config] webPush.credentials.publicKey not set");
-    }
-    if (value.jwt.secret === "") {
-      throw new Error("[config] jwt.secret not set");
     }
     if (value.email.endpoint.toString() === DECONF_OOB) {
       throw new Error("[config] email.endpoint not set");

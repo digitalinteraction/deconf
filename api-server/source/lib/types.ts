@@ -172,3 +172,11 @@ export interface WebPushMessageRecord {
   retries: number;
   state: "pending" | "sent" | "failed";
 }
+
+export interface ServiceTokenRecord {
+  id: number;
+  created_at: Date;
+  token: string;
+  scope: string;
+  label: string;
+}

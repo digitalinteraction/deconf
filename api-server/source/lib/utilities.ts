@@ -1,5 +1,12 @@
 import * as jose from "jose";
 import { pickProperties } from "./gruber-hacks.ts";
+import {
+  AuthzToken,
+  SignTokenOptions,
+  SqlDependency,
+  TokenService,
+} from "gruber";
+import { ServiceTokenTable } from "./tables.ts";
 
 export function trimEmail(input: string) {
   return input.trim().toLowerCase();
@@ -38,4 +45,22 @@ export function generateJWKS(key: jose.JWK) {
   return {
     keys: [getPublicJwk(key)],
   };
+}
+
+export class ServiceTokenService implements TokenService {
+  sql;
+  constructor(sql: SqlDependency) {
+    this.sql = sql;
+  }
+
+  async verify(token: string): Promise<AuthzToken | null> {
+    const record = await ServiceTokenTable.selectOne(
+      this.sql,
+      this.sql`token = ${token}`,
+    );
+    return record ? { scope: record.scope } : null;
+  }
+  sign(scope: string, options?: SignTokenOptions): Promise<string> {
+    throw new Error("Method not implemented.");
+  }
 }

@@ -9,6 +9,7 @@ import {
   Oauth2TokenRecord,
   PersonRecord,
   RegistrationRecord,
+  ServiceTokenRecord,
   SessionLabelRecord,
   SessionLinkRecord,
   SessionPersonRecord,
@@ -254,5 +255,16 @@ export const WebPushMessageTable = defineTable<WebPushMessageRecord>({
       Structure.literal("sent"),
       Structure.literal("failed"),
     ]),
+  },
+});
+
+export const ServiceTokenTable = defineTable<ServiceTokenRecord>({
+  table: "service_tokens",
+  fields: {
+    id: Structure.number(),
+    created_at: Structure.date(),
+    token: Structure.string(),
+    scope: Structure.string(),
+    label: Structure.string(),
   },
 });
