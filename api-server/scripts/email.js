@@ -7,7 +7,7 @@ const [emailAddress, kind = "test"] = process.argv.slice(2);
 
 const usage = `
 usage:
-  ./scripts/email.ts <emailAddress> [kind]
+  ./scripts/email.js <emailAddress> [kind]
 
 arguments:
   <emailAddress>  who to send the email to
