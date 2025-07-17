@@ -2,7 +2,7 @@ import * as deconf from "@openlab/deconf-shared";
 import { defineRoute, loader, SqlDependency } from "gruber";
 import { SessionSaveTable, useAuthz, useDatabase } from "../lib/mod.js";
 import { SessionSaveRecord } from "../lib/types.js";
-import { LegacyRepo } from "./lib.js";
+import { LegacyApiError, LegacyRepo } from "./lib.js";
 
 export class AttendanceRepo {
   static use = loader(() => new this(useDatabase()));
@@ -56,24 +56,26 @@ export const attendRoute = defineRoute({
     attendance: AttendanceRepo.use,
   },
   async handler({ request, params, authz, legacy, attendance }) {
-    const { userId } = await authz.assertUser(request, {
-      scope: "user:legacy:attendance",
+    return LegacyApiError.wrap(async () => {
+      const { userId } = await authz.assertUser(request, {
+        scope: "user:legacy:attendance",
+      });
+
+      const session = await legacy.assertSession(
+        params.session,
+        params.conference,
+      );
+
+      const registration = await legacy.assertRegistration(
+        userId,
+        params.conference,
+      );
+
+      await attendance.clearAttendance(registration.id, session.id);
+      await attendance.addAttendance(registration.id, session.id);
+
+      return new Response();
     });
-
-    const session = await legacy.assertSession(
-      params.session,
-      params.conference,
-    );
-
-    const registration = await legacy.assertRegistration(
-      userId,
-      params.conference,
-    );
-
-    await attendance.clearAttendance(registration.id, session.id);
-    await attendance.addAttendance(registration.id, session.id);
-
-    return new Response();
   },
 });
 
@@ -87,23 +89,25 @@ export const unattendRoute = defineRoute({
     attendance: AttendanceRepo.use,
   },
   async handler({ request, params, authz, legacy, attendance }) {
-    const { userId } = await authz.assertUser(request, {
-      scope: "user:legacy:attendance",
+    return LegacyApiError.wrap(async () => {
+      const { userId } = await authz.assertUser(request, {
+        scope: "user:legacy:attendance",
+      });
+
+      const session = await legacy.assertSession(
+        params.session,
+        params.conference,
+      );
+
+      const registration = await legacy.assertRegistration(
+        userId,
+        params.conference,
+      );
+
+      await attendance.clearAttendance(registration.id, session.id);
+
+      return new Response();
     });
-
-    const session = await legacy.assertSession(
-      params.session,
-      params.conference,
-    );
-
-    const registration = await legacy.assertRegistration(
-      userId,
-      params.conference,
-    );
-
-    await attendance.clearAttendance(registration.id, session.id);
-
-    return new Response();
   },
 });
 
@@ -117,24 +121,26 @@ export const sessionAttendanceRoute = defineRoute({
     attendance: AttendanceRepo.use,
   },
   async handler({ request, params, authz, legacy, attendance }) {
-    const token = await authz.assert(request);
+    return LegacyApiError.wrap(async () => {
+      const token = await authz.assert(request);
 
-    const session = await legacy.assertSession(
-      params.session,
-      params.conference,
-    );
-    const registration =
-      token.kind === "user"
-        ? await legacy.assertRegistration(token.userId, params.conference)
-        : null;
+      const session = await legacy.assertSession(
+        params.session,
+        params.conference,
+      );
+      const registration =
+        token.kind === "user"
+          ? await legacy.assertRegistration(token.userId, params.conference)
+          : null;
 
-    const records = await attendance.getSessionAttendance(session.id);
+      const records = await attendance.getSessionAttendance(session.id);
 
-    return Response.json({
-      isAttending: registration
-        ? records.some((r) => r.registration_id === registration.id)
-        : false,
-      sessionCount: records.length,
+      return Response.json({
+        isAttending: registration
+          ? records.some((r) => r.registration_id === registration.id)
+          : false,
+        sessionCount: records.length,
+      });
     });
   },
 });

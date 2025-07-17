@@ -7,7 +7,7 @@ import {
   useAuthz,
   useStore,
 } from "../lib/mod.js";
-import { cache, LegacyRepo, TaxonomyDetails } from "./lib.js";
+import { cache, LegacyApiError, LegacyRepo, TaxonomyDetails } from "./lib.js";
 
 import * as deconf from "@openlab/deconf-shared";
 
@@ -139,17 +139,19 @@ export const getScheduleRoute = defineRoute({
     store: useStore,
   },
   async handler({ params, legacy, store }) {
-    const conf = await legacy.assertConference(params.conference);
+    return LegacyApiError.wrap(async () => {
+      const conf = await legacy.assertConference(params.conference);
 
-    // Cache the schedule in redis for 5 minutes
-    const schedule = await cache<deconf.ScheduleRecord>(
-      store,
-      `/legacy/${conf.id}/schedule`,
-      5 * 60 * 1_000,
-      () => getSchedule(legacy, conf.id),
-    );
+      // Cache the schedule in redis for 5 minutes
+      const schedule = await cache<deconf.ScheduleRecord>(
+        store,
+        `/legacy/${conf.id}/schedule`,
+        5 * 60 * 1_000,
+        () => getSchedule(legacy, conf.id),
+      );
 
-    return Response.json(schedule);
+      return Response.json(schedule);
+    });
   },
 });
 
@@ -192,29 +194,31 @@ export const getSessionLinksRoute = defineRoute({
     legacy: LegacyRepo.use,
   },
   async handler({ request, params, authz, legacy }) {
-    const { scope } = await authz.assertUser(request, {
-      scope: "user:legacy:conference",
-    });
+    return LegacyApiError.wrap(async () => {
+      const { scope } = await authz.assertUser(request, {
+        scope: "user:legacy:conference",
+      });
 
-    const session = await legacy.assertSession(
-      params.session,
-      params.conference,
-    );
-    if (!session?.start_date) throw HTTPError.notFound();
+      const session = await legacy.assertSession(
+        params.session,
+        params.conference,
+      );
+      if (!session?.start_date) throw HTTPError.notFound();
 
-    const links = await legacy.listSessionLinks(session.id);
+      const links = await legacy.listSessionLinks(session.id);
 
-    // TODO: participantCap has been removed
+      // TODO: participantCap has been removed
 
-    const isPublic = session.visibility === "public";
-    const isAdmin = includesScope(scope, "admin");
-    const timeUntil = session.start_date.getTime() - Date.now();
-    if (!isPublic && !isAdmin && timeUntil > LINKS_GRACE_MS) {
-      throw HTTPError.unauthorized();
-    }
+      const isPublic = session.visibility === "public";
+      const isAdmin = includesScope(scope, "admin");
+      const timeUntil = session.start_date.getTime() - Date.now();
+      if (!isPublic && !isAdmin && timeUntil > LINKS_GRACE_MS) {
+        throw HTTPError.unauthorized();
+      }
 
-    return Response.json({
-      links: links.map((l) => convertLink(l)),
+      return Response.json({
+        links: links.map((l) => convertLink(l)),
+      });
     });
   },
 });

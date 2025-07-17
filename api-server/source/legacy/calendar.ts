@@ -6,7 +6,7 @@ import {
   useAuthz,
   useTokens,
 } from "../lib/mod.js";
-import { LegacyRepo } from "./lib.js";
+import { LegacyApiError, LegacyRepo } from "./lib.js";
 
 function getIcsDate(date: Date) {
   return [
@@ -101,19 +101,21 @@ export const sessionIcsRoute = defineRoute({
     appConfig: useAppConfig,
   },
   async handler({ params, legacy, appConfig }) {
-    // TODO: locale is no longer mapped from authz token
-    // maybe parse from Accept-Language header ?
+    return LegacyApiError.wrap(async () => {
+      // TODO: locale is no longer mapped from authz token
+      // maybe parse from Accept-Language header ?
 
-    const session = await legacy.assertSession(
-      params.session,
-      params.conference,
-    );
+      const session = await legacy.assertSession(
+        params.session,
+        params.conference,
+      );
 
-    return new Response(getSessionIcs(session, appConfig.meta.name), {
-      headers: {
-        "Content-Type": "text/calendar",
-        "content-disposition": `attachment; filename="session.ics`,
-      },
+      return new Response(getSessionIcs(session, appConfig.meta.name), {
+        headers: {
+          "Content-Type": "text/calendar",
+          "content-disposition": `attachment; filename="session.ics`,
+        },
+      });
     });
   },
 });
@@ -126,12 +128,14 @@ export const sessionGoogleCalRoute = defineRoute({
     legacy: LegacyRepo.use,
   },
   async handler({ params, legacy }) {
-    const session = await legacy.assertSession(
-      params.session,
-      params.conference,
-    );
+    return LegacyApiError.wrap(async () => {
+      const session = await legacy.assertSession(
+        params.session,
+        params.conference,
+      );
 
-    return Response.redirect(getSessionGoogleCalUrl(session));
+      return Response.redirect(getSessionGoogleCalUrl(session));
+    });
   },
 });
 
@@ -146,20 +150,22 @@ export const createUserCal = defineRoute({
     tokens: useTokens,
   },
   async handler({ params, request, legacy, authz, appConfig, tokens }) {
-    const { userId } = await authz.assertUser(request, {
-      scope: "user:legacy:calendar",
+    return LegacyApiError.wrap(async () => {
+      const { userId } = await authz.assertUser(request, {
+        scope: "user:legacy:calendar",
+      });
+
+      await legacy.assertRegistration(userId, params.conference);
+
+      const token = await tokens.sign("legacy:calendar:self", { userId });
+
+      return Response.redirect(
+        new URL(
+          `./legacy/${params.conference}/calendar/me/${token}`,
+          appConfig.server.url,
+        ),
+      );
     });
-
-    await legacy.assertRegistration(userId, params.conference);
-
-    const token = await tokens.sign("legacy:calendar:self", { userId });
-
-    return Response.redirect(
-      new URL(
-        `./legacy/${params.conference}/calendar/me/${token}`,
-        appConfig.server.url,
-      ),
-    );
   },
 });
 
@@ -173,21 +179,23 @@ export const getUserCal = defineRoute({
     appConfig: useAppConfig,
   },
   async handler({ params, tokens, legacy, appConfig }) {
-    const token = await tokens.verify(params.token);
-    if (!token?.userId) throw HTTPError.unauthorized();
+    return LegacyApiError.wrap(async () => {
+      const token = await tokens.verify(params.token);
+      if (!token?.userId) throw HTTPError.unauthorized();
 
-    const registration = await legacy.assertRegistration(
-      token.userId,
-      params.conference,
-    );
+      const registration = await legacy.assertRegistration(
+        token.userId,
+        params.conference,
+      );
 
-    const sessions = await legacy.listUserSessions(registration.id);
+      const sessions = await legacy.listUserSessions(registration.id);
 
-    return new Response(getSessionsIcal(sessions, appConfig.meta.name), {
-      headers: {
-        "Content-Type": "text/calendar",
-        "content-disposition": `attachment; filename="session.ics`,
-      },
+      return new Response(getSessionsIcal(sessions, appConfig.meta.name), {
+        headers: {
+          "Content-Type": "text/calendar",
+          "content-disposition": `attachment; filename="session.ics`,
+        },
+      });
     });
   },
 });

@@ -2,7 +2,7 @@ import * as deconf from "@openlab/deconf-shared";
 import { defineRoute, HTTPError, loader, SqlDependency } from "gruber";
 import { marked } from "marked";
 import { ContentTable, useDatabase, useStore } from "../lib/mod.js";
-import { cache, LegacyRepo } from "./lib.js";
+import { cache, LegacyApiError, LegacyRepo } from "./lib.js";
 
 class ContentRepo {
   static use = loader(() => new this(useDatabase()));
@@ -51,19 +51,21 @@ export const getContentRoute = defineRoute({
     content: ContentRepo.use,
   },
   async handler({ params, legacy, content, store }) {
-    const conference = await legacy.assertConference(params.conference);
+    return LegacyApiError.wrap(async () => {
+      const conference = await legacy.assertConference(params.conference);
 
-    const record = await cache<deconf.LocalisedContent>(
-      store,
-      `/legacy/${conference.id}/content/${params.key}`,
-      15 * 60 * 1_000,
-      async () => {
-        const record = await content.getContent(params.key, conference.id);
-        return record ? processMarkdown(record.body) : undefined;
-      },
-    );
-    if (!record) throw HTTPError.notFound();
+      const record = await cache<deconf.LocalisedContent>(
+        store,
+        `/legacy/${conference.id}/content/${params.key}`,
+        15 * 60 * 1_000,
+        async () => {
+          const record = await content.getContent(params.key, conference.id);
+          return record ? processMarkdown(record.body) : undefined;
+        },
+      );
+      if (!record) throw HTTPError.notFound();
 
-    return Response.json(record);
+      return Response.json(record);
+    });
   },
 });

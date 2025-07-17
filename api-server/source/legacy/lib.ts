@@ -393,3 +393,55 @@ export async function cache<T>(
   }
   return value;
 }
+
+export class LegacyApiError extends HTTPError {
+  static async wrap<T>(fn: () => T) {
+    try {
+      return await fn();
+    } catch (error) {
+      if (error instanceof HTTPError) {
+        throw new LegacyApiError(
+          error.status,
+          error.statusText,
+          error.body,
+          error.headers,
+        );
+      }
+      throw error;
+    }
+  }
+
+  static from(value: HTTPError) {
+    return new LegacyApiError(
+      value.status,
+      value.statusText,
+      value.body,
+      value.headers,
+    );
+  }
+
+  static wrap2<T extends any[], U>(
+    fn: (...args: T) => U,
+  ): (...args: T) => Promise<U> {
+    return async (...args) => {
+      try {
+        return await fn(...args);
+      } catch (error) {
+        if (error instanceof HTTPError) {
+          throw LegacyApiError.from(error);
+        }
+        throw error;
+      }
+    };
+  }
+
+  override toResponse(): Response {
+    return Response.json(
+      {
+        message: this.statusText,
+        codes: [],
+      },
+      { headers: this.headers },
+    );
+  }
+}
