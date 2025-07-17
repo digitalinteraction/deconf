@@ -115,18 +115,19 @@ export const upsertScheduleRoute = defineRoute({
       sessions: _diffResource(body.sessions, "id", data.sessions),
 
       labels: _diffResource(body.labels, "id", data.labels),
-      sessionPeople: _diffResource(
+      sessionPeople: _diffRelationship(
         body.sessionPeople,
-        "id",
         data.sessionPeople,
-        { deleteUntracked: true },
+        ["session_id", "person_id"],
+        [data.sessions, data.people],
       ),
+
       sessionLinks: _diffResource(body.sessionLinks, "id", data.sessionLinks),
-      sessionLabels: _diffResource(
+      sessionLabels: _diffRelationship(
         body.sessionLabels,
-        "id",
         data.sessionLabels,
-        { deleteUntracked: true },
+        ["label_id", "session_id"],
+        [data.labels, data.sessions],
       ),
     };
 
@@ -363,7 +364,7 @@ export function _diffResource<T, K extends keyof T, U extends Diffable>(
 
   // A list of records that were visited during the initial check
   // used later to decide which records need to be inserted
-  const visited = new Set();
+  const visited = new Set<any>();
 
   for (const record of current) {
     // Skip or delete the record if it has no metadata "ref"
@@ -389,6 +390,58 @@ export function _diffResource<T, K extends keyof T, U extends Diffable>(
   const additions = input.filter((r) => !visited.has(r[key]));
 
   return { additions, modifications, deletions };
+}
+
+export function _diffRelationship<
+  T,
+  U extends Diffable,
+  K extends Extract<keyof T, keyof U>,
+>(
+  input: T[],
+  current: U[],
+  keys: K[],
+  relations: Diffable[][],
+): Differential<T> {
+  // Create a lookup of existing relations that are set, based on the composite key
+  const lookup = new Map(
+    current.map((r) => [keys.map((k) => r[k]).join(":"), r]),
+  );
+
+  // Start creating the differential
+  const additions: T[] = [];
+  const modifications: Modification<T>[] = [];
+
+  // Keep a record of which records to keep
+  const toKeep = new Set<number>();
+
+  for (const record of input) {
+    // Generate the composite key for this input record by mapping
+    // input-references to database identifier using the correlating "relations",
+    // falling back to the input-ref if the related record doesn't exist yet.
+    const key = keys
+      .map(
+        (k, i) =>
+          relations[i].find((r) => r.metadata?.ref === record[k])?.id ??
+          record[k],
+      )
+      .join(":");
+
+    // See if a relation already exists for that composite key
+    const alreadyExists = lookup.get(key);
+
+    if (alreadyExists) {
+      toKeep.add(alreadyExists.id);
+      continue;
+    }
+
+    // If the relation doesn't exist, mark it for creation
+    additions.push(record);
+  }
+
+  // Mark any existing records that were not visited above as to-be-deleted
+  const deletions = current.filter((r) => !toKeep.has(r.id)).map((r) => r.id);
+
+  return { additions, deletions, modifications };
 }
 
 /** Aggregate several diffs into a human-readable format */

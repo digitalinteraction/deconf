@@ -68,6 +68,7 @@ export const verifyRoute = defineRoute({
         cookie.serialize(appConfig.auth.sessionCookie, sessionToken, {
           httpOnly: true,
           maxAge: appConfig.auth.sessionMaxAge / 1_000,
+          secure: appConfig.server.url.protocol === "https:",
         }),
       );
       headers.append(

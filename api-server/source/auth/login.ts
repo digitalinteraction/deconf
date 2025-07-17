@@ -32,9 +32,9 @@ export const loginRoute = defineRoute({
   async handler({ request, authz, store, random, email, appConfig }) {
     const auth = await authz.from(request);
 
-    if (auth?.kind === "user") {
-      return new Response("already authenticated");
-    }
+    // if (auth?.kind === "user") {
+    //   return new Response("already authenticated");
+    // }
 
     const body = await assertRequestBody(LoginBody, request);
     const emailAddress = trimEmail(body.emailAddress);
@@ -88,6 +88,7 @@ export const loginRoute = defineRoute({
         cookie.serialize(appConfig.auth.loginCookie, login.token, {
           httpOnly: true,
           maxAge: appConfig.auth.loginMaxAge / 1_000,
+          secure: appConfig.server.url.protocol === "https:",
         }),
       );
 

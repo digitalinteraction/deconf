@@ -34,7 +34,7 @@ cli.command(
 );
 
 cli.command(
-  "serve",
+  ["serve", "start"],
   "run the http server",
   (yargs) => yargs,
   () => runServer(useAppConfig().server),
