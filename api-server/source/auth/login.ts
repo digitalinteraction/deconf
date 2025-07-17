@@ -92,7 +92,9 @@ export const loginRoute = defineRoute({
         }),
       );
 
-      return new Response(undefined, { headers });
+      // NOTE: just-cookies doesn't work on safari,
+      // maybe an oauth2 flow would be better in the futures
+      return Response.json({ token: login.token }, { headers });
     }
 
     throw HTTPError.notImplemented();
