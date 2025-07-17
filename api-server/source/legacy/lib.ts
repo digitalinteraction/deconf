@@ -400,12 +400,7 @@ export class LegacyApiError extends HTTPError {
       return await fn();
     } catch (error) {
       if (error instanceof HTTPError) {
-        throw new LegacyApiError(
-          error.status,
-          error.statusText,
-          error.body,
-          error.headers,
-        );
+        throw LegacyApiError.from(error);
       }
       throw error;
     }
@@ -418,21 +413,6 @@ export class LegacyApiError extends HTTPError {
       value.body,
       value.headers,
     );
-  }
-
-  static wrap2<T extends any[], U>(
-    fn: (...args: T) => U,
-  ): (...args: T) => Promise<U> {
-    return async (...args) => {
-      try {
-        return await fn(...args);
-      } catch (error) {
-        if (error instanceof HTTPError) {
-          throw LegacyApiError.from(error);
-        }
-        throw error;
-      }
-    };
   }
 
   override toResponse(): Response {

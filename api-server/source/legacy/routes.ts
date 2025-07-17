@@ -15,6 +15,7 @@ import {
 } from "./calendar.js";
 import { getSessionLinksRoute, getScheduleRoute } from "./conference.js";
 import { getContentRoute } from "./content.js";
+import { getRegistrationRoute } from "./registration.ts";
 
 export default [
   // Conference
@@ -35,4 +36,7 @@ export default [
 
   // Content
   getContentRoute,
+
+  // Registration
+  getRegistrationRoute,
 ];
