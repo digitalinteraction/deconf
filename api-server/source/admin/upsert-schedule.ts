@@ -266,6 +266,12 @@ interface Unwraped<T> {
   records: T[];
 }
 
+export interface UnwrapOptions {
+  insert?: boolean;
+  update?: boolean;
+  delete?: boolean;
+}
+
 /**
  * Perform a diff against a {@link TableDefinition}
  * with a custom map method to decide how columns are arranged
@@ -281,17 +287,18 @@ export async function _unwrap<
   diff: Differential<T>,
   table: TableDefinition<U>,
   map: (value: T) => Partial<U>,
+  options: UnwrapOptions = {},
 ): Promise<Unwraped<U>> {
   const lookup = new Map<string, number>();
   let records: U[] = [];
 
   // Process deletions
-  if (diff.deletions.length > 0) {
+  if (options.delete !== false && diff.deletions.length > 0) {
     await table.delete(sql, sql`id IN ${sql(diff.deletions)}`);
   }
 
   // Process additions by inserting them and adding their ids to the lookup
-  if (diff.additions.length > 0) {
+  if (options.insert !== false && diff.additions.length > 0) {
     records = await table.insert(
       sql,
       diff.additions.map((v) => map(v)),
@@ -303,17 +310,19 @@ export async function _unwrap<
 
   // Process modifications by updating records and adding their ids to the lookup
   // uses a hard fail if the record doesn't exist to cancel the transaction
-  for (const mod of diff.modifications) {
-    const record = await table.updateOne(
-      sql,
-      sql`id = ${mod.target}`,
-      map(mod.value),
-    );
-    if (!record) {
-      throw new Error(`missing target=${mod.target} from=${mod.value.id}`);
+  if (options.update !== false) {
+    for (const mod of diff.modifications) {
+      const record = await table.updateOne(
+        sql,
+        sql`id = ${mod.target}`,
+        map(mod.value),
+      );
+      if (!record) {
+        throw new Error(`missing target=${mod.target} from=${mod.value.id}`);
+      }
+      records.push(record);
+      lookup.set(mod.value.id, record.id);
     }
-    records.push(record);
-    lookup.set(mod.value.id, record.id);
   }
 
   return { lookup, records };

@@ -93,6 +93,7 @@ export const upsertRegistrationsRoute = defineRoute({
           consented_at: value.consented_at,
           metadata: value.metadata,
         }),
+        { delete: false },
       );
 
       // Process registration records
@@ -107,6 +108,7 @@ export const upsertRegistrationsRoute = defineRoute({
           user_id: _getRelated(users.lookup, value.user_id),
           metadata: value.metadata,
         }),
+        { delete: false },
       );
     });
 
