@@ -421,7 +421,11 @@ export class LegacyApiError extends HTTPError {
         message: this.statusText,
         codes: [],
       },
-      { headers: this.headers },
+      {
+        headers: this.headers,
+        status: this.status,
+        statusText: this.statusText,
+      },
     );
   }
 }
