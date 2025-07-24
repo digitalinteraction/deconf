@@ -4,7 +4,7 @@ import {
   SqlDependency,
   Structure,
 } from "gruber";
-import { useAuthz, useDatabase } from "../lib/globals.ts";
+import { useAuthz, useDatabase, useStore } from "../lib/globals.ts";
 import { pickProperties, TableDefinition } from "../lib/gruber-hacks.ts";
 import {
   LabelTable,
@@ -99,8 +99,9 @@ export const upsertScheduleRoute = defineRoute({
   dependencies: {
     authz: useAuthz,
     sql: useDatabase,
+    store: useStore,
   },
-  async handler({ request, authz, url, sql, params }) {
+  async handler({ request, authz, url, sql, params, store }) {
     await authz.assert(request, { scope: "admin" });
 
     // Fetch information to start the diff
@@ -244,6 +245,8 @@ export const upsertScheduleRoute = defineRoute({
         }),
       );
     });
+
+    await store.delete(`/legacy/${data.conference.id}/schedule`);
 
     // Output a summary of the changes
     return Response.json(_totalDiffs(diff));

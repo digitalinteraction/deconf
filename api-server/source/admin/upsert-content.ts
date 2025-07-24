@@ -4,7 +4,7 @@ import {
   localisedStructure,
   recordStructure,
 } from "../lib/gruber-hacks.ts";
-import { useAuthz, useDatabase } from "../lib/globals.ts";
+import { useAuthz, useDatabase, useStore } from "../lib/globals.ts";
 import { ConferenceTable, ContentTable } from "../lib/tables.ts";
 import { _diffResource, _sumDiffs, _unwrap } from "./upsert-schedule.ts";
 import { ContentRecord } from "../lib/types.ts";
@@ -25,8 +25,9 @@ export const upsertContentRoute = defineRoute({
   dependencies: {
     authz: useAuthz,
     sql: useDatabase,
+    store: useStore,
   },
-  async handler({ request, authz, url, sql, params }) {
+  async handler({ request, authz, url, sql, params, store }) {
     await authz.assert(request, { scope: "admin" });
 
     // grep the request
@@ -69,6 +70,8 @@ export const upsertContentRoute = defineRoute({
         }),
       );
     });
+
+    await store.delete(`/legacy/${conference.id}/schedule`);
 
     // Return a summary of actions
     return Response.json(_sumDiffs([diff]));
