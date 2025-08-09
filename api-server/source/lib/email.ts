@@ -32,7 +32,7 @@ export interface EmailOptions {
 export class DebugEmailService implements EmailService {
   async sendPlain(options: SendPlainOptions): Promise<boolean> {
     console.log(
-      "[sendgrind] to=%o subject=%o",
+      "[debug email] to=%o subject=%o",
       options.to.emailAddress,
       options.subject,
       options.body,
@@ -42,7 +42,7 @@ export class DebugEmailService implements EmailService {
 
   async sendTemplated(options: SendTemplatedOptions): Promise<boolean> {
     console.log(
-      "[sendgrind] to=%o type=%o",
+      "[debug email] to=%o type=%o",
       options.to.emailAddress,
       options.type,
       options.arguments,

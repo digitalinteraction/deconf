@@ -1,3 +1,4 @@
+import { appendRegistrationsRoute } from "./append-registrations.ts";
 import { getConferenceRoute } from "./get-conference.ts";
 import { upsertContentRoute } from "./upsert-content.ts";
 import { upsertRegistrationsRoute } from "./upsert-registrations.ts";
@@ -8,4 +9,5 @@ export const adminRoutes = [
   upsertScheduleRoute,
   upsertContentRoute,
   upsertRegistrationsRoute,
+  appendRegistrationsRoute,
 ];

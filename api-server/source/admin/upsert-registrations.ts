@@ -1,4 +1,10 @@
-import { assertRequestBody, defineRoute, HTTPError, Structure } from "gruber";
+import {
+  assertRequestBody,
+  defineRoute,
+  HTTPError,
+  SqlDependency,
+  Structure,
+} from "gruber";
 import { useAuthz, useDatabase } from "../lib/globals.ts";
 import {
   ConferenceTable,
@@ -14,7 +20,7 @@ import {
 } from "./upsert-schedule.ts";
 import { RegistrationRecord, UserRecord } from "../lib/mod.ts";
 
-const _Request = Structure.object({
+export const _Request = Structure.object({
   users: Structure.array(
     Structure.object({
       id: Structure.string(),
@@ -38,6 +44,30 @@ const _Request = Structure.object({
   ),
 });
 
+export async function _assertRegistrationData(
+  sql: SqlDependency,
+  conferenceId: string,
+) {
+  // Ensure the conference exists
+  const conference = await ConferenceTable.selectOne(
+    sql,
+    sql`id = ${assertRequestParam(conferenceId)}`,
+  );
+  if (!conference) throw HTTPError.notFound();
+
+  // Fetch information to start the diff
+  const registrations = await RegistrationTable.select(
+    sql,
+    sql`conference_id = ${conference.id}`,
+  );
+  const users = await UserTable.select(
+    sql,
+    sql`id IN ${sql(registrations.map((r) => r.user_id))}`,
+  );
+
+  return { conference, registrations, users };
+}
+
 export const upsertRegistrationsRoute = defineRoute({
   method: "PUT",
   pathname: "/admin/v1/conferences/:conference/registrations",
@@ -51,21 +81,9 @@ export const upsertRegistrationsRoute = defineRoute({
     const dryRun = url.searchParams.get("dryRun");
     const body = await assertRequestBody(_Request, request);
 
-    // Ensure the conference exists
-    const conference = await ConferenceTable.selectOne(
+    const { conference, registrations, users } = await _assertRegistrationData(
       sql,
-      sql`id = ${assertRequestParam(params.conference)}`,
-    );
-    if (!conference) throw HTTPError.notFound();
-
-    // Fetch information to start the diff
-    const registrations = await RegistrationTable.select(
-      sql,
-      sql`conference_id = ${conference.id}`,
-    );
-    const users = await UserTable.select(
-      sql,
-      sql`id IN ${sql(registrations.map((r) => r.user_id))}`,
+      params.conference,
     );
 
     // Work out the difference for each resource type

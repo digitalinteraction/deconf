@@ -1,9 +1,9 @@
-import { defineRoute, HTTPError, Structure } from "gruber";
+import { defineRoute, HTTPError, Store, Structure } from "gruber";
 import cookie from "cookie";
 
 import { assertRequestBody } from "gruber/http/request-body.js";
 import { commponDependencies } from "../lib/globals.ts";
-import { emailStructure, trimEmail } from "../lib/mod.ts";
+import { EmailService, emailStructure, trimEmail } from "../lib/mod.ts";
 
 const LoginBody = Structure.union([
   Structure.object({
@@ -23,6 +23,47 @@ export interface LoginRequest {
   uses: number;
 }
 
+// This is exported so that it can be used in the tito webhook too
+export async function _startEmailLogin(
+  store: Store,
+  email: EmailService,
+  login: Omit<LoginRequest, "method" | "payload">,
+  emailAddress: string,
+  conferenceId: number,
+  maxAge: number,
+) {
+  store.set<LoginRequest>(
+    `/auth/request/${login.token}`,
+    {
+      ...login,
+      method: "email",
+      payload: { emailAddress },
+    },
+    { maxAge },
+  );
+
+  // const verify = new URL("./auth/v1/verify", appConfig.server.url);
+  const callback = new URL(login.redirectUri);
+  callback.searchParams.set("method", "email");
+  callback.searchParams.set("token", login.token);
+
+  const magicLink = new URL(callback);
+  magicLink.searchParams.set("code", login.code.toString());
+
+  const sent = await email.sendTemplated({
+    to: { emailAddress },
+    type: "login",
+    arguments: {
+      oneTimeCode: login.code,
+      magicLink: magicLink.toString(),
+    },
+  });
+
+  if (!sent) {
+    throw HTTPError.internalServerError("login email failed");
+  }
+}
+
 export const loginRoute = defineRoute({
   method: "POST",
   pathname: "/auth/v1/login",
@@ -30,7 +71,7 @@ export const loginRoute = defineRoute({
     ...commponDependencies,
   },
   async handler({ request, authz, store, random, email, appConfig }) {
-    const auth = await authz.from(request);
+    // const auth = await authz.from(request);
 
     // if (auth?.kind === "user") {
     //   return new Response("already authenticated");
@@ -46,41 +87,17 @@ export const loginRoute = defineRoute({
       uses: 5,
     };
 
-    // TODO: validate redirect_uri
-
-    // const paddedCode = login.code.toString().padStart(6, "0");
+    // TODO: validate redirect_uri ~ maybe based on the ConfRecord#metadata.redirects
 
     if (body.emailAddress) {
-      store.set<LoginRequest>(
-        `/auth/request/${login.token}`,
-        {
-          ...login,
-          method: "email",
-          payload: { emailAddress },
-        },
-        { maxAge: appConfig.auth.loginMaxAge },
+      await _startEmailLogin(
+        store,
+        email,
+        login,
+        emailAddress,
+        -1, // TODO: this needs to be set (see todo above)
+        appConfig.auth.loginMaxAge,
       );
-
-      // const verify = new URL("./auth/v1/verify", appConfig.server.url);
-      const callback = new URL(body.redirectUri);
-      callback.searchParams.set("method", "email");
-      callback.searchParams.set("token", login.token);
-
-      const magicLink = new URL(callback);
-      magicLink.searchParams.set("code", login.code.toString());
-
-      const sent = await email.sendTemplated({
-        to: { emailAddress },
-        type: "login",
-        arguments: {
-          oneTimeCode: login.code,
-          magicLink: magicLink.toString(),
-        },
-      });
-
-      if (!sent) {
-        throw HTTPError.internalServerError("login email failed");
-      }
 
       const headers = new Headers();
       headers.set(
