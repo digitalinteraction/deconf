@@ -78,11 +78,24 @@ function convertSession(
 }
 
 function convertLabel(record: LabelRecord): deconf.SessionType {
+  const icon = {
+    group: "fas",
+    name: "lightbulb",
+  };
+
+  if (record.icon.startsWith("fontawesome:")) {
+    const url = new URL(record.icon);
+    if (url.hostname === "icon") {
+      icon.group = url.searchParams.get("group") ?? icon.group;
+      icon.name = url.searchParams.get("name") ?? icon.name;
+    }
+  }
+
   return {
     id: record.id.toString(),
     title: record.title,
-    iconGroup: "fas",
-    iconName: "lightbulb",
+    iconGroup: icon.group,
+    iconName: icon.name,
     layout: "plenary",
 
     metadata: record.metadata,
