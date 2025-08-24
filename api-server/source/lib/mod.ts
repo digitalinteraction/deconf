@@ -1,4 +1,3 @@
-export * from "./authentication.ts";
 export * from "./csrf.ts";
 export * from "./database.ts";
 export * from "./email.ts";
