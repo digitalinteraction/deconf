@@ -56,7 +56,7 @@ export const useStore = defineDependency((): Store => {
 });
 
 export const useCSRF = defineDependency(() => {
-  return new CSRF(useStore());
+  return new CSRF(useStore(), useRandom());
 });
 
 export const useTokens = defineDependency<TokenService>(() => {
@@ -87,6 +87,11 @@ export const useEmail = defineDependency<EmailService>(() => {
     : new DebugEmailService();
 });
 
+/**
+ * A core set of dependencies that any route might use, designed to make code less verbose.
+ *
+ * NOTE: I'm not sure if this is a good idea yet, it could lead to tight-coupling down the line.
+ */
 export const commponDependencies = {
   appConfig: useAppConfig,
   sql: useDatabase,

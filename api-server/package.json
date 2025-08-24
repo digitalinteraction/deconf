@@ -9,18 +9,17 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@openlab/deconf-shared": "^3.6.0",
+    "@openlab/deconf-shared": "^4.0.0",
     "cookie": "^1.0.2",
     "debug": "^4.4.1",
     "gruber": "^0.9.0-beta.1",
     "ics": "^3.8.1",
-    "jose": "^6.0.11",
+    "jose": "^6.0.13",
     "marked": "^15.0.12",
     "minio": "^8.0.5",
     "postgres": "^3.4.7",
-    "redis": "^5.1.1",
+    "redis": "^5.8.2",
     "urlpattern-polyfill": "^10.1.0",
-    "web-push": "^3.6.7",
     "yargs": "^18.0.0"
   },
   "devDependencies": {
@@ -28,8 +27,8 @@
     "@types/node": "^22.7.4",
     "@types/web-push": "^3.6.4",
     "@types/yargs": "^17.0.33",
-    "prettier": "^3.5.3",
-    "tsx": "^4.19.4",
-    "typescript": "^5.8.3"
+    "prettier": "^3.6.2",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2"
   }
 }

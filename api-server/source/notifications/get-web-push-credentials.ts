@@ -1,5 +1,5 @@
 import { defineRoute } from "gruber";
-import { useAppConfig } from "../lib/globals.ts";
+import { useAppConfig } from "../lib/mod.ts";
 
 export const getWebPushCredentials = defineRoute({
   method: "GET",

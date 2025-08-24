@@ -1,9 +1,14 @@
-import { defineRoute, HTTPError } from "gruber";
-import { useAuthz } from "../lib/globals.ts";
+import { assertRequestBody, defineRoute } from "gruber";
+import { useAuthz, WebPushDeviceTable } from "../lib/mod.ts";
 import { WebPushRepo } from "./web-push-repo.ts";
-import { assertRequestBody } from "gruber/http/request-body.js";
-import { WebPushDeviceTable } from "../lib/tables.ts";
-import { assertRequestParam } from "../lib/gruber-hacks.ts";
+
+const _Request = WebPushDeviceTable.partial([
+  "name",
+  "categories",
+  "endpoint",
+  "expires_at",
+  "keys",
+]);
 
 export const updateWebPushDevicesRoute = defineRoute({
   method: "PATCH",
@@ -14,19 +19,10 @@ export const updateWebPushDevicesRoute = defineRoute({
   },
   async handler({ request, authz, webPush, params }) {
     const { userId } = await authz.assertUser(request, {
-      scope: "notifications:web-push:devices",
+      scope: "user:notifications:web-push:devices",
     });
 
-    const body = await assertRequestBody(
-      WebPushDeviceTable.partial([
-        "name",
-        "categories",
-        "endpoint",
-        "expires_at",
-        "keys",
-      ]),
-      request,
-    );
+    const body = await assertRequestBody(_Request, request);
 
     const { registration } = await webPush.assertRegistered(
       params.conference,

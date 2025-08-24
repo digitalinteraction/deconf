@@ -27,7 +27,7 @@ export interface TableOptions<T> {
   fields: { [K in keyof T]: Structure<T[K]> };
 }
 
-// TODO: should "= keyof T" from this?
+// TODO: should "= keyof T" be removed from this?
 
 export interface TableDefinition<T> {
   select(sql: SqlDependency, where: any): Promise<T[]>;

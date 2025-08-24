@@ -11,7 +11,7 @@ export const deleteWebPushDevicesRoute = defineRoute({
   },
   async handler({ request, authz, webPush, params }) {
     const { userId } = await authz.assertUser(request, {
-      scope: "notifications:web-push:devices",
+      scope: "user:notifications:web-push:devices",
     });
 
     const { registration } = await webPush.assertRegistered(

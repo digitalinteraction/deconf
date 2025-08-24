@@ -11,7 +11,7 @@ export const testWebPushRoute = defineRoute({
   },
   async handler({ request, params, webPush, authz }) {
     const { userId } = await authz.assertUser(request, {
-      scope: "notifs:web-push",
+      scope: "user:notifications:web-push",
     });
 
     const { registration } = await webPush.assertRegistered(

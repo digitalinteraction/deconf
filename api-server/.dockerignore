@@ -11,3 +11,5 @@ bundle
 .cache
 **/*.spec.ts
 .git
+jwk.json
+web-push-credentials.json

@@ -1,6 +1,5 @@
 import { defineRoute, FetchRouter, serveHTTP } from "gruber";
 import {
-  generateJWKS,
   useAppConfig,
   useCors,
   useDatabase,
@@ -10,7 +9,7 @@ import {
 
 import { adminRoutes } from "./admin/admin-routes.ts";
 import { authRoutes } from "./auth/auth-routes.ts";
-import legacyRoutes from "./legacy/routes.js";
+import { legacyRoutes } from "./legacy/legacy-routes.ts";
 import { notificationRoutes } from "./notifications/notification-routes.ts";
 
 export interface RunServerOptions {
@@ -43,18 +42,19 @@ const healthzRoute = defineRoute({
   },
 });
 
-const jwksRoute = defineRoute({
-  method: "GET",
-  pathname: "/.well-known/jwks.json",
-  dependencies: {
-    appConfig: useAppConfig,
-  },
-  async handler({ appConfig }) {
-    return Response.json({
-      keys: [appConfig.jwt.key.publicKey],
-    });
-  },
-});
+// NOTE: review this
+// const jwksRoute = defineRoute({
+//   method: "GET",
+//   pathname: "/.well-known/jwks.json",
+//   dependencies: {
+//     appConfig: useAppConfig,
+//   },
+//   async handler({ appConfig }) {
+//     return Response.json({
+//       keys: [appConfig.jwt.key.publicKey],
+//     });
+//   },
+// });
 
 const corsRoute = defineRoute({
   method: "OPTIONS",
@@ -70,7 +70,6 @@ const corsRoute = defineRoute({
 const routes = [
   helloRoute,
   healthzRoute,
-  jwksRoute,
   corsRoute,
   ...legacyRoutes,
   ...authRoutes,

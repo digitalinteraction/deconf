@@ -34,13 +34,6 @@ const struct = config.object({
     }),
   }),
 
-  // client: config.object({
-  //   url: config.url({
-  //     variable: "CLIENT_URL",
-  //     fallback: "http://localhost:8080",
-  //   }),
-  // }),
-
   postgres: config.object({
     url: config.url({
       variable: "POSTGRES_URL",
@@ -74,11 +67,6 @@ const struct = config.object({
       variable: "AUTH_SESSION_MAX_AGE",
       fallback: 30 * 24 * 60 * 60 * 1_000, // 30 days
     }),
-
-    // appName: config.string({
-    //   variable: "AUTH_APP_NAME",
-    //   fallback: "Deconf",
-    // }),
   }),
 
   jwt: config.object({
@@ -121,12 +109,6 @@ export async function loadConfig(path: string | URL) {
   const value = await config.load(path, struct);
 
   if (value.env === "production") {
-    // if (value.sendgrid.apiKey === "") {
-    //   throw new Error("sendgrid.apiKey not set");
-    // }
-    // if (value.sendgrid.templateId === "") {
-    //   throw new Error("sendgrid.templateId not set");
-    // }
     if (value.webPush.credentials.privateKey === "") {
       throw new Error("[config] webPush.credentials.privateKey not set");
     }

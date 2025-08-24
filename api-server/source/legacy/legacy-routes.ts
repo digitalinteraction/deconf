@@ -3,18 +3,18 @@ import {
   selfAttendanceRoute,
   sessionAttendanceRoute,
   unattendRoute,
-} from "./attendance.js";
+} from "./attendance.ts";
 import {
   createUserCal,
   getUserCal,
   sessionGoogleCalRoute,
   sessionIcsRoute,
-} from "./calendar.js";
-import { getScheduleRoute, getSessionLinksRoute } from "./conference.js";
-import { getContentRoute } from "./content.js";
+} from "./calendar.ts";
+import { getScheduleRoute, getSessionLinksRoute } from "./conference.ts";
+import { getContentRoute } from "./content.ts";
 import { getRegistrationRoute } from "./registration.ts";
 
-export default [
+export const legacyRoutes = [
   // Conference
   getSessionLinksRoute,
   getScheduleRoute,

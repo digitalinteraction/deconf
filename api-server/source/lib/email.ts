@@ -1,12 +1,13 @@
-// import * as jose from "jose";
 import { AppConfig } from "../config.ts";
 
+/** Options for sending a plain-text email to a single subject */
 export interface SendPlainOptions {
   to: { emailAddress: string; name?: string };
   subject: string;
   body: string;
 }
 
+/** Options for sending a templated email to a single subject */
 export interface SendTemplatedOptions {
   to: { emailAddress: string; name?: string };
   type: "login";
@@ -26,9 +27,7 @@ export interface EmailOptions {
   apiKey: string;
 }
 
-// TODO: rewrite to "EmailService" + check for deconf://oob
-// TODO: customise per conference?
-
+/** A development EmailService that just logs to stdout */
 export class DebugEmailService implements EmailService {
   async sendPlain(options: SendPlainOptions): Promise<boolean> {
     console.log(

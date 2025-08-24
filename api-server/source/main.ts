@@ -1,6 +1,6 @@
 #!/usr/bin/env npx tsx
 
-import "gruber/polyfill.js"; // TODO: this only works with live gruber
+import "gruber/polyfill.js";
 import "urlpattern-polyfill";
 
 import process from "node:process";
