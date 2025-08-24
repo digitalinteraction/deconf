@@ -1,5 +1,6 @@
 import { defineRoute, HTTPError, includesScope } from "gruber";
 import {
+  AssetRecord,
   LabelRecord,
   PersonRecord,
   SessionLinkRecord,
@@ -7,7 +8,12 @@ import {
   useAuthz,
   useStore,
 } from "../lib/mod.js";
-import { cache, LegacyApiError, LegacyRepo, TaxonomyDetails } from "./lib.js";
+import {
+  cache,
+  LegacyApiError,
+  LegacyRepo,
+  TaxonomyDetails,
+} from "./legacy-lib.ts";
 
 import * as deconf from "@openlab/deconf-shared";
 
@@ -27,13 +33,17 @@ function convertSlot(record: SessionRecord): deconf.SessionSlot | null {
   };
 }
 
-function convertPerson(record: PersonRecord): deconf.Speaker {
+function convertPerson(
+  record: PersonRecord,
+  assets: Map<number, AssetRecord>,
+): deconf.Speaker {
+  const asset = record.avatar_id ? assets.get(record.avatar_id) : undefined;
   return {
     id: record.id.toString(),
     name: record.name,
     role: { en: record.subtitle },
     bio: record.bio,
-    // TODO: headshots x avatars
+    headshot: asset?.url,
     metadata: record.metadata,
   } as deconf.Speaker;
 }
@@ -62,7 +72,7 @@ function convertSession(
     links: [],
     hostLanguages: record.languages.split(","),
     enableInterpretation: false,
-    speakers: people.map((person) => convertPerson(person).id),
+    speakers: people.map((person) => person.id.toString()),
     hostOrganisation: {},
     isRecorded: false,
     isOfficial: false,
@@ -110,6 +120,7 @@ export async function getSchedule(
   const people = await legacy.getGroupedPeople(conferenceId);
   const taxonomies = await legacy.listTaxonomies(conferenceId);
   const labels = await legacy.getGroupedLabels(conferenceId);
+  const assets = await legacy.getAssetsMap(conferenceId);
 
   const slots = new Map(
     sessions
@@ -136,7 +147,7 @@ export async function getSchedule(
     ),
     settings: settings,
     slots: Array.from(slots.values()),
-    speakers: Array.from(people.all).map((p) => convertPerson(p)),
+    speakers: Array.from(people.all).map((p) => convertPerson(p, assets)),
     themes: legacyTaxonomies.theme.map((l) => convertLabel(l)),
     tracks: legacyTaxonomies.track.map((l) => convertLabel(l)),
     types: legacyTaxonomies.type.map((l) => convertLabel(l)),
@@ -220,7 +231,7 @@ export const getSessionLinksRoute = defineRoute({
 
       const links = await legacy.listSessionLinks(session.id);
 
-      // TODO: participantCap has been removed
+      // NOTE: participantCap has been removed / is no longer used
 
       const isPublic = session.visibility === "public";
       const isAdmin = includesScope(scope, "admin");

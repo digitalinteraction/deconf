@@ -1,10 +1,16 @@
 import * as deconf from "@openlab/deconf-shared";
 import { defineRoute, HTTPError, loader, SqlDependency } from "gruber";
-import { LegacyApiError } from "./lib.ts";
-import { useAuthz, useDatabase } from "../lib/globals.ts";
-import { RegistrationTable, UserTable } from "../lib/tables.ts";
-import { assertRequestParam } from "../lib/gruber-hacks.ts";
-import { RegistrationRecord, UserRecord } from "../lib/types.ts";
+
+import {
+  assertRequestParam,
+  RegistrationRecord,
+  RegistrationTable,
+  useAuthz,
+  useDatabase,
+  UserRecord,
+  UserTable,
+} from "../lib/mod.ts";
+import { LegacyApiError } from "./legacy-lib.ts";
 
 // Registration - startEmailLogin ?
 // Registration - endEmailLogin   ?
@@ -72,7 +78,8 @@ export const getRegistrationRoute = defineRoute({
         params.conference,
       );
 
-      // TODO: assert if blocked
+      // ensure they aren't blocked
+      if (user.metadata.blocked) throw HTTPError.unauthorized();
 
       // TODO: oauth2 tokens
 

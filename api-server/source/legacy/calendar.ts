@@ -1,12 +1,14 @@
 import { defineRoute, HTTPError } from "gruber";
 import ics from "ics";
 import {
+  ConferenceRecord,
   SessionRecord,
   useAppConfig,
   useAuthz,
   useTokens,
 } from "../lib/mod.js";
-import { LegacyApiError, LegacyRepo } from "./lib.js";
+import { LegacyApiError, LegacyRepo } from "./legacy-lib.ts";
+import { AppConfig } from "../config.ts";
 
 function getIcsDate(date: Date) {
   return [
@@ -18,8 +20,7 @@ function getIcsDate(date: Date) {
   ] as [number, number, number, number, number];
 }
 
-// TODO: how to calculate the session URL
-function getSessionIcsOptions(session: SessionRecord, appName: string) {
+function getSessionIcsOptions(session: SessionRecord, info: ConferenceInfo) {
   if (!session.start_date || !session.end_date) throw HTTPError.notFound();
   return {
     start: getIcsDate(session.start_date),
@@ -28,8 +29,8 @@ function getSessionIcsOptions(session: SessionRecord, appName: string) {
     endInputType: "utc",
     title: session.title.en,
     description: session.summary.en,
-    location: "TODO: ",
-    calName: appName,
+    location: info.sessionUrl.replace("{session}", session.id.toString()),
+    calName: info.appName,
   } as const;
 }
 
@@ -41,16 +42,16 @@ function assertIcs(file: ics.ReturnObject) {
   return file.value;
 }
 
-function getSessionIcs(session: SessionRecord, appName: string) {
-  return assertIcs(ics.createEvent(getSessionIcsOptions(session, appName)));
+function getSessionIcs(session: SessionRecord, info: ConferenceInfo) {
+  return assertIcs(ics.createEvent(getSessionIcsOptions(session, info)));
 }
 
-function getSessionsIcal(sessions: SessionRecord[], appName: string) {
+function getSessionsIcal(sessions: SessionRecord[], info: ConferenceInfo) {
   return assertIcs(
     ics.createEvents(
       sessions
         .filter((s) => s.start_date && s.end_date)
-        .map((s) => getSessionIcsOptions(s, appName)),
+        .map((s) => getSessionIcsOptions(s, info)),
     ),
   );
 }
@@ -92,6 +93,21 @@ function getSessionGoogleCalUrl(session: SessionRecord) {
   return url;
 }
 
+interface ConferenceInfo {
+  appName: string;
+  sessionUrl: string;
+}
+
+function getConferenceInfo(
+  conferece: ConferenceRecord,
+  appConfig: AppConfig,
+): ConferenceInfo {
+  return {
+    appName: conferece.title.en ?? appConfig.meta.name,
+    sessionUrl: conferece.metadata.session_url ?? "",
+  };
+}
+
 // Calendar - getSessionIcs
 export const sessionIcsRoute = defineRoute({
   method: "GET",
@@ -102,15 +118,15 @@ export const sessionIcsRoute = defineRoute({
   },
   async handler({ params, legacy, appConfig }) {
     return LegacyApiError.wrap(async () => {
-      // TODO: locale is no longer mapped from authz token
+      // NOTE: locale is no longer mapped from authz token
       // maybe parse from Accept-Language header ?
 
-      const session = await legacy.assertSession(
-        params.session,
-        params.conference,
-      );
+      const conference = await legacy.assertConference(params.conference);
+      const session = await legacy.assertSession(params.session, conference.id);
 
-      return new Response(getSessionIcs(session, appConfig.meta.name), {
+      const info = getConferenceInfo(conference, appConfig);
+
+      return new Response(getSessionIcs(session, info), {
         headers: {
           "Content-Type": "text/calendar",
           "content-disposition": `attachment; filename="session.ics`,
@@ -126,13 +142,12 @@ export const sessionGoogleCalRoute = defineRoute({
   pathname: "/legacy/:conference/calendar/google/:session",
   dependencies: {
     legacy: LegacyRepo.use,
+    appConfig: useAppConfig,
   },
-  async handler({ params, legacy }) {
+  async handler({ params, legacy, appConfig }) {
     return LegacyApiError.wrap(async () => {
-      const session = await legacy.assertSession(
-        params.session,
-        params.conference,
-      );
+      const conference = await legacy.assertConference(params.conference);
+      const session = await legacy.assertSession(params.session, conference.id);
 
       return Response.redirect(getSessionGoogleCalUrl(session));
     });
@@ -183,14 +198,17 @@ export const getUserCal = defineRoute({
       const token = await tokens.verify(params.token);
       if (!token?.userId) throw HTTPError.unauthorized();
 
+      const conference = await legacy.assertConference(params.conference);
       const registration = await legacy.assertRegistration(
         token.userId,
-        params.conference,
+        conference.id,
       );
+
+      const info = getConferenceInfo(conference, appConfig);
 
       const sessions = await legacy.listUserSessions(registration.id);
 
-      return new Response(getSessionsIcal(sessions, appConfig.meta.name), {
+      return new Response(getSessionsIcal(sessions, info), {
         headers: {
           "Content-Type": "text/calendar",
           "content-disposition": `attachment; filename="session.ics`,

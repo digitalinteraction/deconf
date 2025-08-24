@@ -1,8 +1,13 @@
 import * as deconf from "@openlab/deconf-shared";
 import { defineRoute, loader, SqlDependency } from "gruber";
-import { SessionSaveTable, useAuthz, useDatabase } from "../lib/mod.js";
-import { SessionSaveRecord } from "../lib/types.js";
-import { LegacyApiError, LegacyRepo } from "./lib.js";
+
+import {
+  SessionSaveRecord,
+  SessionSaveTable,
+  useAuthz,
+  useDatabase,
+} from "../lib/mod.ts";
+import { LegacyApiError, LegacyRepo } from "./legacy-lib.ts";
 
 export class AttendanceRepo {
   static use = loader(() => new this(useDatabase()));
@@ -16,7 +21,8 @@ export class AttendanceRepo {
     return new AttendanceRepo(sql);
   }
 
-  async clearAttendance(registrationId: number, sessionId: number) {
+  // Remove attendance for a session, including duplicates
+  async removeAttendance(registrationId: number, sessionId: number) {
     await SessionSaveTable.delete(
       this.sql,
       this
@@ -71,7 +77,7 @@ export const attendRoute = defineRoute({
         params.conference,
       );
 
-      await attendance.clearAttendance(registration.id, session.id);
+      await attendance.removeAttendance(registration.id, session.id);
       await attendance.addAttendance(registration.id, session.id);
 
       return new Response();
@@ -104,7 +110,7 @@ export const unattendRoute = defineRoute({
         params.conference,
       );
 
-      await attendance.clearAttendance(registration.id, session.id);
+      await attendance.removeAttendance(registration.id, session.id);
 
       return new Response();
     });
@@ -164,19 +170,21 @@ export const selfAttendanceRoute = defineRoute({
     attendance: AttendanceRepo.use,
   },
   async handler({ request, params, authz, legacy, attendance }) {
-    const { userId } = await authz.assertUser(request, {
-      scope: "user:legacy:attendance",
-    });
+    return LegacyApiError.wrap(async () => {
+      const { userId } = await authz.assertUser(request, {
+        scope: "user:legacy:attendance",
+      });
 
-    const registration = await legacy.assertRegistration(
-      userId,
-      params.conference,
-    );
+      const registration = await legacy.assertRegistration(
+        userId,
+        params.conference,
+      );
 
-    const records = await attendance.getUserAttendance(registration.id);
+      const records = await attendance.getUserAttendance(registration.id);
 
-    return Response.json({
-      attendance: records.map((r) => convertAttendance(r)),
+      return Response.json({
+        attendance: records.map((r) => convertAttendance(r)),
+      });
     });
   },
 });

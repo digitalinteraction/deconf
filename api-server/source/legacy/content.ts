@@ -1,8 +1,9 @@
 import * as deconf from "@openlab/deconf-shared";
 import { defineRoute, HTTPError, loader, SqlDependency } from "gruber";
 import { marked } from "marked";
+
 import { ContentTable, useDatabase, useStore } from "../lib/mod.js";
-import { cache, LegacyApiError, LegacyRepo } from "./lib.js";
+import { cache, LegacyApiError, LegacyRepo } from "./legacy-lib.ts";
 
 class ContentRepo {
   static use = loader(() => new this(useDatabase()));
