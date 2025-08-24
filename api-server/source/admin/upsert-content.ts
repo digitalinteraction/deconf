@@ -1,13 +1,16 @@
 import { assertRequestBody, defineRoute, HTTPError, Structure } from "gruber";
+
 import {
   assertRequestParam,
+  ConferenceTable,
+  ContentRecord,
+  ContentTable,
   localisedStructure,
-  recordStructure,
-} from "../lib/gruber-hacks.ts";
-import { useAuthz, useDatabase, useStore } from "../lib/globals.ts";
-import { ConferenceTable, ContentTable } from "../lib/tables.ts";
-import { _diffResource, _sumDiffs, _unwrap } from "./upsert-schedule.ts";
-import { ContentRecord } from "../lib/types.ts";
+  useAuthz,
+  useDatabase,
+  useStore,
+} from "../lib/mod.ts";
+import { _diffResource, _performDiff, _sumDiffs } from "./admin-lib.ts";
 
 const _Request = Structure.array(
   Structure.object({
@@ -50,14 +53,14 @@ export const upsertContentRoute = defineRoute({
     // Work out what to change
     const diff = _diffResource(body, "id", records, { deleteUntracked: true });
 
-    // Dump & exit early dor dry-runs
+    // Dump & exit early for dry-runs
     if (dryRun) {
       return Response.json(diff);
     }
 
-    // Perform the diff
+    // Perform the diff against the database
     await sql.begin(async (trx) => {
-      await _unwrap(
+      await _performDiff(
         trx,
         diff,
         ContentTable,
@@ -71,6 +74,7 @@ export const upsertContentRoute = defineRoute({
       );
     });
 
+    // Clear the schedule cache
     await store.delete(`/legacy/${conference.id}/schedule`);
 
     // Return a summary of actions

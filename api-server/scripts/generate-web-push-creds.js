@@ -3,9 +3,6 @@
 import process from "node:process";
 import webPush from "web-push";
 
-// NOTE: this imports utilites so it doesn't load in "config"
-import { generateJwk } from "../source/lib/utilities.ts";
-
 const usage = `
 usage:
   ./scripts/generate-web-push-creds.js

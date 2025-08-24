@@ -1,72 +1,23 @@
+import { assertRequestBody, defineRoute } from "gruber";
+
 import {
-  assertRequestBody,
-  defineRoute,
-  HTTPError,
-  SqlDependency,
-  Structure,
-} from "gruber";
-import { useAuthz, useDatabase } from "../lib/globals.ts";
-import {
-  ConferenceTable,
+  RegistrationRecord,
   RegistrationTable,
+  useAuthz,
+  useDatabase,
+  UserRecord,
   UserTable,
-} from "../lib/tables.ts";
-import { assertRequestParam, pickProperties } from "../lib/gruber-hacks.ts";
+} from "../lib/mod.ts";
 import {
+  _assertRegistrationData,
   _diffResource,
   _getRelated,
+  _performDiff,
   _totalDiffs,
-  _unwrap,
-} from "./upsert-schedule.ts";
-import { RegistrationRecord, UserRecord } from "../lib/mod.ts";
+  StagedRegistrations,
+} from "./admin-lib.ts";
 
-export const _Request = Structure.object({
-  users: Structure.array(
-    Structure.object({
-      id: Structure.string(),
-      email: Structure.string(),
-      consented_at: Structure.date(),
-      metadata: Structure.any(),
-    }),
-  ),
-  registrations: Structure.array(
-    Structure.object({
-      id: Structure.string(),
-      avatar_id: Structure.union([Structure.string(), Structure.null()]),
-      name: Structure.string(),
-      role: Structure.union([
-        Structure.literal("attendee"),
-        Structure.literal("admin"),
-      ]),
-      user_id: Structure.string(),
-      metadata: Structure.any(),
-    }),
-  ),
-});
-
-export async function _assertRegistrationData(
-  sql: SqlDependency,
-  conferenceId: string,
-) {
-  // Ensure the conference exists
-  const conference = await ConferenceTable.selectOne(
-    sql,
-    sql`id = ${assertRequestParam(conferenceId)}`,
-  );
-  if (!conference) throw HTTPError.notFound();
-
-  // Fetch information to start the diff
-  const registrations = await RegistrationTable.select(
-    sql,
-    sql`conference_id = ${conference.id}`,
-  );
-  const users = await UserTable.select(
-    sql,
-    sql`id IN ${sql(registrations.map((r) => r.user_id))}`,
-  );
-
-  return { conference, registrations, users };
-}
+export const _Request = StagedRegistrations;
 
 export const upsertRegistrationsRoute = defineRoute({
   method: "PUT",
@@ -78,9 +29,11 @@ export const upsertRegistrationsRoute = defineRoute({
   async handler({ request, authz, url, sql, params }) {
     await authz.assert(request, { scope: "admin" });
 
+    // Get information from the request
     const dryRun = url.searchParams.get("dryRun");
     const body = await assertRequestBody(_Request, request);
 
+    // Get information from the database
     const { conference, registrations, users } = await _assertRegistrationData(
       sql,
       params.conference,
@@ -101,8 +54,8 @@ export const upsertRegistrationsRoute = defineRoute({
     }
 
     await sql.begin(async (trx) => {
-      // Process user records and get a map of virtual ids to real ones
-      const users = await _unwrap(
+      // First process user records and get a map of virtual ids to real ones
+      const users = await _performDiff(
         trx,
         diff.users,
         UserTable,
@@ -114,8 +67,8 @@ export const upsertRegistrationsRoute = defineRoute({
         { delete: false },
       );
 
-      // Process registration records
-      await _unwrap(
+      // Then process registration records with those user ids
+      await _performDiff(
         trx,
         diff.registrations,
         RegistrationTable,

@@ -8,7 +8,7 @@ const [subject, duration = "1h"] = process.argv.slice(2);
 
 const usage = `
 usage:
-  ./scripts/dev_token.js [subject] [duration]
+  ./scripts/dev_token.js <subject> [duration]
 
 info:
   Signs a JWT to use for local API development.
@@ -24,7 +24,7 @@ if (process.argv.includes("--help") || !subject) {
 const tokens = useTokens();
 
 const userId = parseInt(subject);
-if (subject && Number.isNaN(userId)) throw new Error("invalid id");
+if (Number.isNaN(userId)) throw new Error("invalid id");
 
 console.log(
   await tokens.sign("admin", {

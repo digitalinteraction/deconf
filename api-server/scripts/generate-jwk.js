@@ -2,7 +2,8 @@
 
 import process from "node:process";
 
-// NOTE: this imports utilites so it doesn't load in "config"
+// NOTE: this imports utilites directly so it doesn't load in "config"
+// — you'd want to use this to generate credentials that are loaded in config
 import { generateJwk } from "../source/lib/utilities.ts";
 
 const [kid] = process.argv.slice(2);

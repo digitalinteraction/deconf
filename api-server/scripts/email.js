@@ -42,5 +42,5 @@ if (kind === "login") {
     body: "Nothing to see here, this is just a test.",
   });
 
-  console.log("test success=%0", success);
+  console.log("test success=%O", success);
 }

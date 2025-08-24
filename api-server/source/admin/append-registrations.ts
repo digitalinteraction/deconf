@@ -1,6 +1,6 @@
-// ...
-
 import { assertRequestBody, defineRoute, useRandom } from "gruber";
+
+import { _startEmailLogin } from "../auth/login.ts";
 import {
   RegistrationRecord,
   RegistrationTable,
@@ -12,15 +12,16 @@ import {
   UserTable,
   useStore,
 } from "../lib/mod.ts";
-import { _assertRegistrationData, _Request } from "./upsert-registrations.ts";
 import {
+  _assertRegistrationData,
   _diffResource,
   _getRelated,
+  _performDiff,
   _totalDiffs,
-  _unwrap,
-} from "./upsert-schedule.ts";
-import { use } from "marked";
-import { _startEmailLogin } from "../auth/login.ts";
+  StagedRegistrations,
+} from "./admin-lib.ts";
+
+export const _Request = StagedRegistrations;
 
 export const appendRegistrationsRoute = defineRoute({
   method: "POST",
@@ -71,10 +72,12 @@ export const appendRegistrationsRoute = defineRoute({
     }
 
     // NOTE: look into enabling update=true in the future
+    // NOTE: this code is heavily duplicated with ./upsert-registrations.ts
 
     // Perform only the additions
     const result = await sql.begin(async (trx) => {
-      const users = await _unwrap(
+      // First create any user records from the append
+      const users = await _performDiff(
         trx,
         diff.users,
         UserTable,
@@ -86,8 +89,8 @@ export const appendRegistrationsRoute = defineRoute({
         { delete: false, update: false },
       );
 
-      // Process registration records
-      const registrations = await _unwrap(
+      // Second create registration records that are linked to the user
+      const registrations = await _performDiff(
         trx,
         diff.registrations,
         RegistrationTable,
@@ -101,13 +104,12 @@ export const appendRegistrationsRoute = defineRoute({
         { delete: false, update: false },
       );
 
+      // Return all records and lookups if the transaction completes successfully
       return { users, registrations };
     });
 
     // Send login emails to new users
-    for (const reg of result.registrations.records) {
-      const user = result.users.records.find((u) => u.id === reg.user_id)!;
-
+    for (const user of result.users.records) {
       const login = {
         token: random.uuid(),
         code: random.number(0, 999_999),
@@ -120,7 +122,7 @@ export const appendRegistrationsRoute = defineRoute({
         email,
         login,
         user.email,
-        reg.conference_id,
+        conference.id,
         appConfig.auth.loginMaxAge,
       );
     }
