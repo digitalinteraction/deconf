@@ -53,6 +53,8 @@ export const upsertRegistrationsRoute = defineRoute({
       return Response.json(_totalDiffs(diff));
     }
 
+    // NOTE: this heavily duplicates logic with ./append-registrations.ts
+
     await sql.begin(async (trx) => {
       // First process user records and get a map of virtual ids to real ones
       const users = await _performDiff(

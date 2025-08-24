@@ -1,6 +1,12 @@
 import { loader, SqlDependency } from "gruber";
-import { useDatabase } from "../lib/globals.ts";
-import { RegistrationTable, UserTable } from "../lib/tables.ts";
+
+import {
+  assertRequestParam,
+  ConferenceTable,
+  RegistrationTable,
+  useDatabase,
+  UserTable,
+} from "../lib/mod.ts";
 
 export class AuthRepo {
   static use = loader(() => new AuthRepo(useDatabase()));
@@ -24,5 +30,12 @@ export class AuthRepo {
 
   listRegistrations(userId: number) {
     return RegistrationTable.select(this.sql, this.sql`user_id = ${userId}`);
+  }
+
+  getConference(id: string | number) {
+    return ConferenceTable.selectOne(
+      this.sql,
+      this.sql`id = ${assertRequestParam(id)}`,
+    );
   }
 }

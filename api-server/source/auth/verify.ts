@@ -1,9 +1,9 @@
-import { assertRequestBody, defineRoute, HTTPError, Structure } from "gruber";
 import cookie from "cookie";
+import { assertRequestBody, defineRoute, HTTPError, Structure } from "gruber";
 
 import { commponDependencies, undefinedStructure } from "../lib/mod.ts";
+import { LoginRequest } from "./auth-lib.ts";
 import { AuthRepo } from "./auth-repo.ts";
-import { LoginRequest } from "./login.ts";
 
 const VerifyBody = Structure.union([
   Structure.object({
@@ -20,8 +20,6 @@ function getLoginToken(request: Request, cookieName: string) {
   return cookie.parse(value)[cookieName];
 }
 
-// TODO: clear deconf_login cookie
-
 export const verifyRoute = defineRoute({
   method: "POST",
   pathname: "/auth/v1/verify",
@@ -32,15 +30,18 @@ export const verifyRoute = defineRoute({
   async handler({ request, store, repo, tokens, appConfig }) {
     const body = await assertRequestBody(VerifyBody, request);
 
+    // Get the login token from the request body or from the cookies
     const loginToken =
       body.token ?? getLoginToken(request, appConfig.auth.loginCookie);
 
     if (!loginToken) throw HTTPError.badRequest("no token");
 
+    // Get the login itself from the store
     const login = await store.get<LoginRequest>(`/auth/request/${loginToken}`);
     if (!login) throw HTTPError.badRequest();
 
     if (login.method === "email") {
+      // Ensure they have the code correct
       if (login.code !== body.code) {
         throw HTTPError.unauthorized();
       }
@@ -62,6 +63,7 @@ export const verifyRoute = defineRoute({
         userId: user.id,
       });
 
+      // Generate headers to set the session cookie and delete the login cookie
       const headers = new Headers();
       headers.append(
         "Set-Cookie",
@@ -78,14 +80,12 @@ export const verifyRoute = defineRoute({
         }),
       );
 
+      // Clear the login from the store
       await store.delete(`/auth/request/${loginToken}`);
 
-      // return new Response("ok", { headers });
       return Response.json({ token: sessionToken }, { headers });
     }
 
     throw HTTPError.notImplemented();
-
-    // const user = await repo.getUserByEmail(login.)
   },
 });

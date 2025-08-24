@@ -1,4 +1,4 @@
-import { assertRequestBody, defineRoute, useRandom } from "gruber";
+import { assertRequestBody, defineRoute, HTTPError, useRandom } from "gruber";
 
 import { _startEmailLogin } from "../auth/login.ts";
 import {
@@ -57,6 +57,13 @@ export const appendRegistrationsRoute = defineRoute({
       params.conference,
     );
 
+    const [redirectUri] = conference.metadata.redirect_uris ?? [];
+    if (typeof redirectUri !== "string") {
+      throw HTTPError.internalServerError(
+        "conference#redirect_uris is misconfigured",
+      );
+    }
+
     // Work out the difference for each resource type
     const diff = {
       users: _diffResource(body.users, "id", users),
@@ -113,7 +120,7 @@ export const appendRegistrationsRoute = defineRoute({
       const login = {
         token: random.uuid(),
         code: random.number(0, 999_999),
-        redirectUri: "https://example.com", // TODO: this needs to be set properly
+        redirectUri,
         uses: 5,
       };
 
@@ -122,7 +129,6 @@ export const appendRegistrationsRoute = defineRoute({
         email,
         login,
         user.email,
-        conference.id,
         appConfig.auth.loginMaxAge,
       );
     }
