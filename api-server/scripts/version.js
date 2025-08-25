@@ -29,14 +29,25 @@ const cwd = new URL("../", import.meta.url);
 console.log("version %o", version);
 await exec(`npm version --allow-same-version ${version}`, { cwd });
 
-const tag = `containers.r0b.io/deconf/api-server:${version}`;
+// const tag = `containers.r0b.io/deconf/api-server:${version}`;
 
-console.log("build %o", tag);
-await exec(`docker build -t ${tag} --platform=linux/arm64,linux/amd64 .`, {
-  cwd,
-});
+// console.log("build %o", tag);
+// await exec(`docker build -t ${tag} --platform=linux/arm64,linux/amd64 .`, {
+//   cwd,
+// });
 
-console.log("pushing");
-await exec(`docker push ${tag}`, { cwd });
+// console.log("pushing");
+// await exec(`docker push ${tag}`, { cwd });
+
+const tag = `api-server/v${version}`;
+
+console.log("staging");
+await exec("git add package.json package-lock.json");
+
+console.log("committing");
+await exec(`git commit -m "${tag}"`);
+
+console.log("tagging");
+await exec(`git tag -m "${tag}" "${tag}"`);
 
 console.log("done");
