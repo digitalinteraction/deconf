@@ -1,6 +1,8 @@
 import { assertRequestBody, defineRoute, Structure } from "gruber";
 
 import {
+  AssetRecord,
+  AssetTable,
   LabelRecord,
   LabelTable,
   PersonRecord,
@@ -21,12 +23,12 @@ import {
   useStore,
 } from "../lib/mod.ts";
 import {
+  _assertConferenceData,
   _diffRelationship,
   _diffResource,
   _getRelated,
   _performDiff,
   _totalDiffs,
-  _assertConferenceData,
 } from "./admin-lib.ts";
 
 // The shape of the accepted HTTP request body
@@ -47,13 +49,8 @@ const _Request = Structure.object({
   people: Structure.array(
     Structure.object({
       id: Structure.string(),
-      ...PersonTable.fields([
-        "avatar_id",
-        "bio",
-        "name",
-        "subtitle",
-        "metadata",
-      ]),
+      avatar_id: Structure.union([Structure.null(), Structure.string()]),
+      ...PersonTable.fields(["bio", "name", "subtitle", "metadata"]),
     }),
   ),
   sessions: Structure.array(
@@ -92,6 +89,12 @@ const _Request = Structure.object({
       id: Structure.string(),
       session_id: Structure.string(),
       ...SessionLinkTable.fields(["title", "url", "metadata"]),
+    }),
+  ),
+  assets: Structure.array(
+    Structure.object({
+      id: Structure.string(),
+      ...AssetTable.fields(["title", "url", "metadata"]),
     }),
   ),
 });
@@ -133,6 +136,8 @@ export const upsertScheduleRoute = defineRoute({
         ["label_id", "session_id"],
         [data.labels, data.sessions],
       ),
+
+      assets: _diffResource(body.assets, "id", data.assets),
     };
 
     // Exit early & output information if the dry run flag was passed in the URL
@@ -188,19 +193,27 @@ export const upsertScheduleRoute = defineRoute({
         }),
       );
 
+      const assets = await _performDiff(
+        trx,
+        diff.assets,
+        AssetTable,
+        (value): Partial<AssetRecord> => ({
+          ...pickProperties(value, ["title", "url", "metadata"]),
+          conference_id: data.conference.id,
+        }),
+        { delete: false },
+      );
+
       const people = await _performDiff(
         trx,
         diff.people,
         PersonTable,
         (value): Partial<PersonRecord> => ({
-          ...pickProperties(value, [
-            "avatar_id",
-            "bio",
-            "name",
-            "subtitle",
-            "metadata",
-          ]),
+          ...pickProperties(value, ["bio", "name", "subtitle", "metadata"]),
           conference_id: data.conference.id,
+          avatar_id: value.avatar_id
+            ? _getRelated(assets.lookup, value.avatar_id)
+            : null,
         }),
       );
 

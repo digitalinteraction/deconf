@@ -1,6 +1,7 @@
 import { HTTPError, SqlDependency, Structure } from "gruber";
 import {
   assertRequestParam,
+  AssetTable,
   ConferenceTable,
   ContentTable,
   LabelTable,
@@ -125,11 +126,17 @@ export async function _assertConferenceData(
     sql`session_id IN ${sql(getRecordIds(sessions))}`,
   );
 
+  const assets = await AssetTable.select(
+    sql,
+    sql`conference_id = ${conference.id}`,
+  );
+
   return {
     conference,
     sessions,
     people,
     content,
+    assets,
 
     taxonomies,
     labels,
@@ -153,7 +160,7 @@ interface Unwraped<T> {
   records: T[];
 }
 
-export interface UnwrapOptions {
+export interface PerformDiffOptions {
   insert?: boolean;
   update?: boolean;
   delete?: boolean;
@@ -174,7 +181,7 @@ export async function _performDiff<
   diff: Differential<T>,
   table: TableDefinition<U>,
   map: (value: T) => Partial<U>,
-  options: UnwrapOptions = {},
+  options: PerformDiffOptions = {},
 ): Promise<Unwraped<U>> {
   const lookup = new Map<string, number>();
   let records: U[] = [];
