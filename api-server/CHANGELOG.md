@@ -4,7 +4,7 @@ This file documents changes to the Deconf API Server.
 
 ## 0.1.2
 
-- **new** Stage and diff assets during upsert-schedule
+- **new** Stage and diff assets during upsert-schedule & link them to people
 
 ## 0.1.1
 

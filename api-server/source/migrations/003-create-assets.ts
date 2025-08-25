@@ -6,7 +6,7 @@ export default definePostgresMigration({
       CREATE TABLE "assets" (
         "id" SERIAL PRIMARY KEY,
         "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        "title" VARCHAR(64) NOT NULL,
+        "title" JSONB NOT NULL,
         "url" VARCHAR(64) NOT NULL,
         "conference_id" INTEGER NOT NULL REFERENCES "conferences" (id) ON DELETE CASCADE,
         "metadata" JSONB NOT NULL DEFAULT '{}'::JSONB
