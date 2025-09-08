@@ -48,6 +48,7 @@ export const appendRegistrationsRoute = defineRoute({
     await authz.assert(request, { scope: "admin" });
 
     const dryRun = url.searchParams.has("dryRun");
+    const sendEmail = url.searchParams.has("notify");
     const body = await assertRequestBody(_Request, request);
 
     // NOTE: this is a bit inefficient if only inserting a couple of records
@@ -116,21 +117,23 @@ export const appendRegistrationsRoute = defineRoute({
     });
 
     // Send login emails to new users
-    for (const user of result.users.records) {
-      const login = {
-        token: random.uuid(),
-        code: random.number(0, 999_999),
-        redirectUri,
-        uses: 5,
-      };
+    if (sendEmail) {
+      for (const user of result.users.records) {
+        const login = {
+          token: random.uuid(),
+          code: random.number(0, 999_999),
+          redirectUri,
+          uses: 5,
+        };
 
-      await _startEmailLogin(
-        store,
-        email,
-        login,
-        user.email,
-        appConfig.auth.loginMaxAge,
-      );
+        await _startEmailLogin(
+          store,
+          email,
+          login,
+          user.email,
+          appConfig.auth.loginMaxAge,
+        );
+      }
     }
 
     return Response.json(_totalDiffs(diff));
