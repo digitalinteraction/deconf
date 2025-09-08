@@ -59,8 +59,8 @@ export const upsertContentRoute = defineRoute({
     }
 
     // Perform the diff against the database
-    await sql.begin(async (trx) => {
-      await _performDiff(
+    const result = await sql.begin(async (trx) => {
+      return _performDiff(
         trx,
         diff,
         ContentTable,
@@ -76,6 +76,10 @@ export const upsertContentRoute = defineRoute({
 
     // Clear the schedule cache
     await store.delete(`/legacy/${conference.id}/schedule`);
+
+    for (const record of result.records) {
+      await store.delete(`/legacy/${conference.id}/content/${record.slug}`);
+    }
 
     // Return a summary of actions
     return Response.json(_sumDiffs([diff]));
