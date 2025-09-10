@@ -65,7 +65,16 @@ export async function _startEmailLogin(
   }
 }
 
-function assertRedirect(uri: string, conference: ConferenceRecord | null) {
+function stripRedirect(input: string) {
+  const url = new URL(input);
+  url.search = "";
+  url.hash = "";
+  return url.toString();
+}
+
+function assertRedirect(input: string, conference: ConferenceRecord | null) {
+  const uri = stripRedirect(input);
+
   if (conference && Array.isArray(conference.metadata.redirect_uris)) {
     if (conference.metadata.redirect_uris.includes(uri)) return;
   }
