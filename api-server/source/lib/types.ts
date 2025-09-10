@@ -126,8 +126,8 @@ export interface SessionLabelRecord {
 export interface LogRecord {
   id: number;
   created_at: Date;
-  visitor_id: string;
-  event: string;
+  visitor: string;
+  name: string;
   payload: unknown;
 }
 

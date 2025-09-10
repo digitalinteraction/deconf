@@ -194,8 +194,8 @@ export const LogTable = defineTable<LogRecord>({
   fields: {
     id: Structure.number(),
     created_at: Structure.date(),
-    visitor_id: Structure.string(),
-    event: Structure.string(),
+    visitor: Structure.string(),
+    name: Structure.string(),
     payload: Structure.any(),
   },
 });

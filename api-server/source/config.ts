@@ -101,6 +101,10 @@ const struct = config.object({
       }),
     ),
   }),
+
+  legacy: config.object({
+    metrics: config.boolean({ variable: "LEGACY_METRICS", fallback: false }),
+  }),
 });
 
 export async function loadConfig(path: string | URL) {

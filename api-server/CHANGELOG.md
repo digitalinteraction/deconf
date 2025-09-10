@@ -8,6 +8,7 @@ This file documents changes to the Deconf API Server.
 - **fix** redis keys are stored for the correct amount of time
 - **tweak** sending magic-links is opt-in when appending registrations
 - **improve** login redirects with `?` or `#` params work
+- **new** add opt-in legacy metrics API
 
 ## 0.1.2
 

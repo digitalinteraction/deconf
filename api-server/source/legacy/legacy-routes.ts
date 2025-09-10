@@ -12,6 +12,7 @@ import {
 } from "./calendar.ts";
 import { getScheduleRoute, getSessionLinksRoute } from "./conference.ts";
 import { getContentRoute } from "./content.ts";
+import { metricRoute } from "./metrics.ts";
 import { getRegistrationRoute } from "./registration.ts";
 
 export const legacyRoutes = [
@@ -36,4 +37,7 @@ export const legacyRoutes = [
 
   // Registration
   getRegistrationRoute,
+
+  // Metrics
+  metricRoute,
 ];
