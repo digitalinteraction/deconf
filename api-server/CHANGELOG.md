@@ -2,7 +2,7 @@
 
 This file documents changes to the Deconf API Server.
 
-## next
+## 0.2.0
 
 - **fix** clear legacy content cache when new content is uploaded
 - **fix** redis keys are stored for the correct amount of time
