@@ -5,6 +5,7 @@ This file documents changes to the Deconf API Server.
 ## next
 
 - **fix** clear legacy content cache when new content is uploaded
+- **fix** redis keys are stored for the correct amount of time
 - **tweak** sending magic-links is opt-in when appending registrations
 
 ## 0.1.2

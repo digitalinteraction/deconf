@@ -38,7 +38,7 @@ export class NodeRedisStore implements Store {
   ): Promise<void> {
     const opts: redis.SetOptions = {};
     if (typeof options?.maxAge === "number") {
-      opts.expiration = { type: "EX", value: options.maxAge };
+      opts.expiration = { type: "PX", value: options.maxAge };
     }
 
     await this.client((c) =>
