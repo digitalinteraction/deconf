@@ -2,13 +2,19 @@
 
 This file documents changes to the Deconf API Server.
 
+## 0.2.1
+
+- **improve** (legacy calendar) set event location from session or conference
+- **improve** (legacy calendar) set geo from conference
+- **fix** legacy calendar returns private URLs correctly
+
 ## 0.2.0
 
-- **fix** clear legacy content cache when new content is uploaded
-- **fix** redis keys are stored for the correct amount of time
+- **new** add opt-in legacy metrics API
 - **tweak** sending magic-links is opt-in when appending registrations
 - **improve** login redirects with `?` or `#` params work
-- **new** add opt-in legacy metrics API
+- **fix** clear legacy content cache when new content is uploaded
+- **fix** redis keys are stored for the correct amount of time
 
 ## 0.1.2
 

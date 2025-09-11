@@ -20,18 +20,29 @@ function getIcsDate(date: Date) {
   ] as [number, number, number, number, number];
 }
 
-function getSessionIcsOptions(session: SessionRecord, info: ConferenceInfo) {
+function getSessionIcsOptions(
+  session: SessionRecord,
+  info: ConferenceInfo,
+): ics.EventAttributes {
   if (!session.start_date || !session.end_date) throw HTTPError.notFound();
+
+  const location: string[] = [];
+  if (session.metadata.location) location.push(session.metadata.location);
+  if (info.location) location.push(info.location);
+
   return {
+    uid: `ptx_${session.slug}`,
     start: getIcsDate(session.start_date),
     startInputType: "utc",
     end: getIcsDate(session.end_date),
     endInputType: "utc",
     title: session.title.en,
     description: session.summary.en,
-    location: info.sessionUrl.replace("{session}", session.id.toString()),
+    url: info.sessionUrl.replace("{session}", session.id.toString()),
     calName: info.appName,
-  } as const;
+    location: location.length > 0 ? location.join(", ") : undefined,
+    geo: info.geo,
+  };
 }
 
 function assertIcs(file: ics.ReturnObject) {
@@ -96,15 +107,23 @@ function getSessionGoogleCalUrl(session: SessionRecord) {
 interface ConferenceInfo {
   appName: string;
   sessionUrl: string;
+  location?: string;
+  geo?: {
+    lat: number;
+    lon: number;
+  };
 }
 
 function getConferenceInfo(
   conferece: ConferenceRecord,
   appConfig: AppConfig,
 ): ConferenceInfo {
+  const { session_url = "", location, lat, lng } = conferece.metadata;
   return {
     appName: conferece.title.en ?? appConfig.meta.name,
-    sessionUrl: conferece.metadata.session_url ?? "",
+    sessionUrl: session_url,
+    location: location,
+    geo: lat && lng ? { lat, lon: lng } : undefined,
   };
 }
 
@@ -174,12 +193,12 @@ export const createUserCal = defineRoute({
 
       const token = await tokens.sign("legacy:calendar:self", { userId });
 
-      return Response.redirect(
-        new URL(
+      return Response.json({
+        url: new URL(
           `./legacy/${params.conference}/calendar/me/${token}`,
           appConfig.server.url,
         ),
-      );
+      });
     });
   },
 });

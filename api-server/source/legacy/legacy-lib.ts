@@ -185,7 +185,7 @@ export class LegacyRepo {
     );
     return SessionTable.select(
       this.sql,
-      this.sql`id IN ${this.sql(relation.map((r) => r.id))}`,
+      this.sql`id IN ${this.sql(relation.map((r) => r.session_id))}`,
     );
   }
 
