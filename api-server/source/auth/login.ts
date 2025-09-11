@@ -111,6 +111,10 @@ export const loginRoute = defineRoute({
     };
 
     if (body.emailAddress) {
+      // TODO: should it verify conference registration too?
+      const user = await repo.getUserByEmail(emailAddress);
+      if (!user) throw HTTPError.unauthorized();
+
       // Send the email login, throwing if it fails
       await _startEmailLogin(
         store,
