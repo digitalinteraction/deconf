@@ -2,6 +2,10 @@
 
 This file documents changes to the Deconf API Server.
 
+## 0.2.2
+
+- **fix** (legacy conference) pull recorded + featured from session metadata
+
 ## 0.2.1
 
 - **improve** (legacy calendar) set event location from session or conference
