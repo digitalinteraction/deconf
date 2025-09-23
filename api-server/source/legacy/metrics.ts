@@ -89,6 +89,10 @@ const MetricBody = Structure.union([
       params: Structure.any(),
     }),
   }),
+  Structure.object({
+    name: Structure.literal("general/error"),
+    payload: Structure.any(),
+  }),
 
   //
   // Moz custom
