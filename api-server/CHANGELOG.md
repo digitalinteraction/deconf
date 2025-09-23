@@ -2,6 +2,10 @@
 
 This file documents changes to the Deconf API Server.
 
+## 0.2.4
+
+- **improve** add "general/error" metric
+
 ## 0.2.3
 
 - **fix** (auth) only email users that are registered
