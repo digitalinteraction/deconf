@@ -2,6 +2,10 @@
 
 This file documents changes to the Deconf API Server.
 
+## next
+
+- **fix** `metadata` columns are preserved when upserting registrations
+
 ## 0.2.4
 
 - **improve** add "general/error" metric

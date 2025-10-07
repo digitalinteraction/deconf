@@ -245,7 +245,13 @@ interface Diffable {
 
 export interface DiffOptions {
   /** This is a bit crude for relationships, but works for now */
-  deleteUntracked?: boolean;
+  deleteUnknown?: boolean;
+
+  /**
+   * whether to merge new metadata rather than replace,
+   * TODO: should this be the default?
+   */
+  mergeMetadata?: boolean;
 }
 
 /**
@@ -261,7 +267,7 @@ export function _diffResource<T, K extends keyof T, U extends Diffable>(
   input: T[],
   key: K,
   current: U[],
-  { deleteUntracked: deleteUnknown = false }: DiffOptions = {},
+  { deleteUnknown = false, mergeMetadata = false }: DiffOptions = {},
 ): Differential<T> {
   const lookup = new Map(input.map((r) => [r[key], r]));
 
@@ -285,7 +291,11 @@ export function _diffResource<T, K extends keyof T, U extends Diffable>(
     // If there is a match, mark the existing record for modification
     // if not, mark it for deletion
     if (matched) {
-      modifications.push({ target: record.id, value: matched });
+      const merged: any = { ...matched };
+      if (mergeMetadata && typeof merged.metadata === "object") {
+        merged.metadata = { ...record.metadata, ...merged.metadata };
+      }
+      modifications.push({ target: record.id, value: merged });
       visited.add(matched[key]);
     } else {
       deletions.push(record.id);

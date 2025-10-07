@@ -51,7 +51,7 @@ export const upsertContentRoute = defineRoute({
     );
 
     // Work out what to change
-    const diff = _diffResource(body, "id", records, { deleteUntracked: true });
+    const diff = _diffResource(body, "id", records, { deleteUnknown: true });
 
     // Dump & exit early for dry-runs
     if (dryRun) {

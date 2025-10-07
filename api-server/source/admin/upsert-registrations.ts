@@ -41,8 +41,10 @@ export const upsertRegistrationsRoute = defineRoute({
 
     // Work out the difference for each resource type
     const diff = {
-      users: _diffResource(body.users, "id", users),
-      registrations: _diffResource(body.registrations, "id", registrations),
+      users: _diffResource(body.users, "id", users, { mergeMetadata: true }),
+      registrations: _diffResource(body.registrations, "id", registrations, {
+        mergeMetadata: true,
+      }),
     };
 
     // Exit early & output information if the dry run flag was passed in the URL
