@@ -22,14 +22,13 @@ export const testWebPushRoute = defineRoute({
     const devices = await webPush.listDevices(registration.id);
 
     for (const device of devices) {
-      const message = await webPush.enqueueMessage(device.id, {
+      await webPush.send(device.endpoint, device.keys, {
         title: "Hello There!",
         body: "General Kenobi",
         data: {
           url: "https://example.com",
         },
       });
-      await webPush.attemptToSend(message, device);
     }
 
     return new Response("OK");

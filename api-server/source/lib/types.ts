@@ -114,6 +114,7 @@ export interface SessionSaveRecord {
   created_at: Date;
   session_id: number;
   registration_id: number;
+  notified: string[];
 }
 
 export interface SessionLabelRecord {

@@ -1,14 +1,15 @@
 import { defineRoute, HTTPError } from "gruber";
 import ics from "ics";
 import {
-  ConferenceRecord,
+  ConferenceInfo,
+  getConferenceInfo,
+  getSessionUrl,
   SessionRecord,
   useAppConfig,
   useAuthz,
   useTokens,
 } from "../lib/mod.js";
 import { LegacyApiError, LegacyRepo } from "./legacy-lib.ts";
-import { AppConfig } from "../config.ts";
 
 function getIcsDate(date: Date) {
   return [
@@ -38,7 +39,7 @@ function getSessionIcsOptions(
     endInputType: "utc",
     title: session.title.en,
     description: session.summary.en,
-    url: info.sessionUrl.replace("{session}", session.id.toString()),
+    url: getSessionUrl(info.sessionUrl, session.id),
     calName: info.appName,
     location: location.length > 0 ? location.join(", ") : undefined,
     geo: info.geo,
@@ -102,29 +103,6 @@ function getSessionGoogleCalUrl(session: SessionRecord) {
   // )
 
   return url;
-}
-
-interface ConferenceInfo {
-  appName: string;
-  sessionUrl: string;
-  location?: string;
-  geo?: {
-    lat: number;
-    lon: number;
-  };
-}
-
-function getConferenceInfo(
-  conferece: ConferenceRecord,
-  appConfig: AppConfig,
-): ConferenceInfo {
-  const { session_url = "", location, lat, lng } = conferece.metadata;
-  return {
-    appName: conferece.title.en ?? appConfig.meta.name,
-    sessionUrl: session_url,
-    location: location,
-    geo: lat && lng ? { lat, lon: lng } : undefined,
-  };
 }
 
 // Calendar - getSessionIcs

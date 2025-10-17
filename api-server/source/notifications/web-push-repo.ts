@@ -109,38 +109,15 @@ export class WebPushRepo {
     return WebPushDeviceTable.delete(this.sql, this.sql`id = ${deviceId}`);
   }
 
-  enqueueMessage<T extends WebPushPayload>(deviceId: number, payload: T) {
-    return WebPushMessageTable.insertOne(this.sql, {
-      device_id: deviceId,
-      payload,
-    });
-  }
-
   async attemptToSend(
     message: WebPushMessageRecord,
     device: WebPushDeviceRecord,
   ): Promise<boolean> {
     if (message.retries > this.maxAttempts) return false;
 
-    try {
-      // Try to send the message
-      await webPush.sendNotification(
-        { endpoint: device.endpoint, keys: device.keys },
-        JSON.stringify(message.payload),
-        { headers: { "Content-Type": "application/json" } },
-      );
+    const sent = await this.send(device.endpoint, device.keys, message.payload);
 
-      // Mark the message as sent
-      await WebPushMessageTable.updateOne(
-        this.sql,
-        this.sql`id = ${message.id}`,
-        { state: "sent", updated_at: new Date() },
-      );
-
-      return true;
-    } catch (error) {
-      console.error("Failed to send web-push", error);
-
+    if (!sent) {
       // Increase retries and update the state
       await WebPushMessageTable.updateOne(
         this.sql,
@@ -154,5 +131,48 @@ export class WebPushRepo {
 
       return false;
     }
+
+    // Mark the message as sent
+    await WebPushMessageTable.updateOne(
+      this.sql,
+      this.sql`id = ${message.id}`,
+      { state: "sent", updated_at: new Date() },
+    );
+
+    return true;
+  }
+
+  async send<T extends WebPushPayload>(
+    endpoint: string,
+    keys: any,
+    payload: T,
+  ) {
+    try {
+      // Try to send the message
+      await webPush.sendNotification(
+        { endpoint, keys },
+        JSON.stringify(payload),
+        { headers: { "Content-Type": "application/json" } },
+      );
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async listPending() {
+    const messages = await WebPushMessageTable.select(
+      this.sql,
+      this.sql`state = 'pending'`,
+    );
+    const ids = Array.from(new Set(messages.map((m) => m.device_id)));
+    const devices = await WebPushDeviceTable.select(
+      this.sql,
+      this.sql`id IN ${this.sql(ids)}`,
+    );
+    return {
+      messages,
+      devices: new Map(devices.map((d) => [d.id, d])),
+    };
   }
 }

@@ -7,6 +7,8 @@ import {
   TokenService,
 } from "gruber";
 import { ServiceTokenTable } from "./tables.ts";
+import { ConferenceRecord } from "./types.ts";
+import { AppConfig } from "../config.ts";
 
 export function trimEmail(input: string) {
   return input.trim().toLowerCase();
@@ -63,4 +65,31 @@ export class ServiceTokenService implements TokenService {
   sign(scope: string, options?: SignTokenOptions): Promise<string> {
     throw new Error("Method not implemented.");
   }
+}
+
+export interface ConferenceInfo {
+  appName: string;
+  sessionUrl: string;
+  location?: string;
+  geo?: {
+    lat: number;
+    lon: number;
+  };
+}
+
+export function getConferenceInfo(
+  conferece: ConferenceRecord,
+  appConfig: AppConfig,
+): ConferenceInfo {
+  const { session_url = "", location, lat, lng } = conferece.metadata;
+  return {
+    appName: conferece.title.en ?? appConfig.meta.name,
+    sessionUrl: session_url,
+    location: location,
+    geo: lat && lng ? { lat, lon: lng } : undefined,
+  };
+}
+
+export function getSessionUrl(template: string, id: number) {
+  return template.replace("{session}", id.toString());
 }

@@ -176,6 +176,7 @@ export const SessionSaveTable = defineTable<SessionSaveRecord>({
     created_at: Structure.date(),
     session_id: Structure.number(),
     registration_id: Structure.number(),
+    notified: Structure.array(Structure.string()),
   },
 });
 
