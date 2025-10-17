@@ -3,7 +3,7 @@ import { useAppConfig } from "../lib/mod.ts";
 
 export const getWebPushCredentials = defineRoute({
   method: "GET",
-  pathname: "/notify/v1/web-push/credentials",
+  pathname: "/notifications/v1/web-push/credentials",
   dependencies: {
     appConfig: useAppConfig,
   },

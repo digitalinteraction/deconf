@@ -12,6 +12,7 @@
     "@openlab/deconf-shared": "^4.0.0",
     "cookie": "^1.0.2",
     "debug": "^4.4.1",
+    "google-auth-library": "^10.3.1",
     "gruber": "^0.9.0-beta.1",
     "ics": "^3.8.1",
     "jose": "^6.0.13",
@@ -20,6 +21,7 @@
     "postgres": "^3.4.7",
     "redis": "^5.8.2",
     "urlpattern-polyfill": "^10.1.0",
+    "web-push": "^3.6.7",
     "yargs": "^18.0.0"
   },
   "devDependencies": {

@@ -3,11 +3,15 @@ import {
   assertRequestParam,
   ConferenceTable,
   RegistrationTable,
+  useAppConfig,
   useDatabase,
   WebPushDeviceRecord,
   WebPushDeviceTable,
+  WebPushMessageRecord,
   WebPushMessageTable,
 } from "../lib/mod.ts";
+import webPush from "web-push";
+import { AppConfig } from "../config.ts";
 
 export interface WebPushPayload {
   title: string;
@@ -16,15 +20,29 @@ export interface WebPushPayload {
 }
 
 export class WebPushRepo {
-  static use = loader(() => new this(useDatabase()));
+  static use = loader(() => new this(useDatabase(), useAppConfig()));
 
   sql: SqlDependency;
-  constructor(sql: SqlDependency) {
+  config: AppConfig;
+  constructor(sql: SqlDependency, config: AppConfig) {
     this.sql = sql;
+    this.config = config;
+
+    // NOTE: I'd prefer if this library exposed an instanced client
+    // that we could instantiate here
+    webPush.setVapidDetails(
+      "mailto:" + config.webPush.contactEmail,
+      config.webPush.credentials.publicKey,
+      config.webPush.credentials.privateKey,
+    );
   }
 
   with(sql: SqlDependency) {
-    return new WebPushRepo(sql);
+    return new WebPushRepo(sql, this.config);
+  }
+
+  get maxAttempts() {
+    return this.config.webPush.maxAttempts;
   }
 
   async assertRegistered(conferenceId: number | string, userId: number) {
@@ -96,5 +114,45 @@ export class WebPushRepo {
       device_id: deviceId,
       payload,
     });
+  }
+
+  async attemptToSend(
+    message: WebPushMessageRecord,
+    device: WebPushDeviceRecord,
+  ): Promise<boolean> {
+    if (message.retries > this.maxAttempts) return false;
+
+    try {
+      // Try to send the message
+      await webPush.sendNotification(
+        { endpoint: device.endpoint, keys: device.keys },
+        JSON.stringify(message.payload),
+        { headers: { "Content-Type": "application/json" } },
+      );
+
+      // Mark the message as sent
+      await WebPushMessageTable.updateOne(
+        this.sql,
+        this.sql`id = ${message.id}`,
+        { state: "sent", updated_at: new Date() },
+      );
+
+      return true;
+    } catch (error) {
+      console.error("Failed to send web-push", error);
+
+      // Increase retries and update the state
+      await WebPushMessageTable.updateOne(
+        this.sql,
+        this.sql`id = ${message.id}`,
+        {
+          state: message.retries + 1 >= this.maxAttempts ? "failed" : "pending",
+          updated_at: new Date(),
+          retries: message.retries + 1,
+        },
+      );
+
+      return false;
+    }
   }
 }

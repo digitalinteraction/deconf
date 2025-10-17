@@ -93,6 +93,14 @@ const struct = config.object({
   }),
 
   webPush: config.object({
+    maxAttempts: config.number({
+      variable: "WEB_PUSH_MAX_ATTEMPTS",
+      fallback: 3,
+    }),
+    contactEmail: config.string({
+      variable: "WEB_PUSH_EMAIL",
+      fallback: "noreply@deconf.app",
+    }),
     credentials: config.external(
       new URL("../web-push-credentials.json", import.meta.url),
       Structure.object({
@@ -104,6 +112,19 @@ const struct = config.object({
 
   legacy: config.object({
     metrics: config.boolean({ variable: "LEGACY_METRICS", fallback: false }),
+  }),
+
+  google: config.object({
+    oauth2: config.object({
+      clientId: config.string({
+        variable: "GOOGLE_OAUTH2_CLIENT_ID",
+        fallback: DECONF_OOB,
+      }),
+      clientSecret: config.string({
+        variable: "GOOGLE_OAUTH2_CLIENT_SECRET",
+        fallback: DECONF_OOB,
+      }),
+    }),
   }),
 });
 
