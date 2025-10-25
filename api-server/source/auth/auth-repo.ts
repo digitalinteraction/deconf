@@ -3,6 +3,8 @@ import { loader, SqlDependency } from "gruber";
 import {
   assertRequestParam,
   ConferenceTable,
+  Oauth2TokenRecord,
+  OAuth2TokenTable,
   RegistrationTable,
   useDatabase,
   UserTable,
@@ -37,5 +39,9 @@ export class AuthRepo {
       this.sql,
       this.sql`id = ${assertRequestParam(id)}`,
     );
+  }
+
+  createToken(init: Omit<Oauth2TokenRecord, "id" | "created_at">) {
+    return OAuth2TokenTable.insertOne(this.sql, init);
   }
 }

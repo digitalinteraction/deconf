@@ -1,69 +1,33 @@
 import cookie from "cookie";
-import {
-  assertRequestBody,
-  defineRoute,
-  HTTPError,
-  Store,
-  Structure,
-} from "gruber";
+import { assertRequestBody, defineRoute, HTTPError, Structure } from "gruber";
 
 import {
   commponDependencies,
   ConferenceRecord,
-  EmailService,
   emailStructure,
+  GOOGLE_CALENDAR_SCOPE,
+  GoogleRepo,
   trimEmail,
+  undefinedStructure,
 } from "../lib/mod.ts";
-import { LoginRequest } from "./auth-lib.ts";
+import { AuthLib, LoginRequest, parseScopes } from "./auth-lib.ts";
 import { AuthRepo } from "./auth-repo.ts";
 
 const LoginBody = Structure.union([
   Structure.object({
+    type: Structure.literal("email"),
     emailAddress: emailStructure(),
     redirectUri: Structure.string(),
     conferenceId: Structure.union([Structure.null(), Structure.number()]),
   }),
+  Structure.object({
+    type: Structure.literal("oauth"),
+    provider: Structure.literal("google"),
+    redirectUri: Structure.string(),
+    conferenceId: Structure.union([Structure.null(), Structure.number()]),
+    scope: Structure.union([Structure.string(), undefinedStructure()]),
+  }),
 ]);
-
-// This is exported so that it can be used in the tito webhook too
-export async function _startEmailLogin(
-  store: Store,
-  email: EmailService,
-  login: Omit<LoginRequest, "method" | "payload">,
-  emailAddress: string,
-  maxAge: number,
-) {
-  // Store the login to be retrieved on clicking through from the email
-  store.set<LoginRequest>(
-    `/auth/request/${login.token}`,
-    {
-      ...login,
-      method: "email",
-      payload: { emailAddress },
-    },
-    { maxAge },
-  );
-
-  // Generate the magic link to send the client with the token + code in it
-  const magicLink = new URL(login.redirectUri);
-  magicLink.searchParams.set("method", "email");
-  magicLink.searchParams.set("token", login.token);
-  magicLink.searchParams.set("code", login.code.toString());
-
-  // Send the email
-  const sent = await email.sendTemplated({
-    to: { emailAddress },
-    type: "login",
-    arguments: {
-      oneTimeCode: login.code,
-      magicLink: magicLink.toString(),
-    },
-  });
-
-  if (!sent) {
-    throw HTTPError.internalServerError("login email failed");
-  }
-}
 
 function stripRedirect(input: string) {
   const url = new URL(input);
@@ -89,13 +53,14 @@ export const loginRoute = defineRoute({
   dependencies: {
     ...commponDependencies,
     repo: AuthRepo.use,
+    lib: AuthLib.use,
+    google: GoogleRepo.use,
   },
-  async handler({ request, authz, store, random, email, appConfig, repo }) {
+  async handler({ request, store, random, lib, appConfig, repo, google }) {
     // NOTE: it previously short-circuited the login if there was an active session
     // this cased confusion so was taken out
 
     const body = await assertRequestBody(LoginBody, request);
-    const emailAddress = trimEmail(body.emailAddress);
 
     const conference = body.conferenceId
       ? await repo.getConference(body.conferenceId)
@@ -110,34 +75,72 @@ export const loginRoute = defineRoute({
       uses: 5,
     };
 
-    if (body.emailAddress) {
+    const cookieOptions = {
+      httpOnly: true,
+      maxAge: appConfig.auth.loginMaxAge / 1_000,
+      secure: appConfig.server.url.protocol === "https:",
+    };
+
+    if (body.type === "email") {
+      const emailAddress = trimEmail(body.emailAddress);
+
       // TODO: should it verify conference registration too?
       const user = await repo.getUserByEmail(emailAddress);
       if (!user) throw HTTPError.unauthorized();
 
       // Send the email login, throwing if it fails
-      await _startEmailLogin(
-        store,
-        email,
-        login,
-        emailAddress,
-        appConfig.auth.loginMaxAge,
-      );
+      await lib.startEmailLogin({
+        ...login,
+        method: "email",
+        payload: { emailAddress },
+      });
 
       // Set the login cookie on the client
       const headers = new Headers();
       headers.set(
         "Set-Cookie",
         cookie.serialize(appConfig.auth.loginCookie, login.token, {
-          httpOnly: true,
-          maxAge: appConfig.auth.loginMaxAge / 1_000,
-          secure: appConfig.server.url.protocol === "https:",
+          ...cookieOptions,
         }),
       );
 
       // NOTE: just-cookies doesn't work on safari,
       // maybe an oauth2 flow would be better in the futures
       return Response.json({ token: login.token }, { headers });
+    }
+
+    if (body.type === "oauth") {
+      const scope = [
+        "https://www.googleapis.com/auth/userinfo.email",
+        "openid",
+        "profile",
+      ];
+
+      const requested = body.scope
+        ? parseScopes(body.scope)
+        : new Set<string>();
+
+      if (requested.has("calendar")) {
+        scope.push(GOOGLE_CALENDAR_SCOPE);
+      }
+
+      await store.set<LoginRequest>(`/auth/request/${login.token}`, {
+        ...login,
+        method: "oauth",
+        provider: "google",
+      });
+
+      const headers = new Headers();
+      headers.set(
+        "Set-Cookie",
+        cookie.serialize("oauth2-state", login.token, cookieOptions),
+      );
+
+      const url = google.authUrl(scope, login.token, requested);
+
+      // NOTE: you cannot access headers.location from JavaScript
+      // This method would make more sense as a GET request, then cookies can be set too
+      return Response.json({ location: url }, { headers });
     }
 
     throw HTTPError.notImplemented();

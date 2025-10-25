@@ -1,6 +1,6 @@
 import { assertRequestBody, defineRoute, HTTPError, useRandom } from "gruber";
 
-import { _startEmailLogin } from "../auth/login.ts";
+import { AuthLib } from "../auth/auth-lib.ts";
 import {
   RegistrationRecord,
   RegistrationTable,
@@ -33,6 +33,7 @@ export const appendRegistrationsRoute = defineRoute({
     authz: useAuthz,
     sql: useDatabase,
     random: useRandom,
+    authLib: AuthLib.use,
   },
   async handler({
     request,
@@ -44,6 +45,7 @@ export const appendRegistrationsRoute = defineRoute({
     store,
     email,
     random,
+    authLib,
   }) {
     await authz.assert(request, { scope: "admin" });
 
@@ -119,20 +121,16 @@ export const appendRegistrationsRoute = defineRoute({
     // Send login emails to new users
     if (sendEmail) {
       for (const user of result.users.records) {
-        const login = {
+        await authLib.startEmailLogin({
+          method: "email",
           token: random.uuid(),
           code: random.number(0, 999_999),
           redirectUri,
           uses: 5,
-        };
-
-        await _startEmailLogin(
-          store,
-          email,
-          login,
-          user.email,
-          appConfig.auth.loginMaxAge,
-        );
+          payload: {
+            emailAddress: user.email,
+          },
+        });
       }
     }
 

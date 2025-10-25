@@ -2,7 +2,7 @@ import cookie from "cookie";
 import { assertRequestBody, defineRoute, HTTPError, Structure } from "gruber";
 
 import { commponDependencies, undefinedStructure } from "../lib/mod.ts";
-import { LoginRequest } from "./auth-lib.ts";
+import { AuthLib, LoginRequest } from "./auth-lib.ts";
 import { AuthRepo } from "./auth-repo.ts";
 
 const VerifyBody = Structure.union([
@@ -26,8 +26,9 @@ export const verifyRoute = defineRoute({
   dependencies: {
     ...commponDependencies,
     repo: AuthRepo.use,
+    lib: AuthLib.use,
   },
-  async handler({ request, store, repo, tokens, appConfig }) {
+  async handler({ request, store, repo, lib, appConfig }) {
     const body = await assertRequestBody(VerifyBody, request);
 
     // Get the login token from the request body or from the cookies
@@ -57,31 +58,7 @@ export const verifyRoute = defineRoute({
 
       // TODO: this is a hack for now, should be based on Conference roles
       const scope = user.metadata.admin ? "admin" : "user";
-
-      const sessionToken = await tokens.sign(scope, {
-        maxAge: appConfig.auth.sessionMaxAge,
-        userId: user.id,
-      });
-
-      // Generate headers to set the session cookie and delete the login cookie
-      const headers = new Headers();
-      headers.append(
-        "Set-Cookie",
-        cookie.serialize(appConfig.auth.sessionCookie, sessionToken, {
-          httpOnly: true,
-          maxAge: appConfig.auth.sessionMaxAge / 1_000,
-          secure: appConfig.server.url.protocol === "https:",
-        }),
-      );
-      headers.append(
-        "Set-Cookie",
-        cookie.serialize(appConfig.auth.loginCookie, "", {
-          expires: new Date(0),
-        }),
-      );
-
-      // Clear the login from the store
-      await store.delete(`/auth/request/${loginToken}`);
+      const { headers, sessionToken } = await lib.finish(login, user.id, scope);
 
       return Response.json({ token: sessionToken }, { headers });
     }
