@@ -20,16 +20,19 @@ class NotifyContext {
   webPush: WebPushRepo;
   sql: SqlDependency;
   appConfig: AppConfig;
+  date: Date;
   constructor(
     options: NotifyOptions,
     webPush: WebPushRepo,
     sql: SqlDependency,
     appConfig: AppConfig,
+    date: Date,
   ) {
     this.options = options;
     this.webPush = webPush;
     this.sql = sql;
     this.appConfig = appConfig;
+    this.date = date;
   }
 
   /** Log a timestamped message */
@@ -49,27 +52,32 @@ export interface NotifyOptions {
   forever: boolean;
   interval: number;
   grace: number;
+  date?: string;
 }
 
 export async function notifyCommand(options: NotifyOptions) {
+  // Parse the date from options or use "now"
+  const date = options.date ? new Date(options.date) : new Date();
+  if (Number.isNaN(date.getTime())) throw new Error("invalid date option");
+
   // Set up context
   const appConfig = useAppConfig();
   const store = useStore();
   const sql = useDatabase();
   const webPush = WebPushRepo.use();
-  const ctx = new NotifyContext(options, webPush, sql, appConfig);
+  const ctx = new NotifyContext(options, webPush, sql, appConfig, date);
 
   ctx.log("init");
 
   try {
-    while (options.forever) {
+    do {
       ctx.log("starting");
 
       await enqueueMySchedule(ctx);
       await sendPendingMessages(ctx);
 
-      await ctx.pause(options.interval);
-    }
+      if (options.forever) await ctx.pause(options.interval);
+    } while (options.forever);
 
     ctx.log("done");
   } catch (error) {
@@ -86,7 +94,7 @@ interface PendingMessage {
   payload: WebPushPayload;
 }
 
-async function enqueueMySchedule(ctx: NotifyContext, date = new Date()) {
+async function enqueueMySchedule(ctx: NotifyContext) {
   ctx.log("enqueue from schedule…");
 
   // Get sessions starting in 15 minutes or started 5 minutes ago
@@ -94,8 +102,8 @@ async function enqueueMySchedule(ctx: NotifyContext, date = new Date()) {
     ctx.sql,
     ctx.sql`
       start_date IS NOT NULL
-      AND start_date >= ${date} - INTERVAL '15 minutes'
-      AND start_date <= ${date} + INTERVAL '5 minutes'
+      AND start_date >= ${ctx.date} - INTERVAL '15 minutes'
+      AND start_date <= ${ctx.date} + INTERVAL '5 minutes'
     `,
   );
 
