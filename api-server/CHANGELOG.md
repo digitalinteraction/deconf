@@ -6,6 +6,7 @@ This file documents changes to the Deconf API Server.
 
 - **new** web-push "test" endpoint
 - **new** notify command to run notifications process
+- **new** sign in with Google
 - **fix** align web-push endpoints
 - **fix** `metadata` columns are preserved when upserting registrations
 
