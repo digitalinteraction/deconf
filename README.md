@@ -4,7 +4,7 @@ This repository contains information about the Deconf OSS project.
 
 ## About
 
-Deconf is an Open Source library for building virtual conference platforms developed by [Open Lab at Newcastle University](http://openlab.ncl.ac.uk/). It has been developed with the learnings of running several online conferences since 2020.
+Deconf is a platform and toolkit that helps facilitate virtual, physical and hybrid conferences. It is an Open Source project created by [Open Lab](http://openlab.ncl.ac.uk/) and has been used for many events from different organisations, including the IFRC & Mozilla Foundation.
 
 ### Core team
 
@@ -21,7 +21,13 @@ Deconf is an Open Source library for building virtual conference platforms devel
 
 ## Overview
 
-Deconf is made up of several repositories under the `digitalinteraction` organisation and each repository starts with `deconf`.
+Deconf is currently being restructured to encorporate all of the learnings from the conferences run from it.
+The new architecture features an [api-server](./api-server) with an improved malleable data structure to store any conference data.
+The new server also includes "legacy" endpoints that maintain backwards compatability with `deconf-api-toolkit`.
+
+> More info coming soon…
+
+Deconf is currently made up of several repositories under the `digitalinteraction` organisation and each repository starts with `deconf`.
 
 - [digitalinteraction/deconf-shared](https://github.com/digitalinteraction/deconf-shared) —
   A package of TypeScript types to be shared between the ui and api toolkits
@@ -48,15 +54,25 @@ Deconf is made up of several repositories under the `digitalinteraction` organis
 - Real-time interpretation during live events, so attendees can tune-in to live interpretation and experience the conference in English, French, Spanish or Arabic
 - All copy is built to be localised to it can be customised or translated as required and the ui is built for RTL and LTR orientations.
 
+## Deployments
+
+Each conference has been used to testing the capabilities of the software and to iterate upon it, to encorporate changes, improvements and fix bugs. Some conferences include:
+
+- [ClimateRed 2020](https://climate-red.openlab.dev/atrium)
+- PlanetRed 2021
+- [MozFest 2021—2025](https://schedule.mozillafestival.org)
+- [PDC 2022](https://schedule.pdc2022.org/#/atrium)
+- [ECSCW 2025](https://ecscw.openlab.dev/#/atrium)
+
 ## History
 
-[climate:red 2020](https://climate.red) was the first prototype for Deconf and is what the initial version of the libraries were based on, [more info](https://github.com/digitalinteraction/climatered).
+2020 — climate:red was the first prototype and is what the initial version of the libraries were based on, [more info](https://github.com/digitalinteraction/climatered).
 
-[MozFest 2021](https://www.mozillafestival.org) was the first deployment of Deconf. The libraries were made to adapt the logic from climate:red so it could be repurposed for MozFest.
+2021 — [MozFest](https://www.mozillafestival.org) was the first deployment of Deconf. The libraries were made to adapt the logic from climate:red so it could be repurposed for MozFest.
 
-[planet:Red](https://planetredsummit.com) was the next deployment of Deconf. It was used to convert planet:red into a Deconf deployment as the initial prototype contained no shared code in the end. It was a good oppertunity to refine the Deconf libraries to make them more customisable and add new features/configurations based on the MozFest deployment. This lead to lots of breaking changes but ended up with more flexible APIs and components.
+2021 — planet:Red was the next deployment. It was used to convert climate:red into a Deconf deployment as the initial prototype contained no shared code. It was a good opportunity to refine the libraries to make them more customisable and add new features/configurations based on the MozFest deployment. This lead to lots of breaking changes but ended up with more flexible APIs and components.
 
-[MozFest 2022](https://www.mozillafestival.org) was the next deployment of Deconf which nicely inherited lots of improvements from the planet:Red deployment and added back more customisations and configurations to the libraries.
+2022-2025 — MozFest has continued to refine the libraries and add features back to the project
 
 ## Future work
 
