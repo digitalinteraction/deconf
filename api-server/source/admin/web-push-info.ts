@@ -4,7 +4,7 @@ import { WebPushRepo } from "../notifications/web-push-repo.ts";
 
 export const getWebPushInfo = defineRoute({
   method: "GET",
-  pathname: "/admin/v1/conference/:conference/web-push",
+  pathname: "/admin/v1/conferences/:conference/web-push/info",
   dependencies: {
     authz: useAuthz,
     webPush: WebPushRepo.use,

@@ -192,7 +192,7 @@ export class WebPushRepo {
 
     const devices = await WebPushDeviceTable.select(
       this.sql,
-      this.sql`id IN ${this.sql(registrations.map((r) => r.id))}`,
+      this.sql`registration_id IN ${this.sql(registrations.map((r) => r.id))}`,
     );
 
     const categories = sumCategories(devices);
@@ -208,16 +208,19 @@ export class WebPushRepo {
     return { categories, messages };
   }
 
-  async listConferenceDevices(conferenceId: number) {
+  async listConferenceDevices(conferenceId: number, categories: string[]) {
     const registrations = await RegistrationTable.select(
       this.sql,
-      this.sql` conference_id = ${conferenceId} `,
+      this.sql`conference_id = ${conferenceId}`,
       ["id"],
     );
 
     return WebPushDeviceTable.select(
       this.sql,
-      this.sql`id IN ${this.sql(registrations.map((r) => r.id))}`,
+      this.sql`
+        registration_id IN ${this.sql(registrations.map((r) => r.id))}
+        AND categories ? ${this.sql(categories)}
+      `,
     );
   }
 }

@@ -11,7 +11,7 @@ const _Request = Structure.object({
 
 export const testWebPushMessage = defineRoute({
   method: "POST",
-  pathname: "/admin/v1/conference/:conference/web-push-test",
+  pathname: "/admin/v1/conferences/:conference/web-push/test",
   dependencies: {
     authz: useAuthz,
     webPush: WebPushRepo.use,

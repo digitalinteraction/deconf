@@ -4,6 +4,7 @@ import { upsertContentRoute } from "./upsert-content.ts";
 import { upsertRegistrationsRoute } from "./upsert-registrations.ts";
 import { upsertScheduleRoute } from "./upsert-schedule.ts";
 import { getWebPushInfo } from "./web-push-info.ts";
+import { sendWebPushMessage } from "./web-push-send.ts";
 import { testWebPushMessage } from "./web-push-test.ts";
 
 export const adminRoutes = [
@@ -15,4 +16,5 @@ export const adminRoutes = [
 
   getWebPushInfo,
   testWebPushMessage,
+  sendWebPushMessage,
 ];

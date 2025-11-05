@@ -11,7 +11,7 @@ const _Request = Structure.object({
 
 export const sendWebPushMessage = defineRoute({
   method: "POST",
-  pathname: "/admin/v1/conference/:conference/web-push-test",
+  pathname: "/admin/v1/conferences/:conference/web-push/send",
   dependencies: {
     authz: useAuthz,
     webPush: WebPushRepo.use,
@@ -30,7 +30,9 @@ export const sendWebPushMessage = defineRoute({
     const body = await assertRequestBody(_Request, request);
 
     // Get all of the web-push-devices for the conference
-    const devices = await webPush.listConferenceDevices(conference.id);
+    const devices = await webPush.listConferenceDevices(conference.id, [
+      "Special",
+    ]);
 
     // Send the message
     const stats = await _sendToDevices(devices, webPush, {
