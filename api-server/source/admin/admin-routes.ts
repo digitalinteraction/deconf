@@ -3,6 +3,8 @@ import { getConferenceRoute } from "./get-conference.ts";
 import { upsertContentRoute } from "./upsert-content.ts";
 import { upsertRegistrationsRoute } from "./upsert-registrations.ts";
 import { upsertScheduleRoute } from "./upsert-schedule.ts";
+import { getWebPushInfo } from "./web-push-info.ts";
+import { testWebPushMessage } from "./web-push-test.ts";
 
 export const adminRoutes = [
   getConferenceRoute,
@@ -10,4 +12,7 @@ export const adminRoutes = [
   upsertContentRoute,
   upsertRegistrationsRoute,
   appendRegistrationsRoute,
+
+  getWebPushInfo,
+  testWebPushMessage,
 ];

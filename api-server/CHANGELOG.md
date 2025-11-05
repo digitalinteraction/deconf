@@ -5,6 +5,7 @@ This file documents changes to the Deconf API Server.
 ## next
 
 - **new** web-push "test" endpoint
+- **new** web-push admin endpoints to test & broadcast
 - **new** notify command to run notifications process
 - **new** sign in with Google
 - **fix** align web-push endpoints

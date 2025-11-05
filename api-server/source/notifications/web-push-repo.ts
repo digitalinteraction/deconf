@@ -109,6 +109,13 @@ export class WebPushRepo {
     return WebPushDeviceTable.delete(this.sql, this.sql`id = ${deviceId}`);
   }
 
+  enqueueMessage<T extends WebPushPayload>(deviceId: number, payload: T) {
+    return WebPushMessageTable.insertOne(this.sql, {
+      device_id: deviceId,
+      payload,
+    });
+  }
+
   async attemptToSend(
     message: WebPushMessageRecord,
     device: WebPushDeviceRecord,
@@ -175,4 +182,57 @@ export class WebPushRepo {
       devices: new Map(devices.map((d) => [d.id, d])),
     };
   }
+
+  async getInfo(conferenceId: number) {
+    const registrations = await RegistrationTable.select(
+      this.sql,
+      this.sql` conference_id = ${conferenceId} `,
+      ["id"],
+    );
+
+    const devices = await WebPushDeviceTable.select(
+      this.sql,
+      this.sql`id IN ${this.sql(registrations.map((r) => r.id))}`,
+    );
+
+    const categories = sumCategories(devices);
+
+    const states = await this.sql<MessageStateCount[]>`
+      SELECT state, count(*) AS count
+      FROM ${this.sql(WebPushMessageTable.tableName)}
+      WHERE device_id IN ${this.sql(devices.map((r) => r.id))}
+      GROUP BY state
+    `;
+    const messages = Object.fromEntries(states.map((r) => [r.state, r.count]));
+
+    return { categories, messages };
+  }
+
+  async listConferenceDevices(conferenceId: number) {
+    const registrations = await RegistrationTable.select(
+      this.sql,
+      this.sql` conference_id = ${conferenceId} `,
+      ["id"],
+    );
+
+    return WebPushDeviceTable.select(
+      this.sql,
+      this.sql`id IN ${this.sql(registrations.map((r) => r.id))}`,
+    );
+  }
+}
+
+interface MessageStateCount {
+  state: string;
+  count: number;
+}
+
+function sumCategories(devices: WebPushDeviceRecord[]) {
+  const output: Record<string, number> = {};
+  for (const record of devices) {
+    for (const category of record.categories) {
+      output[category] = (output[category] ?? 0) + 1;
+    }
+  }
+  return output;
 }
