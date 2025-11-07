@@ -59,7 +59,8 @@ cli.command(
       .option("interval", { type: "number", default: 30_000 })
       .option("grace", { type: "number", default: 1_000 })
       .option("dry-run", { type: "boolean", default: false })
-      .option("forever", { type: "boolean", default: false }),
+      .option("forever", { type: "boolean", default: false })
+      .option("date", { type: "string" }),
   (args) => notifyCommand(args),
 );
 

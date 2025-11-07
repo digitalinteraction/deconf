@@ -67,7 +67,7 @@ export async function notifyCommand(options: NotifyOptions) {
   const webPush = WebPushRepo.use();
   const ctx = new NotifyContext(options, webPush, sql, appConfig, date);
 
-  ctx.log("init");
+  ctx.log("init date=", date.toISOString());
 
   try {
     do {
@@ -102,8 +102,8 @@ async function enqueueMySchedule(ctx: NotifyContext) {
     ctx.sql,
     ctx.sql`
       start_date IS NOT NULL
-      AND start_date >= ${ctx.date} - INTERVAL '15 minutes'
-      AND start_date <= ${ctx.date} + INTERVAL '5 minutes'
+      AND start_date >= ${ctx.date} - INTERVAL '5 minutes'
+      AND start_date <= ${ctx.date} + INTERVAL '15 minutes'
     `,
   );
 

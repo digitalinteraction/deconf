@@ -2,6 +2,11 @@
 
 This file documents changes to the Deconf API Server.
 
+## 0.3.2
+
+- **fix** add missing "date" option to notify command
+- **fix** use +15m/-5m correctly when notifying
+
 ## 0.3.1
 
 - **new** web-push admin endpoints to test & broadcast
