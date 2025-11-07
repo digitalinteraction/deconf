@@ -6,6 +6,7 @@ This file documents changes to the Deconf API Server.
 
 - **fix** add missing "date" option to notify command
 - **fix** use +15m/-5m correctly when notifying
+- **fix** long running notify uses the current date each loop
 
 ## 0.3.1
 

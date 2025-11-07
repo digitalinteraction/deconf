@@ -20,19 +20,24 @@ class NotifyContext {
   webPush: WebPushRepo;
   sql: SqlDependency;
   appConfig: AppConfig;
-  date: Date;
+  customDate: Date | null;
   constructor(
     options: NotifyOptions,
     webPush: WebPushRepo,
     sql: SqlDependency,
     appConfig: AppConfig,
-    date: Date,
+    customDate: Date | null,
   ) {
     this.options = options;
     this.webPush = webPush;
     this.sql = sql;
     this.appConfig = appConfig;
-    this.date = date;
+    this.customDate = customDate;
+  }
+
+  /** Get the overidden date or use the time right now */
+  get date() {
+    return this.customDate ?? new Date();
   }
 
   /** Log a timestamped message */
@@ -55,23 +60,30 @@ export interface NotifyOptions {
   date?: string;
 }
 
+function assertDate(input: string) {
+  const date = new Date(input);
+  if (Number.isNaN(date.getTime())) {
+    throw new Error("invalid date option");
+  }
+  return date;
+}
+
 export async function notifyCommand(options: NotifyOptions) {
-  // Parse the date from options or use "now"
-  const date = options.date ? new Date(options.date) : new Date();
-  if (Number.isNaN(date.getTime())) throw new Error("invalid date option");
+  // Parse and assert the custom date if it was passed
+  const customDate = options.date ? assertDate(options.date) : null;
 
   // Set up context
   const appConfig = useAppConfig();
   const store = useStore();
   const sql = useDatabase();
   const webPush = WebPushRepo.use();
-  const ctx = new NotifyContext(options, webPush, sql, appConfig, date);
+  const ctx = new NotifyContext(options, webPush, sql, appConfig, customDate);
 
-  ctx.log("init date=", date.toISOString());
+  ctx.log("init");
 
   try {
     do {
-      ctx.log("starting");
+      ctx.log("starting date=", ctx.date.toISOString());
 
       await enqueueMySchedule(ctx);
       await sendPendingMessages(ctx);
