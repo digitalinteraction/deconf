@@ -6,7 +6,6 @@ import {
   loader as defineDependency,
   getTerminator,
   type SqlDependency,
-  type Store,
   type TokenService,
   useRandom,
 } from "gruber";
@@ -22,7 +21,7 @@ import {
   ExternalEmailService,
 } from "./email.ts";
 import { JoseJWKTokens } from "./gruber-hacks.ts";
-import { NodeRedisStore } from "./store.ts";
+import { RedisStore } from "./store.ts";
 import { DECONF_OOB, ServiceTokenService } from "./utilities.ts";
 
 export const useAppConfig = defineDependency(() => {
@@ -50,9 +49,13 @@ export const useCors = defineDependency(() => {
     : undefined;
 });
 
-export const useStore = defineDependency((): Store => {
+export const useStore = defineDependency(() => {
   const appConfig = useAppConfig();
-  return new NodeRedisStore(appConfig.redis.url, appConfig.redis);
+  return RedisStore.createAndStart({
+    url: appConfig.redis.url,
+    prefix: appConfig.redis.prefix,
+    log: console.error,
+  });
 });
 
 export const useCSRF = defineDependency(() => {

@@ -1,4 +1,4 @@
-import { defineRoute, FetchRouter, serveHTTP } from "gruber";
+import { defineRoute, FetchRouter, HTTPError, serveHTTP } from "gruber";
 import {
   useAppConfig,
   useCors,
@@ -31,15 +31,29 @@ const helloRoute = defineRoute({
   },
 });
 
-const healthzRoute = defineRoute({
+const readyzRoute = defineRoute({
   method: "GET",
-  pathname: "/healthz",
+  pathname: "/readyz",
+  dependencies: {
+    arnie: useTerminator,
+    store: useStore,
+  },
+  async handler({ arnie, store }) {
+    if (arnie.state === "running") {
+      const ok = await store.isReady();
+      if (!ok) throw new HTTPError(503);
+    }
+    return arnie.getResponse();
+  },
+});
+
+const livezRoute = defineRoute({
+  method: "GET",
+  pathname: "/livez",
   dependencies: {
     arnie: useTerminator,
   },
-  async handler({ arnie }) {
-    return arnie.getResponse();
-  },
+  handler: () => new Response(),
 });
 
 // NOTE: review this
@@ -69,7 +83,8 @@ const corsRoute = defineRoute({
 
 export const routes = [
   helloRoute,
-  healthzRoute,
+  readyzRoute,
+  livezRoute,
   corsRoute,
   ...legacyRoutes,
   ...authRoutes,
