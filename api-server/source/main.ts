@@ -1,8 +1,5 @@
 #!/usr/bin/env npx tsx
 
-import "gruber/polyfill.js";
-import "urlpattern-polyfill";
-
 import process from "node:process";
 import yargs from "yargs";
 import { dumpConfiguration } from "./config.ts";

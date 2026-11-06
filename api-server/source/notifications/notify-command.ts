@@ -95,7 +95,7 @@ export async function notifyCommand(options: NotifyOptions) {
     console.log("Fatal error", error);
   }
 
-  await store.close();
+  await store.dispose();
   await sql.end();
 }
 

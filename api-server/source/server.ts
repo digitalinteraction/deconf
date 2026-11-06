@@ -97,6 +97,6 @@ export async function runServer(options: RunServerOptions) {
   arnie.start(async () => {
     await server.stop();
     await sql.end();
-    await store.close();
+    await store.dispose();
   });
 }

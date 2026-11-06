@@ -6,27 +6,27 @@
     "dev": "node source/main.ts",
     "debug": "node --inspect-wait source/main.ts",
     "start": "node --watch --watch-preserve-output source/main.ts serve",
-    "build": "tsc"
+    "build": "tsc",
+    "lint": "tsc --noEmit && prettier --check source scripts"
   },
   "dependencies": {
     "@openlab/deconf-shared": "^4.0.0",
     "cookie": "^1.0.2",
     "debug": "^4.4.1",
     "google-auth-library": "^10.3.1",
-    "gruber": "^0.9.0-beta.1",
+    "gruber": "^0.10.0-beta.5",
     "ics": "^3.8.1",
     "jose": "^6.0.13",
     "marked": "^15.0.12",
     "minio": "^8.0.5",
     "postgres": "^3.4.7",
     "redis": "^5.8.2",
-    "urlpattern-polyfill": "^10.1.0",
     "web-push": "^3.6.7",
     "yargs": "^18.0.0"
   },
   "devDependencies": {
     "@types/debug": "^4.1.12",
-    "@types/node": "^22.7.4",
+    "@types/node": "^24.19.2",
     "@types/web-push": "^3.6.4",
     "@types/yargs": "^17.0.33",
     "prettier": "^3.6.2",

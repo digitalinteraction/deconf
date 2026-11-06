@@ -50,7 +50,16 @@ export class NodeRedisStore implements Store {
     await this.client((c) => c.del(this.prefix + key));
   }
 
+  /** @deprecated use {@link dispose} */
   async close(): Promise<void> {
+    await this.dispose();
+  }
+
+  async dispose(): Promise<void> {
     await this.client((c) => c.isOpen && c.quit());
+  }
+
+  [Symbol.asyncDispose](): Promise<void> {
+    return this.dispose();
   }
 }
