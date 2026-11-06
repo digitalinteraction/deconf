@@ -1,8 +1,8 @@
 import cookie from "cookie";
-import { HTTPError, loader, Store, TokenService } from "gruber";
-import { AppConfig } from "../config.ts";
+import { HTTPError, loader, type Store, type TokenService } from "gruber";
+import type { AppConfig } from "../config.ts";
 import {
-  EmailService,
+  type EmailService,
   useAppConfig,
   useEmail,
   useStore,

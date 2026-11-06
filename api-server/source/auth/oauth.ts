@@ -5,7 +5,7 @@ import {
   GoogleRepo,
   trimEmail,
 } from "../lib/mod.ts";
-import { AuthLib, LoginRequest, parseScopes } from "./auth-lib.ts";
+import { AuthLib, type LoginRequest, parseScopes } from "./auth-lib.ts";
 import { AuthRepo } from "./auth-repo.ts";
 
 // An error that is shown to the user via a HTTP redirect to a page that renders it

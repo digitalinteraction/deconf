@@ -1,4 +1,4 @@
-import { RandomService, Store } from "gruber";
+import type { RandomService, Store } from "gruber";
 
 const CSRF_DEFAULT_MAX_AGE = 10 * 60 * 1000; // 10 minutes
 

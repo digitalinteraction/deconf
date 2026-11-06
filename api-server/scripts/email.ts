@@ -1,7 +1,7 @@
-#!/usr/bin/env npx tsx
+#!/usr/bin/env node
 
 import process from "node:process";
-import { useEmail } from "../source/lib/mod.js";
+import { useEmail } from "../source/lib/mod.ts";
 
 const [emailAddress, kind = "test"] = process.argv.slice(2);
 

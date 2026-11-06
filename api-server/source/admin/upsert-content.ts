@@ -3,7 +3,7 @@ import { assertRequestBody, defineRoute, HTTPError, Structure } from "gruber";
 import {
   assertRequestParam,
   ConferenceTable,
-  ContentRecord,
+  type ContentRecord,
   ContentTable,
   localisedStructure,
   useAuthz,

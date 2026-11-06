@@ -1,6 +1,6 @@
 import { getPostgresMigrator, loader } from "gruber";
 
-import { useDatabase } from "./globals.js";
+import { useDatabase } from "./globals.ts";
 
 export async function runMigrations(direction: string) {
   const directory = new URL("../migrations/", import.meta.url);

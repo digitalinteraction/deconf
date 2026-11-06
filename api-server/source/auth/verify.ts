@@ -2,7 +2,7 @@ import cookie from "cookie";
 import { assertRequestBody, defineRoute, HTTPError, Structure } from "gruber";
 
 import { commponDependencies, undefinedStructure } from "../lib/mod.ts";
-import { AuthLib, LoginRequest } from "./auth-lib.ts";
+import { AuthLib, type LoginRequest } from "./auth-lib.ts";
 import { AuthRepo } from "./auth-repo.ts";
 
 const VerifyBody = Structure.union([

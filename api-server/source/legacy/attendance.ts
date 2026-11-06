@@ -1,8 +1,8 @@
 import * as deconf from "@openlab/deconf-shared";
-import { defineRoute, loader, SqlDependency } from "gruber";
+import { defineRoute, loader, type SqlDependency } from "gruber";
 
 import {
-  SessionSaveRecord,
+  type SessionSaveRecord,
   SessionSaveTable,
   useAuthz,
   useDatabase,

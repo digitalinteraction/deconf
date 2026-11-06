@@ -1,13 +1,13 @@
 import * as deconf from "@openlab/deconf-shared";
-import { defineRoute, HTTPError, loader, SqlDependency } from "gruber";
+import { defineRoute, HTTPError, loader, type SqlDependency } from "gruber";
 
 import {
   assertRequestParam,
-  RegistrationRecord,
+  type RegistrationRecord,
   RegistrationTable,
   useAuthz,
   useDatabase,
-  UserRecord,
+  type UserRecord,
   UserTable,
 } from "../lib/mod.ts";
 import { LegacyApiError } from "./legacy-lib.ts";

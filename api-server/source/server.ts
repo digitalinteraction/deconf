@@ -5,7 +5,7 @@ import {
   useDatabase,
   useStore,
   useTerminator,
-} from "./lib/mod.js";
+} from "./lib/mod.ts";
 
 import { adminRoutes } from "./admin/admin-routes.ts";
 import { authRoutes } from "./auth/auth-routes.ts";
@@ -67,7 +67,7 @@ const corsRoute = defineRoute({
   },
 });
 
-const routes = [
+export const routes = [
   helloRoute,
   healthzRoute,
   corsRoute,

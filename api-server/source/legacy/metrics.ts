@@ -5,7 +5,7 @@ import {
   defineRoute,
   HTTPError,
   loader,
-  SqlDependency,
+  type SqlDependency,
   Structure,
   useRandom,
 } from "gruber";

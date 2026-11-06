@@ -1,9 +1,9 @@
-import { loader, SqlDependency } from "gruber";
+import { loader, type SqlDependency } from "gruber";
 
 import {
   assertRequestParam,
   ConferenceTable,
-  Oauth2TokenRecord,
+  type Oauth2TokenRecord,
   OAuth2TokenTable,
   RegistrationTable,
   useDatabase,

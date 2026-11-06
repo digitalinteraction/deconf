@@ -1,14 +1,14 @@
 import { defineRoute, HTTPError } from "gruber";
 import ics from "ics";
 import {
-  ConferenceInfo,
+  type ConferenceInfo,
   getConferenceInfo,
   getSessionUrl,
-  SessionRecord,
+  type SessionRecord,
   useAppConfig,
   useAuthz,
   useTokens,
-} from "../lib/mod.js";
+} from "../lib/mod.ts";
 import { LegacyApiError, LegacyRepo } from "./legacy-lib.ts";
 
 function getIcsDate(date: Date) {

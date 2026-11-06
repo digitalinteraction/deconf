@@ -1,11 +1,11 @@
 import {
   _nestContext,
-  AuthzToken,
+  type AuthzToken,
   HTTPError,
-  SignTokenOptions,
-  SqlDependency,
+  type SignTokenOptions,
+  type SqlDependency,
   Structure,
-  TokenService,
+  type TokenService,
 } from "gruber";
 import * as jose from "jose";
 

@@ -3,14 +3,14 @@ import { assertRequestBody, defineRoute, HTTPError, Structure } from "gruber";
 
 import {
   commponDependencies,
-  ConferenceRecord,
+  type ConferenceRecord,
   emailStructure,
   GOOGLE_CALENDAR_SCOPE,
   GoogleRepo,
   trimEmail,
   undefinedStructure,
 } from "../lib/mod.ts";
-import { AuthLib, LoginRequest, parseScopes } from "./auth-lib.ts";
+import { AuthLib, type LoginRequest, parseScopes } from "./auth-lib.ts";
 import { AuthRepo } from "./auth-repo.ts";
 
 const LoginBody = Structure.union([

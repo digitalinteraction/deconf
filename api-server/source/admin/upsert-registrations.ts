@@ -1,11 +1,11 @@
 import { assertRequestBody, defineRoute } from "gruber";
 
 import {
-  RegistrationRecord,
+  type RegistrationRecord,
   RegistrationTable,
   useAuthz,
   useDatabase,
-  UserRecord,
+  type UserRecord,
   UserTable,
 } from "../lib/mod.ts";
 import {

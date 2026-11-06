@@ -1,4 +1,4 @@
-import { AppConfig } from "../config.ts";
+import type { AppConfig } from "../config.ts";
 
 /** Options for sending a plain-text email to a single subject */
 export interface SendPlainOptions {

@@ -1,8 +1,8 @@
-#!/usr/bin/env npx tsx
+#!/usr/bin/env node
 
 import process from "node:process";
 import ms from "ms";
-import { useTokens } from "../source/lib/mod.js";
+import { useTokens } from "../source/lib/mod.ts";
 
 const [subject, duration = "1h"] = process.argv.slice(2);
 
@@ -28,7 +28,7 @@ if (Number.isNaN(userId)) throw new Error("invalid id");
 
 console.log(
   await tokens.sign("admin", {
-    maxAge: ms(duration),
+    maxAge: ms(duration as `${number}`),
     userId,
   }),
 );

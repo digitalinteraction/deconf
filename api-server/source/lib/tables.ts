@@ -1,6 +1,6 @@
 import { Structure } from "gruber";
 import { defineTable, localisedStructure } from "./gruber-hacks.ts";
-import {
+import type {
   AssetRecord,
   ConferenceRecord,
   ContentRecord,

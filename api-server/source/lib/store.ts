@@ -1,4 +1,4 @@
-import { Store, StoreSetOptions } from "gruber";
+import type { Store, StoreSetOptions } from "gruber";
 import * as redis from "redis";
 
 type NodeRedis = redis.RedisClientType;

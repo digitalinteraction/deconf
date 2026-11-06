@@ -1,14 +1,14 @@
 import * as jose from "jose";
 import { pickProperties } from "./gruber-hacks.ts";
-import {
+import type {
   AuthzToken,
   SignTokenOptions,
   SqlDependency,
   TokenService,
 } from "gruber";
 import { ServiceTokenTable } from "./tables.ts";
-import { ConferenceRecord } from "./types.ts";
-import { AppConfig } from "../config.ts";
+import type { ConferenceRecord } from "./types.ts";
+import type { AppConfig } from "../config.ts";
 
 export function trimEmail(input: string) {
   return input.trim().toLowerCase();

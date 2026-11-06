@@ -1,17 +1,17 @@
-import { HTTPError, loader, SqlDependency } from "gruber";
+import { HTTPError, loader, type SqlDependency } from "gruber";
 import {
   assertRequestParam,
   ConferenceTable,
   RegistrationTable,
   useAppConfig,
   useDatabase,
-  WebPushDeviceRecord,
+  type WebPushDeviceRecord,
   WebPushDeviceTable,
-  WebPushMessageRecord,
+  type WebPushMessageRecord,
   WebPushMessageTable,
 } from "../lib/mod.ts";
 import webPush from "web-push";
-import { AppConfig } from "../config.ts";
+import type { AppConfig } from "../config.ts";
 
 export interface WebPushPayload {
   title: string;

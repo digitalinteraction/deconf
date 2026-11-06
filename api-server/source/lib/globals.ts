@@ -1,24 +1,24 @@
 import {
-  AbstractAuthorizationService,
+  type AbstractAuthorizationService,
   AuthorizationService,
   CompositeTokens,
   Cors,
   loader as defineDependency,
   getTerminator,
-  SqlDependency,
-  Store,
-  TokenService,
+  type SqlDependency,
+  type Store,
+  type TokenService,
   useRandom,
 } from "gruber";
 import postgres from "postgres";
 
 export { default as createDebug } from "debug";
 
-import { _appConfig } from "../config.js";
-import { CSRF } from "./csrf.js";
+import { _appConfig } from "../config.ts";
+import { CSRF } from "./csrf.ts";
 import {
   DebugEmailService,
-  EmailService,
+  type EmailService,
   ExternalEmailService,
 } from "./email.ts";
 import { JoseJWKTokens } from "./gruber-hacks.ts";

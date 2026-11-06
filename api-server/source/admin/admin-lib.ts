@@ -1,4 +1,4 @@
-import { HTTPError, SqlDependency, Structure } from "gruber";
+import { HTTPError, type SqlDependency, Structure } from "gruber";
 import {
   assertRequestParam,
   AssetTable,
@@ -11,7 +11,7 @@ import {
   SessionLinkTable,
   SessionPersonTable,
   SessionTable,
-  TableDefinition,
+  type TableDefinition,
   TaxonomyTable,
   UserTable,
 } from "../lib/mod.ts";

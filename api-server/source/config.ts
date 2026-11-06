@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import process from "node:process";
-import { getConfiguration, Infer, Structure } from "gruber";
+import { getConfiguration, type Infer, Structure } from "gruber";
 
 import pkg from "../package.json" with { type: "json" };
 import { DECONF_OOB } from "./lib/utilities.ts";

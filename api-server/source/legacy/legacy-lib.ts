@@ -1,25 +1,25 @@
 import * as deconf from "@openlab/deconf-shared";
-import { HTTPError, loader, SqlDependency, Store } from "gruber";
+import { HTTPError, loader, type SqlDependency, type Store } from "gruber";
 
 import {
-  AssetRecord,
+  type AssetRecord,
   AssetTable,
-  ConferenceRecord,
+  type ConferenceRecord,
   ConferenceTable,
   ContentTable,
   getOrInsert,
-  LabelRecord,
+  type LabelRecord,
   LabelTable,
-  PersonRecord,
+  type PersonRecord,
   PersonTable,
   RegistrationTable,
   SessionLabelTable,
   SessionLinkTable,
   SessionPersonTable,
-  SessionRecord,
+  type SessionRecord,
   SessionSaveTable,
   SessionTable,
-  TaxonomyRecord,
+  type TaxonomyRecord,
   TaxonomyTable,
   useDatabase,
 } from "../lib/mod.ts";

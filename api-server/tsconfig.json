@@ -4,9 +4,12 @@
   "compilerOptions": {
     "target": "ES2023",
     "module": "NodeNext",
+    "types": ["node"],
+    "rootDir": ".",
     "outDir": "bundle",
     "newLine": "lf",
     "strict": true,
+    "verbatimModuleSyntax": true,
     "noEmitOnError": true,
     "skipLibCheck": true,
     "useDefineForClassFields": true,
@@ -17,8 +20,7 @@
     "noImplicitOverride": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
-    "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true
+    "forceConsistentCasingInFileNames": true
   },
   "include": ["source", "scripts"]
 }

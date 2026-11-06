@@ -1,16 +1,15 @@
-import { SqlDependency } from "gruber";
+import type { SqlDependency } from "gruber";
+import type { AppConfig } from "../config.ts";
 import { useAppConfig, useDatabase, useStore } from "../lib/globals.ts";
-import { WebPushPayload, WebPushRepo } from "./web-push-repo.ts";
 import {
   ConferenceTable,
-  RegistrationTable,
   SessionSaveTable,
   SessionTable,
   WebPushDeviceTable,
   WebPushMessageTable,
 } from "../lib/tables.ts";
 import { getConferenceInfo, getSessionUrl } from "../lib/utilities.ts";
-import { AppConfig } from "../config.ts";
+import { type WebPushPayload, WebPushRepo } from "./web-push-repo.ts";
 
 //
 // A context to run various sub-commands with containing relevant dependencies & helpers

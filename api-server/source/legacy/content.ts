@@ -1,8 +1,8 @@
 import * as deconf from "@openlab/deconf-shared";
-import { defineRoute, HTTPError, loader, SqlDependency } from "gruber";
+import { defineRoute, HTTPError, loader, type SqlDependency } from "gruber";
 import { marked } from "marked";
 
-import { ContentTable, useDatabase, useStore } from "../lib/mod.js";
+import { ContentTable, useDatabase, useStore } from "../lib/mod.ts";
 import { cache, LegacyApiError, LegacyRepo } from "./legacy-lib.ts";
 
 class ContentRepo {

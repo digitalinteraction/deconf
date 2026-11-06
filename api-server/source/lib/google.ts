@@ -1,4 +1,4 @@
-import { Credentials, OAuth2Client } from "google-auth-library";
+import { type Credentials, OAuth2Client } from "google-auth-library";
 import { loader } from "gruber";
 import { useAppConfig } from "./globals.ts";
 

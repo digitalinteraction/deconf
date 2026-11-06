@@ -1,18 +1,18 @@
 import { defineRoute, HTTPError, includesScope } from "gruber";
 import {
-  AssetRecord,
-  LabelRecord,
-  PersonRecord,
-  SessionLinkRecord,
-  SessionRecord,
+  type AssetRecord,
+  type LabelRecord,
+  type PersonRecord,
+  type SessionLinkRecord,
+  type SessionRecord,
   useAuthz,
   useStore,
-} from "../lib/mod.js";
+} from "../lib/mod.ts";
 import {
   cache,
   LegacyApiError,
   LegacyRepo,
-  TaxonomyDetails,
+  type TaxonomyDetails,
 } from "./legacy-lib.ts";
 
 import * as deconf from "@openlab/deconf-shared";

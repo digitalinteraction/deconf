@@ -1,5 +1,5 @@
 # [0] A common base for both stages
-FROM node:22-alpine AS base
+FROM node:24-alpine AS base
 RUN mkdir /app && chown -R node:node /app
 COPY --chown=node ["package*.json", "tsconfig.json", "/app/"]
 USER node

@@ -2,13 +2,13 @@ import { assertRequestBody, defineRoute, HTTPError, useRandom } from "gruber";
 
 import { AuthLib } from "../auth/auth-lib.ts";
 import {
-  RegistrationRecord,
+  type RegistrationRecord,
   RegistrationTable,
   useAppConfig,
   useAuthz,
   useDatabase,
   useEmail,
-  UserRecord,
+  type UserRecord,
   UserTable,
   useStore,
 } from "../lib/mod.ts";

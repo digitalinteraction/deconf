@@ -1,7 +1,10 @@
 import { assertRequestBody, defineRoute, Structure } from "gruber";
 import { useAuthz } from "../lib/globals.ts";
-import { WebPushPayload, WebPushRepo } from "../notifications/web-push-repo.ts";
-import { WebPushDeviceRecord } from "../lib/types.ts";
+import type { WebPushDeviceRecord } from "../lib/types.ts";
+import {
+  type WebPushPayload,
+  WebPushRepo,
+} from "../notifications/web-push-repo.ts";
 
 const _Request = Structure.object({
   title: Structure.string(),
