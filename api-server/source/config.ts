@@ -55,7 +55,7 @@ const struct = config.object({
       fallback: "deconf_login",
     }),
     loginMaxAge: config.number({
-      variable: "AUTH_SESSION_MAX_AGE",
+      variable: "AUTH_LOGIN_MAX_AGE",
       fallback: 15 * 60 * 1_000, // 15 minutes
     }),
 
