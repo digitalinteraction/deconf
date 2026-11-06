@@ -41,7 +41,7 @@ export const oauthRoute = defineRoute({
     // If there was a oauth error, stop now
     if (typeof body.error === "string") {
       console.error("[oauth2 error]", body);
-      throw new HTTPError(400, undefined, "Something went wrong");
+      throw HTTPError.badRequest("Something went wrong");
     }
 
     // Get the code and state from the URL
@@ -54,7 +54,7 @@ export const oauthRoute = defineRoute({
         `/auth/request/${body.state}`,
       );
       if (login?.method !== "oauth") {
-        throw new HTTPError(400, undefined, "Something went wrong");
+        throw HTTPError.badRequest("Something went wrong");
       }
 
       //

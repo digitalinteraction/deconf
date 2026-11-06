@@ -11,7 +11,7 @@ import {
 } from "gruber";
 import { useAppConfig, useDatabase } from "../lib/globals.ts";
 import { LogTable } from "../lib/tables.ts";
-import { assertRequestParam, undefinedStructure } from "../lib/gruber-hacks.ts";
+import { assertRequestParam } from "../lib/gruber-hacks.ts";
 
 interface MetricInit {
   visitor: string;

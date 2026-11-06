@@ -1,21 +1,13 @@
 import {
-  _nestContext,
   type AuthzToken,
   HTTPError,
+  pickProperties,
   type SignTokenOptions,
   type SqlDependency,
   Structure,
   type TokenService,
 } from "gruber";
 import * as jose from "jose";
-
-function pick<T, K extends keyof T>(input: T, keys: K[]): { [L in K]: T[L] } {
-  let output: Pick<T, K> = {} as any;
-  for (const key of keys) output[key] = input[key];
-  return output;
-}
-
-export const pickProperties = pick;
 
 // TODO: Maybe a gruber thing? + also in make-place
 export type InferTable<T> = T extends TableDefinition<infer U> ? U : never;
@@ -164,7 +156,7 @@ export function defineTable<T>({
     ): Structure<Pick<T, K>> {
       // TODO: sort out these types
       if (keys) {
-        return Structure.object(pick(fields, keys) as any);
+        return Structure.object(pickProperties(fields, keys) as any);
       } else {
         return Structure.object(fields) as any;
         // return namedStructure(
@@ -176,11 +168,11 @@ export function defineTable<T>({
 
     partial<K extends keyof T>(keys: K[]): Structure<Pick<Partial<T>, K>> {
       // TODO: sort out these types
-      return Structure.partial(pick(fields, keys) as any);
+      return Structure.partial(pickProperties(fields, keys) as any);
     },
 
     fields<K extends keyof T = keyof T>(keys?: K[] | undefined) {
-      if (keys) return pick(fields, keys) as TableFields<Pick<T, K>>;
+      if (keys) return pickProperties(fields, keys) as TableFields<Pick<T, K>>;
       else return fields;
     },
 
@@ -194,49 +186,8 @@ export function defineTable<T>({
   };
 }
 
-export function recordStructure<T extends string | number | symbol, U>(
-  keyStruct: Structure<T>,
-  valueStruct: Structure<U>,
-) {
-  return new Structure<Record<T, U | undefined>>(
-    { type: "object" },
-    (value, context) => {
-      if (typeof value !== "object") throw new Error("not an object");
-
-      const output: any = {};
-      const errors: any[] = [];
-      for (const entry of Object.entries(value as any)) {
-        try {
-          const ctx = _nestContext(context, entry[0]);
-          output[keyStruct.process(entry[0], ctx)] = valueStruct.process(
-            entry[1],
-            ctx,
-          );
-        } catch (error) {
-          errors.push(error as Error);
-        }
-      }
-      if (errors.length > 0) {
-        throw new Structure.Error("invalid record", context.path, errors);
-      }
-      for (const key in output) {
-        if (output[key] === undefined) delete output[key];
-      }
-
-      return output;
-    },
-  );
-}
-
 export function localisedStructure() {
-  return recordStructure(Structure.string(), Structure.string());
-}
-
-export function getOrInsert<K, V>(map: Map<K, V>, key: K, defaultValue: V) {
-  if (!map.has(key)) {
-    map.set(key, defaultValue);
-  }
-  return map.get(key)!;
+  return Structure.record(Structure.string(), Structure.string());
 }
 
 export interface ConfigFileOptions {
@@ -340,13 +291,6 @@ export function emailStructure() {
     const string = primative.process(value);
     if (!/.+@.+/.test(string)) throw new Error("Bad email address");
     return string;
-  });
-}
-
-export function undefinedStructure() {
-  return new Structure<undefined>({}, (value) => {
-    if (value !== undefined) throw new Error("not undefined");
-    return undefined;
   });
 }
 

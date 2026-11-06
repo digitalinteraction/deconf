@@ -1,5 +1,11 @@
 import * as deconf from "@openlab/deconf-shared";
-import { HTTPError, loader, type SqlDependency, type Store } from "gruber";
+import {
+  getOrInsert,
+  HTTPError,
+  loader,
+  type SqlDependency,
+  type Store,
+} from "gruber";
 
 import {
   type AssetRecord,
@@ -7,7 +13,6 @@ import {
   type ConferenceRecord,
   ConferenceTable,
   ContentTable,
-  getOrInsert,
   type LabelRecord,
   LabelTable,
   type PersonRecord,

@@ -8,7 +8,6 @@ import {
   GOOGLE_CALENDAR_SCOPE,
   GoogleRepo,
   trimEmail,
-  undefinedStructure,
 } from "../lib/mod.ts";
 import { AuthLib, type LoginRequest, parseScopes } from "./auth-lib.ts";
 import { AuthRepo } from "./auth-repo.ts";
@@ -25,7 +24,7 @@ const LoginBody = Structure.union([
     provider: Structure.literal("google"),
     redirectUri: Structure.string(),
     conferenceId: Structure.union([Structure.null(), Structure.number()]),
-    scope: Structure.union([Structure.string(), undefinedStructure()]),
+    scope: Structure.optional(Structure.string()),
   }),
 ]);
 

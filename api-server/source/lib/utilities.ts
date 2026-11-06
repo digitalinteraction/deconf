@@ -1,10 +1,10 @@
 import * as jose from "jose";
-import { pickProperties } from "./gruber-hacks.ts";
-import type {
-  AuthzToken,
-  SignTokenOptions,
-  SqlDependency,
-  TokenService,
+import {
+  type AuthzToken,
+  pickProperties,
+  type SignTokenOptions,
+  type SqlDependency,
+  type TokenService,
 } from "gruber";
 import { ServiceTokenTable } from "./tables.ts";
 import type { ConferenceRecord } from "./types.ts";

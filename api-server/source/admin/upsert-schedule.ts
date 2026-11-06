@@ -1,4 +1,9 @@
-import { assertRequestBody, defineRoute, Structure } from "gruber";
+import {
+  assertRequestBody,
+  defineRoute,
+  pickProperties,
+  Structure,
+} from "gruber";
 
 import {
   type AssetRecord,
@@ -7,7 +12,6 @@ import {
   LabelTable,
   type PersonRecord,
   PersonTable,
-  pickProperties,
   type SessionLabelRecord,
   SessionLabelTable,
   type SessionLinkRecord,
